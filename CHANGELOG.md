@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/jrfullstack/jr-next-starter/compare/v0.2.0...v0.2.1) (2026-09-29)
+
+
+### 📝 Documentación
+
+* add authentication and admin panel plan ([#6](https://github.com/jrfullstack/jr-next-starter/issues/6)) ([2912040](https://github.com/jrfullstack/jr-next-starter/commit/2912040eaf12c2a5b6078a51a990470d5759facb))
+* add phase 11 and next steps to the roadmap ([#4](https://github.com/jrfullstack/jr-next-starter/issues/4)) ([c438b3e](https://github.com/jrfullstack/jr-next-starter/commit/c438b3e2a7394ee47bdfdba185c843e2e119d0c1))
+
 ## [0.2.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.1.0...v0.2.0) (2026-09-29)
 
 
