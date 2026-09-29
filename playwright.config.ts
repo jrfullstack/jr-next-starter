@@ -80,7 +80,12 @@ export default defineConfig({
 
   /* Locally reuse `pnpm dev` if running; on CI serve the production build made by the Build step */
   webServer: {
-    command: process.env.CI ? "pnpm start" : "pnpm dev",
+    // On CI, run Next directly: pnpm 12's native binary doesn't forward the stop
+    // signal on Linux, so Playwright's teardown would wait for a server that never exits
+    command: process.env.CI
+      ? "node node_modules/next/dist/bin/next start"
+      : "pnpm dev",
+    gracefulShutdown: { signal: "SIGTERM", timeout: 5_000 },
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
