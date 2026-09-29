@@ -168,7 +168,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 
 ### 🧭 Fase avanzada
 
-- [ ] Autenticación
+- [ ] Autenticación y panel de administración (Better Auth). Plan en revisión: [`docs/plans/auth.md`](docs/plans/auth.md)
 
 ## 📦 Librerías
 
@@ -614,6 +614,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   └── **/*.test.ts(x)             # Tests unitarios junto a su archivo
 ├── scripts
 │   └── oxlint-fix.mjs              # Repite `oxlint --fix` hasta que no quede nada corregible
+├── docs/plans                      # Planes de funcionalidades grandes, revisados antes de programar
 ├── .jscpd.json                     # Configuración de detección de duplicados
 ├── .markdownlint-cli2.jsonc        # Reglas de Markdown (CLI y extensión del editor)
 ├── .release-please-manifest.json   # Versión actual publicada (release-please)
