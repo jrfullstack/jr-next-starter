@@ -17,6 +17,9 @@ permissions:
 env:
   DATABASE_URL: postgresql://user:password@localhost:5432/ci
   NEXT_PUBLIC_APP_URL: http://localhost:3000
+  # Opt out of Next.js and Prisma CLI telemetry
+  NEXT_TELEMETRY_DISABLED: 1
+  CHECKPOINT_DISABLE: 1
 
 jobs:
   quality:

@@ -52,6 +52,14 @@ export const env = createEnv({
      * Formato: postgresql://usuario:contraseña@host:5432/base?schema=public
      */
     DATABASE_URL: z.url(),
+
+    /**
+     * VERCEL · la define Vercel automáticamente (no la pongas en `.env`)
+     * Vale "1" en los builds y servidores de Vercel. Activa Speed Insights
+     * y Web Analytics de Vercel (`<VercelInsights />`); fuera de Vercel no
+     * se cargan.
+     */
+    VERCEL: z.literal("1").optional(),
   },
 
   /**

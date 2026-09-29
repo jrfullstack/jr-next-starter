@@ -6,6 +6,7 @@ import { Analytics } from "@/components/analytics";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { VercelInsights } from "@/components/vercel-insights";
 import { siteConfig } from "@/config/site";
 import { env } from "@/env";
 import { localeStaticParams, parseLocale } from "@/i18n/locale";
@@ -75,6 +76,7 @@ export default async function RootLayout({
             <SiteHeader />
             {children}
             <SiteFooter />
+            <VercelInsights />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

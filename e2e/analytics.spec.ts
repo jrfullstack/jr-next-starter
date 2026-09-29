@@ -1,19 +1,20 @@
 import { expect, test } from "@playwright/test";
 
-// Local and CI runs have no NEXT_PUBLIC_GA_MEASUREMENT_ID: Analytics must stay off
-test("does not load Google Analytics without a measurement ID", async ({
+// Local and CI runs have no GA measurement ID and are not on Vercel: no tracking scripts must load
+test("does not load analytics scripts outside production platforms", async ({
   page,
 }) => {
-  const gaRequests: string[] = [];
+  const trackingRequests: string[] = [];
   page.on("request", (request) => {
-    if (request.url().includes("googletagmanager.com")) {
-      gaRequests.push(request.url());
+    const url = request.url();
+    if (url.includes("googletagmanager.com") || url.includes("/_vercel/")) {
+      trackingRequests.push(url);
     }
   });
 
   await page.goto("/es");
   await page.waitForLoadState("networkidle");
 
-  expect(gaRequests).toEqual([]);
+  expect(trackingRequests).toEqual([]);
   expect(await page.evaluate(() => "gtag" in window)).toBe(false);
 });

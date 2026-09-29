@@ -34,6 +34,8 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🌐 i18n con `next-intl` - Español e inglés con rutas `/es` y `/en`
 - 🗺️ SEO - Metadata, Open Graph generada por idioma, `sitemap.xml`, `robots.txt` y `hreflang`
 - 📊 Google Analytics 4 - Se activa solo si defines su ID en las variables de entorno
+- ⚡ Vercel Speed Insights y Web Analytics - Se cargan solo al desplegar en Vercel
+- 🔕 Telemetría de Next.js y Prisma desactivada
 - 🧪 Vitest + React Testing Library - Tests unitarios y de componentes
 - 🎭 Playwright - Tests end-to-end en navegador real
 - 💅 Biome - Linter y formatter con reglas estrictas de código limpio
@@ -151,6 +153,8 @@ Versiones instaladas a fecha de la última actualización del README.
 | `cn` | 0.4.0 | Combina clases de Tailwind resolviendo conflictos (reemplaza clsx + tailwind-merge) |
 | `lucide-react` | 1.48.0 | Iconos SVG como componentes de React |
 | `@next/third-parties` | 16.3.6 | Integraciones oficiales de Next.js con servicios externos (Google Analytics) cargadas sin bloquear el renderizado |
+| `@vercel/speed-insights` | 2.0.0 | Mide Core Web Vitals de usuarios reales en Vercel (solo se carga en Vercel) |
+| `@vercel/analytics` | 2.0.1 | Analítica de visitas de Vercel, sin cookies (solo se carga en Vercel) |
 | `next-intl` | 4.14.7 | Traducciones, formato de fechas/números y rutas por idioma para el App Router |
 | `next-themes` | 0.4.6 | Tema claro/oscuro/sistema sin parpadeo; guarda la preferencia del usuario |
 | `@t3-oss/env-nextjs` | 0.13.11 | Valida con Zod las variables de entorno al arrancar y las expone tipadas en `env` |
@@ -279,6 +283,9 @@ Ejecuta `pnpm check` antes de cada commit.
 | `DATABASE_URL` | Servidor (secreta) | Sí | Conexión a PostgreSQL para Prisma |
 | `NEXT_PUBLIC_APP_URL` | Pública | Sí | URL del sitio, base de las URLs absolutas del SEO |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Pública | No | ID de Google Analytics 4 (`G-XXXXXXXXXX`). Si está vacía, Analytics no se carga |
+| `NEXT_TELEMETRY_DISABLED` | Herramienta | No (recomendado `1`) | Desactiva la telemetría anónima de Next.js |
+| `CHECKPOINT_DISABLE` | Herramienta | No (recomendado `1`) | Desactiva la telemetría y el aviso de versiones del CLI de Prisma |
+| `VERCEL` | Plataforma | La define Vercel | Vale `1` en Vercel y activa Speed Insights y Web Analytics |
 | `SKIP_ENV_VALIDATION` | - | No | Desactiva la validación (CI/Docker). Nunca en producción |
 
 - **Pública** (`NEXT_PUBLIC_*`): se incluye en el JavaScript del navegador. Nunca pongas secretos en ellas.
@@ -286,6 +293,20 @@ Ejecuta `pnpm check` antes de cada commit.
 - En el código usa siempre `import { env } from "@/env"`, nunca `process.env` directamente.
 
 **Añadir una variable:** sigue los pasos comentados al principio de `src/env.ts` (ficha en `.env.example`, esquema en `src/env.ts` y, si tiene formato especial, un test en `src/env.test.ts`).
+
+### Telemetría
+
+`NEXT_TELEMETRY_DISABLED=1` en `.env` cubre `next build` y el servidor de desarrollo, pero el proceso principal de `next dev` envía un último evento al cerrarse antes de leer `.env`. Para desactivarla del todo en tu equipo, ejecuta una vez:
+
+```bash
+pnpm exec next telemetry disable
+```
+
+En CI, las dos variables de telemetría están definidas en el workflow.
+
+### Vercel Speed Insights y Web Analytics
+
+[`<VercelInsights />`](src/components/vercel-insights.tsx) solo se carga cuando la app corre en Vercel (`VERCEL=1`, que define Vercel automáticamente). En local u otros servidores no añade ningún script. Para que recojan datos, actívalos en el panel del proyecto en Vercel: **Speed Insights → Enable** y **Analytics → Enable**.
 
 ### Google Analytics
 
@@ -432,6 +453,7 @@ Ejemplo: `feat: add dark mode toggle`
 │   │   ├── mode-toggle.tsx         # Selector de tema claro/oscuro/sistema
 │   │   ├── site-footer.tsx         # Pie de página
 │   │   ├── site-header.tsx         # Cabecera con marca, idioma y tema
+│   │   ├── vercel-insights.tsx     # Speed Insights y Web Analytics (solo en Vercel)
 │   │   └── theme-provider.tsx      # Provider de next-themes
 │   ├── config
 │   │   └── site.ts                 # Datos del sitio: nombre, autor, enlaces
