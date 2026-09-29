@@ -37,6 +37,29 @@ describe("env", () => {
     await expect(loadEnv()).rejects.toThrow("Invalid environment variables");
   });
 
+  it("treats NEXT_PUBLIC_GA_MEASUREMENT_ID as optional", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_MEASUREMENT_ID", "");
+
+    const env = await loadEnv();
+
+    expect(env.NEXT_PUBLIC_GA_MEASUREMENT_ID).toBeUndefined();
+  });
+
+  it("accepts a valid NEXT_PUBLIC_GA_MEASUREMENT_ID", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_MEASUREMENT_ID", "G-ABC123XYZ");
+
+    const env = await loadEnv();
+
+    expect(env.NEXT_PUBLIC_GA_MEASUREMENT_ID).toBe("G-ABC123XYZ");
+  });
+
+  it("fails when NEXT_PUBLIC_GA_MEASUREMENT_ID has the wrong format", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_MEASUREMENT_ID", "UA-12345-1");
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(loadEnv()).rejects.toThrow("Invalid environment variables");
+  });
+
   it("treats an empty DATABASE_URL as missing", async () => {
     vi.stubEnv("DATABASE_URL", "");
     vi.spyOn(console, "error").mockImplementation(() => {});

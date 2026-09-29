@@ -8,6 +8,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
   <a href="#-librerías"><strong>Librerías</strong></a> ·
   <a href="#-primeros-pasos"><strong>Primeros pasos</strong></a> ·
   <a href="#-scripts"><strong>Scripts</strong></a> ·
+  <a href="#-variables-de-entorno"><strong>Variables</strong></a> ·
   <a href="#-internacionalización"><strong>i18n</strong></a> ·
   <a href="#️-seo"><strong>SEO</strong></a> ·
   <a href="#-testing"><strong>Testing</strong></a> ·
@@ -31,6 +32,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🌑 Dark mode con `next-themes` (claro / oscuro / sistema)
 - 🌐 i18n con `next-intl` - Español e inglés con rutas `/es` y `/en`
 - 🗺️ SEO - Metadata, Open Graph generada por idioma, `sitemap.xml`, `robots.txt` y `hreflang`
+- 📊 Google Analytics 4 - Se activa solo si defines su ID en las variables de entorno
 - 🧪 Vitest + React Testing Library - Tests unitarios y de componentes
 - 🎭 Playwright - Tests end-to-end en navegador real
 - 💅 Biome - Linter y formatter ultrarrápido
@@ -135,6 +137,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `class-variance-authority` | 0.7.1 | Define variantes de componentes (tamaño, color…) con clases de Tailwind |
 | `cn` | 0.4.0 | Combina clases de Tailwind resolviendo conflictos (reemplaza clsx + tailwind-merge) |
 | `lucide-react` | 1.48.0 | Iconos SVG como componentes de React |
+| `@next/third-parties` | 16.3.6 | Integraciones oficiales de Next.js con servicios externos (Google Analytics) cargadas sin bloquear el renderizado |
 | `next-intl` | 4.14.7 | Traducciones, formato de fechas/números y rutas por idioma para el App Router |
 | `next-themes` | 0.4.6 | Tema claro/oscuro/sistema sin parpadeo; guarda la preferencia del usuario |
 | `@t3-oss/env-nextjs` | 0.13.11 | Valida con Zod las variables de entorno al arrancar y las expone tipadas en `env` |
@@ -195,12 +198,7 @@ Al instalar se ejecutan automáticamente:
 
 ### 4. Configura las variables de entorno
 
-Crea un archivo `.env` a partir de `.env.example` y define:
-
-- `DATABASE_URL`: la conexión a tu PostgreSQL.
-- `NEXT_PUBLIC_APP_URL`: la URL pública del sitio (`http://localhost:3000` en local).
-
-Las variables se validan con T3-env en [`src/env.ts`](src/env.ts): si falta alguna o tiene un formato incorrecto, `pnpm dev` y `pnpm build` se detienen con un error que indica cuál. Para añadir una variable nueva, sigue las instrucciones comentadas en ese archivo.
+Crea un archivo `.env` a partir de `.env.example` y rellena los valores. Consulta la sección [Variables de entorno](#-variables-de-entorno).
 
 ### 5. Crea las tablas de la base de datos
 
@@ -237,6 +235,27 @@ y abre http://localhost:3000.
 | `db:studio` | Abre Prisma Studio para ver y editar datos |
 | `postinstall` | Genera el cliente de Prisma tras cada `pnpm install` |
 | `prepare` | Activa los hooks de git de Husky tras cada `pnpm install` |
+
+## 🔑 Variables de entorno
+
+[`.env.example`](.env.example) es la documentación completa: cada variable tiene una ficha con qué es, si es obligatoria, su formato, dónde se obtiene y dónde se usa. Todas se validan al arrancar en [`src/env.ts`](src/env.ts) con T3-env.
+
+| Variable | Tipo | Obligatoria | Para qué |
+|---|---|---|---|
+| `DATABASE_URL` | Servidor (secreta) | Sí | Conexión a PostgreSQL para Prisma |
+| `NEXT_PUBLIC_APP_URL` | Pública | Sí | URL del sitio, base de las URLs absolutas del SEO |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Pública | No | ID de Google Analytics 4 (`G-XXXXXXXXXX`). Si está vacía, Analytics no se carga |
+| `SKIP_ENV_VALIDATION` | - | No | Desactiva la validación (CI/Docker). Nunca en producción |
+
+- **Pública** (`NEXT_PUBLIC_*`): se incluye en el JavaScript del navegador. Nunca pongas secretos en ellas.
+- **Servidor**: solo existe en el servidor. T3-env da error si se intenta leer desde un Client Component.
+- En el código usa siempre `import { env } from "@/env"`, nunca `process.env` directamente.
+
+**Añadir una variable:** sigue los pasos comentados al principio de `src/env.ts` (ficha en `.env.example`, esquema en `src/env.ts` y, si tiene formato especial, un test en `src/env.test.ts`).
+
+### Google Analytics
+
+Define `NEXT_PUBLIC_GA_MEASUREMENT_ID` con tu ID (`G-XXXXXXXXXX`) y el componente [`<Analytics />`](src/components/analytics.tsx) del layout cargará Google Analytics 4 en todas las páginas. Si la variable está vacía, no se carga nada. Recomendación: defínela solo en producción, para no mezclar tus visitas de desarrollo con las reales.
 
 ## 🌐 Internacionalización
 
@@ -348,7 +367,7 @@ Ejemplo: `feat: add dark mode toggle`
 | **E2E tests** | Instala Chromium y ejecuta `pnpm e2e` contra el build de producción. Si falla, sube `playwright-report` como artefacto (7 días). |
 | **Commit messages** | Solo en PRs: valida con commitlint todos los commits del PR |
 
-- Usa valores de ejemplo para `DATABASE_URL` y `NEXT_PUBLIC_APP_URL`, para que pase la validación de T3-env. Ningún job se conecta a una base de datos. Si en el futuro necesitas secretos reales, añádelos en **Settings → Secrets and variables → Actions**.
+- Usa valores de ejemplo para `DATABASE_URL` y `NEXT_PUBLIC_APP_URL` (y no define `NEXT_PUBLIC_GA_MEASUREMENT_ID`), para que pase la validación de T3-env. Ningún job se conecta a una base de datos. Si en el futuro necesitas secretos reales, añádelos en **Settings → Secrets and variables → Actions**.
 - La configuración común (pnpm, Node, caché e instalación) está en la action `.github/actions/setup`.
 
 ## 📁 Estructura del proyecto
@@ -374,6 +393,7 @@ Ejemplo: `feat: add dark mode toggle`
 │   │   └── sitemap.ts              # sitemap.xml
 │   ├── components
 │   │   ├── ui                      # Componentes de shadcn/ui
+│   │   ├── analytics.tsx           # Google Analytics (solo si hay ID)
 │   │   ├── locale-switcher.tsx     # Selector de idioma
 │   │   ├── mode-toggle.tsx         # Selector de tema claro/oscuro/sistema
 │   │   ├── site-footer.tsx         # Pie de página

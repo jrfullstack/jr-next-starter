@@ -23,9 +23,14 @@
  *     env.DATABASE_URL; // tipo `string`, garantizado que existe y es una URL
  *
  * ¿CÓMO AÑADO UNA VARIABLE NUEVA?
- *   1. Añádela a tu `.env` (y a `.env.example` con un valor de ejemplo).
- *   2. Declárala abajo en `server` o `client` con su esquema de Zod.
+ *   1. Añádela a `.env.example` con su ficha (qué es, si es obligatoria,
+ *      formato, dónde se obtiene y dónde se usa) y a tu `.env`.
+ *   2. Declárala abajo en `server` o `client` con su esquema de Zod y un
+ *      comentario con la misma ficha resumida.
  *   3. Si es de `client`, añádela también en `experimental__runtimeEnv`.
+ *   4. Añade un test en `src/env.test.ts` si tiene un formato especial.
+ *
+ * `.env.example` es la documentación completa de cada variable.
  *
  * Documentación: https://env.t3.gg/docs/nextjs
  */
@@ -40,7 +45,12 @@ export const env = createEnv({
    * T3-env lanza un error en vez de filtrar el secreto al navegador.
    */
   server: {
-    // Conexión a PostgreSQL que usa Prisma. Debe ser una URL válida.
+    /**
+     * DATABASE_URL · obligatoria
+     * Conexión a PostgreSQL. La usan `src/lib/db.ts` (cliente de Prisma)
+     * y `prisma.config.ts` (CLI de Prisma).
+     * Formato: postgresql://usuario:contraseña@host:5432/base?schema=public
+     */
     DATABASE_URL: z.url(),
   },
 
@@ -50,16 +60,35 @@ export const env = createEnv({
    * ⚠️ Nunca pongas aquí claves secretas: cualquiera puede verlas.
    */
   client: {
-    // URL pública del sitio, sin "/" final. Se usa para las URLs absolutas
-    // del SEO: canonical, sitemap.xml, robots.txt y Open Graph.
-    // En local: http://localhost:3000 · En producción: https://tu-dominio.com
+    /**
+     * NEXT_PUBLIC_APP_URL · obligatoria
+     * URL pública del sitio, sin "/" final. Base de todas las URLs absolutas
+     * del SEO: canonical, hreflang, sitemap.xml, robots.txt y Open Graph.
+     * Local: http://localhost:3000 · Producción: https://tu-dominio.com
+     */
     NEXT_PUBLIC_APP_URL: z.url(),
+
+    /**
+     * NEXT_PUBLIC_GA_MEASUREMENT_ID · opcional
+     * ID de Google Analytics 4. Si tiene valor, `<Analytics />` (en el
+     * layout) carga Google Analytics; si no existe, no se carga nada.
+     * Formato: G-XXXXXXXXXX
+     */
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: z
+      .string()
+      .regex(/^G-[A-Z0-9]+$/, "Debe tener el formato G-XXXXXXXXXX")
+      .optional(),
   },
 
   /**
    * COMPARTIDAS: disponibles en servidor y cliente sin prefijo.
    */
   shared: {
+    /**
+     * NODE_ENV · la define Next.js automáticamente
+     * "development" con `pnpm dev`, "production" con `pnpm build`/`start`
+     * y "test" en Vitest. No hace falta ponerla en `.env`.
+     */
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -74,6 +103,7 @@ export const env = createEnv({
   experimental__runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
   },
 
   /**
