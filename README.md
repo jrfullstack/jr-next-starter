@@ -12,6 +12,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
   <a href="#️-seo"><strong>SEO</strong></a> ·
   <a href="#-testing"><strong>Testing</strong></a> ·
   <a href="#-commits"><strong>Commits</strong></a> ·
+  <a href="#-ci"><strong>CI</strong></a> ·
   <a href="#-estructura-del-proyecto"><strong>Estructura</strong></a> ·
   <a href="#-seguridad-y-dependencias"><strong>Seguridad</strong></a>
 </p>
@@ -33,6 +34,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🧪 Vitest + React Testing Library - Tests unitarios y de componentes
 - 🎭 Playwright - Tests end-to-end en navegador real
 - 💅 Biome - Linter y formatter ultrarrápido
+- 🤖 GitHub Actions - Lint, typecheck, tests unitarios, e2e y commits en cada PR
 - 🐶 Husky + lint-staged - Lint y formato de los archivos en stage antes de cada commit
 - 📝 Commitlint - Commits convencionales (`feat:`, `fix:`…)
 - 📈 Alias de imports con el prefijo `@/`
@@ -101,9 +103,14 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] Corregida la fuente: `shadcn init` dejó `--font-sans` apuntándose a sí misma y se veía Times en vez de Geist
 - [x] Tests del header, footer, landing, 404 y de regresión de la fuente
 
-### 🔜 Próximas fases
+### ✅ Fase 7 - GitHub Actions
 
-- [ ] **Fase 7 - GitHub Actions:** lint, typecheck y tests en cada PR
+- [x] Workflow `CI` en cada push a `main` y en cada PR
+- [x] Jobs en paralelo: calidad (lint, typecheck, unitarios), e2e contra el build de producción y commitlint de los commits del PR
+- [x] Action compartida de setup: pnpm (desde `packageManager`), Node (desde `.nvmrc`), caché y `--frozen-lockfile`
+- [x] Reporte de Playwright como artefacto si fallan los e2e, y fallos anotados en el PR
+- [x] `typecheck` genera los tipos de rutas con `next typegen` (necesario en un clon limpio)
+- [x] Workflow validado con actionlint y simulado localmente en un clon limpio
 
 ### 🧭 Fase avanzada
 
@@ -219,7 +226,7 @@ y abre http://localhost:3000.
 | `lint` | Revisa lint y formato con Biome |
 | `lint:fix` | Corrige lint y formato automáticamente |
 | `format` | Formatea el código con Biome |
-| `typecheck` | Comprueba tipos con TypeScript sin generar archivos |
+| `typecheck` | Genera los tipos de rutas de Next (`next typegen`) y comprueba tipos con TypeScript |
 | `test` | Ejecuta los tests unitarios con Vitest |
 | `test:watch` | Vitest en modo watch: repite los tests al guardar |
 | `e2e` | Ejecuta los tests end-to-end con Playwright |
@@ -331,10 +338,26 @@ Cada commit pasa por dos hooks de Husky:
 
 Ejemplo: `feat: add dark mode toggle`
 
+## 🤖 CI
+
+`.github/workflows/ci.yml` se ejecuta en cada push a `main` y en cada pull request:
+
+| Job | Qué hace |
+|---|---|
+| **Lint, typecheck & unit tests** | `pnpm lint`, `pnpm typecheck` y `pnpm test` |
+| **E2E tests** | Instala Chromium y ejecuta `pnpm e2e` contra el build de producción. Si falla, sube `playwright-report` como artefacto (7 días). |
+| **Commit messages** | Solo en PRs: valida con commitlint todos los commits del PR |
+
+- Usa valores de ejemplo para `DATABASE_URL` y `NEXT_PUBLIC_APP_URL`, para que pase la validación de T3-env. Ningún job se conecta a una base de datos. Si en el futuro necesitas secretos reales, añádelos en **Settings → Secrets and variables → Actions**.
+- La configuración común (pnpm, Node, caché e instalación) está en la action `.github/actions/setup`.
+
 ## 📁 Estructura del proyecto
 
 ```bash
 .
+├── .github
+│   ├── actions/setup               # Setup compartido: pnpm, Node, caché e instalación
+│   └── workflows/ci.yml            # Pipeline de CI
 ├── .husky                          # Hooks de git (pre-commit, commit-msg)
 ├── .vscode                         # Biome como formateador por defecto y extensiones recomendadas
 ├── e2e                             # Tests end-to-end de Playwright (*.spec.ts)
