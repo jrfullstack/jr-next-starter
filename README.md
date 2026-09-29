@@ -212,11 +212,24 @@ Versiones instaladas a fecha de la última actualización del README.
 
 > Requiere **Node.js 24** (ver `.nvmrc`) y **pnpm 12**.
 
-### 1. Clona el proyecto
+### 1. Crea tu proyecto a partir del starter
 
-```bash
-git clone <url-del-repositorio> mi-proyecto
-```
+Elige una de estas tres formas:
+
+1. **Como plantilla de GitHub:** pulsa **Use this template → Create a new repository** en [el repositorio](https://github.com/jrfullstack/jr-next-starter) y después clona el tuyo. Empiezas con un historial limpio.
+2. **Con `create-next-app`:**
+
+   ```bash
+   npx create-next-app@latest mi-proyecto -e https://github.com/jrfullstack/jr-next-starter --use-pnpm
+   ```
+
+3. **Con `git clone`:**
+
+   ```bash
+   git clone https://github.com/jrfullstack/jr-next-starter.git mi-proyecto
+   ```
+
+Después, en tu proyecto: cambia `name` y `author` en `src/config/site.ts`, `name` en `package.json` y la versión en `package.json` y `.release-please-manifest.json` (por ejemplo, `0.1.0`).
 
 > **Editor:** instala las extensiones recomendadas (Biome y Tailwind CSS IntelliSense). `.vscode/settings.json` configura Biome para formatear al guardar. Si tu editor usa Prettier, desactívalo en este proyecto: los dos formateadores chocan.
 
