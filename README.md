@@ -8,6 +8,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
   <a href="#-librerías"><strong>Librerías</strong></a> ·
   <a href="#-primeros-pasos"><strong>Primeros pasos</strong></a> ·
   <a href="#-scripts"><strong>Scripts</strong></a> ·
+  <a href="#-testing"><strong>Testing</strong></a> ·
   <a href="#-commits"><strong>Commits</strong></a> ·
   <a href="#-estructura-del-proyecto"><strong>Estructura</strong></a> ·
   <a href="#-seguridad-y-dependencias"><strong>Seguridad</strong></a>
@@ -25,6 +26,8 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🔍 Zod 4 - Validación de esquemas
 - ⚙️ T3-env - Variables de entorno tipadas y validadas al arrancar
 - 🌑 Dark mode con `next-themes` (claro / oscuro / sistema)
+- 🧪 Vitest + React Testing Library - Tests unitarios y de componentes
+- 🎭 Playwright - Tests end-to-end en navegador real
 - 💅 Biome - Linter y formatter ultrarrápido
 - 🐶 Husky + lint-staged - Lint y formato de los archivos en stage antes de cada commit
 - 📝 Commitlint - Commits convencionales (`feat:`, `fix:`…)
@@ -59,10 +62,15 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] Commitlint - Commits convencionales
 - [x] T3-env - Variables de entorno tipadas y validadas (`src/env.ts`)
 
+### ✅ Fase 3 - Testing
+
+- [x] Vitest + React Testing Library + jest-dom (tests unitarios y de componentes)
+- [x] Playwright (tests e2e con Chromium; arranca Next.js automáticamente)
+- [x] Tests de ejemplo: `cn`, `ModeToggle`, validación de `env` y página de inicio
+- [x] lint-staged ejecuta los tests relacionados con los archivos del commit
+
 ### 🔜 Próximas fases (por definir)
 
-- [ ] Testing unitario (Vitest/Jest + React Testing Library)
-- [ ] Testing e2e con Playwright
 - [ ] Autenticación
 - [ ] Internacionalización con `next-intl`
 - [ ] SEO: metadata, Open Graph, `sitemap.xml` y `robots.txt`
@@ -107,6 +115,14 @@ Versiones instaladas a fecha de la última actualización del README.
 | `lint-staged` | 17.6.0 | Pasa Biome solo sobre los archivos en stage del commit |
 | `@commitlint/cli` | 21.2.3 | Valida que el mensaje de commit siga el formato convencional |
 | `@commitlint/config-conventional` | 21.2.3 | Reglas de Conventional Commits para commitlint |
+| `vitest` | 5.0.2 | Ejecutor de tests unitarios y de componentes (API compatible con Jest) |
+| `@vitejs/plugin-react` | 6.1.1 | Permite a Vitest transformar JSX/TSX de React |
+| `jsdom` | 30.1.1 | Simula el DOM del navegador dentro de Node para los tests de componentes |
+| `@testing-library/react` | 16.3.3 | Renderiza componentes y los consulta como lo haría un usuario (por rol, texto…) |
+| `@testing-library/dom` | 10.4.2 | Base de consultas del DOM que usa Testing Library |
+| `@testing-library/user-event` | 14.6.7 | Simula interacciones reales: clics, teclado, escritura |
+| `@testing-library/jest-dom` | 7.0.1 | Aserciones del DOM como `toBeInTheDocument()` o `toHaveClass()` |
+| `@playwright/test` | 1.63.0 | Tests end-to-end en navegadores reales (Chromium, Firefox, WebKit) |
 | `@types/node`, `@types/react`, `@types/react-dom`, `@types/pg` | - | Tipos de TypeScript |
 
 ## 🎯 Primeros pasos
@@ -166,6 +182,10 @@ y abre http://localhost:3000.
 | `lint:fix` | Corrige lint y formato automáticamente |
 | `format` | Formatea el código con Biome |
 | `typecheck` | Comprueba tipos con TypeScript sin generar archivos |
+| `test` | Ejecuta los tests unitarios con Vitest |
+| `test:watch` | Vitest en modo watch: repite los tests al guardar |
+| `e2e` | Ejecuta los tests end-to-end con Playwright |
+| `e2e:ui` | Abre la interfaz de Playwright para ver y depurar los tests e2e |
 | `db:generate` | Genera el cliente de Prisma |
 | `db:migrate` | Crea y aplica migraciones en desarrollo |
 | `db:push` | Sincroniza el esquema con la base de datos sin migraciones |
@@ -173,11 +193,31 @@ y abre http://localhost:3000.
 | `postinstall` | Genera el cliente de Prisma tras cada `pnpm install` |
 | `prepare` | Activa los hooks de git de Husky tras cada `pnpm install` |
 
+## 🧪 Testing
+
+| Tipo | Herramienta | Dónde van | Para qué |
+|---|---|---|---|
+| Unitarios y de componentes | Vitest + Testing Library | Junto al archivo que prueban: `button.tsx` → `button.test.tsx` | Funciones, hooks y componentes aislados. Rápidos. |
+| End-to-end | Playwright | Carpeta `e2e/` (`*.spec.ts`) | Flujos completos en un navegador real: páginas, navegación, formularios. |
+
+```bash
+pnpm test          # unitarios, una vez
+pnpm test:watch    # unitarios en modo watch
+pnpm e2e           # e2e (arranca `pnpm dev` si no está corriendo)
+pnpm e2e:ui        # e2e con interfaz visual
+```
+
+- La primera vez, descarga el navegador de Playwright con `pnpm exec playwright install chromium`.
+- Si ya tienes `pnpm dev` en el puerto 3000, Playwright lo reutiliza. Para usar otro puerto: `PORT=3100 pnpm e2e`.
+- Con `CI=1`, Playwright prueba el build de producción (`pnpm build && pnpm start`).
+- **Limitación:** Vitest no puede renderizar Server Components `async`. Esos se prueban con Playwright.
+- En cada commit, lint-staged ejecuta `vitest related --run`: solo los tests afectados por los archivos que cambiaste.
+
 ## 📝 Commits
 
 Cada commit pasa por dos hooks de Husky:
 
-1. **`pre-commit`**: lint-staged ejecuta `biome check --write` sobre los archivos en stage. Corrige lo que puede y bloquea el commit si quedan errores.
+1. **`pre-commit`**: lint-staged ejecuta `biome check --write` sobre los archivos en stage (corrige lo que puede) y los tests de Vitest relacionados. Bloquea el commit si queda algún error o falla algún test.
 2. **`commit-msg`**: commitlint exige el formato [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/): `tipo: descripción`.
 
 | Tipo | Cuándo usarlo |
@@ -197,6 +237,7 @@ Ejemplo: `feat: add dark mode toggle`
 ```bash
 .
 ├── .husky                          # Hooks de git (pre-commit, commit-msg)
+├── e2e                             # Tests end-to-end de Playwright (*.spec.ts)
 ├── prisma
 │   └── schema.prisma               # Modelos de la base de datos
 ├── public                          # Archivos estáticos
@@ -210,12 +251,16 @@ Ejemplo: `feat: add dark mode toggle`
 │   ├── lib
 │   │   ├── db.ts                   # Cliente de Prisma singleton
 │   │   └── utils.ts                # Utilidades (cn)
-│   └── env.ts                      # Variables de entorno validadas (T3-env)
+│   ├── env.ts                      # Variables de entorno validadas (T3-env)
+│   └── **/*.test.ts(x)             # Tests unitarios junto a su archivo
 ├── biome.json                      # Configuración de Biome
 ├── commitlint.config.mjs           # Configuración de commitlint
 ├── components.json                 # Configuración de shadcn/ui
+├── playwright.config.ts            # Configuración de Playwright
 ├── prisma.config.ts                # Configuración del CLI de Prisma
 ├── pnpm-workspace.yaml             # Políticas de pnpm (builds permitidos, overrides)
+├── vitest.config.mts               # Configuración de Vitest
+├── vitest.setup.ts                 # Setup de tests (jest-dom, limpieza)
 └── .nvmrc                          # Versión de Node.js
 ```
 
