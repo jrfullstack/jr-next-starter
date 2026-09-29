@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { notFound } from "next/navigation";
-import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Analytics } from "@/components/analytics";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { siteConfig } from "@/config/site";
 import { env } from "@/env";
+import { localeStaticParams, parseLocale } from "@/i18n/locale";
 import { routing } from "@/i18n/routing";
 import { ogLocales } from "@/lib/seo";
 import "../globals.css";
@@ -23,15 +24,13 @@ const geistMono = Geist_Mono({
 });
 
 // Prerender every locale at build time
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
+export const generateStaticParams = localeStaticParams;
 
 // Site-wide metadata; each page adds its own title and `alternates`
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const t = await getTranslations("Metadata");
-  const siteName = t("title");
+  const siteName = siteConfig.name;
 
   return {
     metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
@@ -56,10 +55,7 @@ export default async function RootLayout({
   children,
   params,
 }: LayoutProps<"/[locale]">) {
-  const { locale } = await params;
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
+  const locale = parseLocale((await params).locale);
 
   return (
     // suppressHydrationWarning: next-themes sets the theme class on <html> before hydration

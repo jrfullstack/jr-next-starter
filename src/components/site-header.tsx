@@ -2,6 +2,7 @@ import { Rocket } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
+import { siteConfig } from "@/config/site";
 import { Link } from "@/i18n/navigation";
 
 export function SiteHeader() {
@@ -16,7 +17,7 @@ export function SiteHeader() {
           className="flex items-center gap-2 font-semibold"
         >
           <Rocket className="size-5" />
-          <span>JR Next Starter</span>
+          <span>{siteConfig.name}</span>
         </Link>
         <div className="flex items-center gap-2">
           <LocaleSwitcher />

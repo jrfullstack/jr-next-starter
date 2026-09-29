@@ -1,6 +1,5 @@
 {
   "Metadata": {
-    "title": "JR Next Starter",
     "description": "Plantilla base para arrancar proyectos con Next.js 16 en minutos."
   },
   "HomePage": {
@@ -61,7 +60,7 @@
   },
   "SiteFooter": {
     "madeBy": "Hecho por {author}",
-    "rights": "© {year} JR Next Starter"
+    "rights": "© {year} {name}"
   },
   "NotFound": {
     "title": "Página no encontrada",

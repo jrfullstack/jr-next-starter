@@ -8,6 +8,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
   <a href="#-librerías"><strong>Librerías</strong></a> ·
   <a href="#-primeros-pasos"><strong>Primeros pasos</strong></a> ·
   <a href="#-scripts"><strong>Scripts</strong></a> ·
+  <a href="#-convenciones-de-código"><strong>Convenciones</strong></a> ·
   <a href="#-variables-de-entorno"><strong>Variables</strong></a> ·
   <a href="#-internacionalización"><strong>i18n</strong></a> ·
   <a href="#️-seo"><strong>SEO</strong></a> ·
@@ -35,7 +36,9 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 📊 Google Analytics 4 - Se activa solo si defines su ID en las variables de entorno
 - 🧪 Vitest + React Testing Library - Tests unitarios y de componentes
 - 🎭 Playwright - Tests end-to-end en navegador real
-- 💅 Biome - Linter y formatter ultrarrápido
+- 💅 Biome - Linter y formatter con reglas estrictas de código limpio
+- 🧹 knip y jscpd - Detectan código sin usar y código duplicado
+- 📐 Fuentes de verdad únicas y convenciones documentadas en [`AGENTS.md`](AGENTS.md)
 - 🤖 GitHub Actions - Lint, typecheck, tests unitarios, e2e y commits en cada PR
 - 🐶 Husky + lint-staged - Lint y formato de los archivos en stage antes de cada commit
 - 📝 Commitlint - Commits convencionales (`feat:`, `fix:`…)
@@ -114,6 +117,16 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] `typecheck` genera los tipos de rutas con `next typegen` (necesario en un clon limpio)
 - [x] Workflow validado con actionlint y simulado localmente en un clon limpio
 
+### ✅ Fase 8 - Analytics, variables de entorno y código limpio
+
+- [x] Google Analytics 4 opcional: se carga solo si existe `NEXT_PUBLIC_GA_MEASUREMENT_ID`
+- [x] Cada variable de entorno documentada en `.env.example` y `src/env.ts`
+- [x] Fuentes de verdad: `src/config/site.ts` (datos del sitio) y helpers `parseLocale` / `localeStaticParams`
+- [x] Biome estricto: exports con nombre, kebab-case, funciones pequeñas, sin `any`/`!`/`console`, sin textos fuera de `messages/`, sin `process.env` fuera de `src/env.ts`, navegación solo desde `@/i18n/navigation`
+- [x] TypeScript más estricto (`noUncheckedIndexedAccess`, `noImplicitReturns`, `noImplicitOverride`)
+- [x] knip (código sin usar) y jscpd (duplicados, umbral 0 %) en `pnpm check` y en el CI
+- [x] Convenciones documentadas en `AGENTS.md`, para personas y agentes de IA
+
 ### 🧭 Fase avanzada
 
 - [ ] Autenticación
@@ -158,6 +171,8 @@ Versiones instaladas a fecha de la última actualización del README.
 | `lint-staged` | 17.6.0 | Pasa Biome solo sobre los archivos en stage del commit |
 | `@commitlint/cli` | 21.2.3 | Valida que el mensaje de commit siga el formato convencional |
 | `@commitlint/config-conventional` | 21.2.3 | Reglas de Conventional Commits para commitlint |
+| `knip` | 6.38.0 | Detecta archivos, exports y dependencias que no se usan |
+| `jscpd` | 5.3.3 | Detecta bloques de código duplicado (copy-paste) |
 | `vitest` | 5.0.2 | Ejecutor de tests unitarios y de componentes (API compatible con Jest) |
 | `@vitejs/plugin-react` | 6.1.1 | Permite a Vitest transformar JSX/TSX de React |
 | `jsdom` | 30.1.1 | Simula el DOM del navegador dentro de Node para los tests de componentes |
@@ -225,6 +240,9 @@ y abre http://localhost:3000.
 | `lint:fix` | Corrige lint y formato automáticamente |
 | `format` | Formatea el código con Biome |
 | `typecheck` | Genera los tipos de rutas de Next (`next typegen`) y comprueba tipos con TypeScript |
+| `knip` | Busca código, exports, archivos y dependencias sin usar |
+| `dup` | Busca código duplicado con jscpd |
+| `check` | Todo lo anterior junto: lint, typecheck, knip, dup y tests unitarios. Ejecútalo antes de cada commit |
 | `test` | Ejecuta los tests unitarios con Vitest |
 | `test:watch` | Vitest en modo watch: repite los tests al guardar |
 | `e2e` | Ejecuta los tests end-to-end con Playwright |
@@ -235,6 +253,22 @@ y abre http://localhost:3000.
 | `db:studio` | Abre Prisma Studio para ver y editar datos |
 | `postinstall` | Genera el cliente de Prisma tras cada `pnpm install` |
 | `prepare` | Activa los hooks de git de Husky tras cada `pnpm install` |
+
+## 📐 Convenciones de código
+
+Las reglas completas están en [`AGENTS.md`](AGENTS.md), la fuente de verdad que leen tanto las personas como los agentes de IA. En resumen:
+
+- **Cada dato vive en un solo lugar**: datos del sitio en `src/config/site.ts`, textos en `messages/`, variables de entorno en `src/env.ts`, idiomas en `src/i18n/`, URLs del SEO en `src/lib/seo.ts`.
+- **Código limpio verificado automáticamente**: si no se cumple, fallan el commit o el CI.
+
+| Herramienta | Qué verifica |
+|---|---|
+| Biome | Reglas estrictas: exports con nombre, archivos en kebab-case, funciones ≤ 80 líneas y complejidad ≤ 15, sin `any`/`!`/`console`, sin textos fuera de `messages/`, sin `process.env` fuera de `src/env.ts`, navegación con idioma |
+| TypeScript | `strict` + `noUncheckedIndexedAccess`, `noImplicitReturns`, `noImplicitOverride` |
+| knip | Nada sin usar: archivos, exports, dependencias (excepciones justificadas en `knip.jsonc`) |
+| jscpd | Nada duplicado (umbral 0 %, configurado en `.jscpd.json`) |
+
+Ejecuta `pnpm check` antes de cada commit.
 
 ## 🔑 Variables de entorno
 
@@ -363,7 +397,7 @@ Ejemplo: `feat: add dark mode toggle`
 
 | Job | Qué hace |
 |---|---|
-| **Lint, typecheck & unit tests** | `pnpm lint`, `pnpm typecheck` y `pnpm test` |
+| **Lint, typecheck, dead code, duplicates & unit tests** | `pnpm lint`, `pnpm typecheck`, `pnpm knip`, `pnpm dup` y `pnpm test` |
 | **E2E tests** | Instala Chromium y ejecuta `pnpm e2e` contra el build de producción. Si falla, sube `playwright-report` como artefacto (7 días). |
 | **Commit messages** | Solo en PRs: valida con commitlint todos los commits del PR |
 
@@ -399,8 +433,11 @@ Ejemplo: `feat: add dark mode toggle`
 │   │   ├── site-footer.tsx         # Pie de página
 │   │   ├── site-header.tsx         # Cabecera con marca, idioma y tema
 │   │   └── theme-provider.tsx      # Provider de next-themes
+│   ├── config
+│   │   └── site.ts                 # Datos del sitio: nombre, autor, enlaces
 │   ├── generated/prisma            # Cliente de Prisma generado (ignorado por git)
 │   ├── i18n
+│   │   ├── locale.ts               # parseLocale y localeStaticParams
 │   │   ├── navigation.ts           # Link, useRouter… con idioma
 │   │   ├── request.ts              # Carga los mensajes del idioma actual
 │   │   └── routing.ts              # Idiomas soportados e idioma por defecto
@@ -414,9 +451,12 @@ Ejemplo: `feat: add dark mode toggle`
 │   ├── global.ts                   # Tipos de next-intl (idiomas y claves de mensajes)
 │   ├── proxy.ts                    # Redirección por idioma (antes middleware.ts)
 │   └── **/*.test.ts(x)             # Tests unitarios junto a su archivo
-├── biome.json                      # Configuración de Biome
+├── .jscpd.json                     # Configuración de detección de duplicados
+├── AGENTS.md                       # Convenciones del proyecto (personas y agentes de IA)
+├── biome.json                      # Configuración de Biome (reglas estrictas)
 ├── commitlint.config.mjs           # Configuración de commitlint
 ├── components.json                 # Configuración de shadcn/ui
+├── knip.jsonc                      # Configuración de knip (excepciones justificadas)
 ├── playwright.config.ts            # Configuración de Playwright
 ├── prisma.config.ts                # Configuración del CLI de Prisma
 ├── pnpm-workspace.yaml             # Políticas de pnpm (builds permitidos, overrides)

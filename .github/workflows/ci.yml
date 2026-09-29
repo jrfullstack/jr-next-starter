@@ -20,7 +20,7 @@ env:
 
 jobs:
   quality:
-    name: Lint, typecheck & unit tests
+    name: Lint, typecheck, dead code, duplicates & unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -32,6 +32,12 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Unused code (knip)
+        run: pnpm knip
+
+      - name: Duplicated code (jscpd)
+        run: pnpm dup
 
       - name: Unit tests
         run: pnpm test

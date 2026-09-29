@@ -1,6 +1,5 @@
 {
   "Metadata": {
-    "title": "JR Next Starter",
     "description": "Starter template to kick off Next.js 16 projects in minutes."
   },
   "HomePage": {
@@ -61,7 +60,7 @@
   },
   "SiteFooter": {
     "madeBy": "Made by {author}",
-    "rights": "© {year} JR Next Starter"
+    "rights": "© {year} {name}"
   },
   "NotFound": {
     "title": "Page not found",

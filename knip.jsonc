@@ -1,0 +1,23 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  // Files knip can't see as used on its own
+  "entry": [
+    // Type augmentation for next-intl, picked up implicitly by TypeScript
+    "src/global.ts",
+    // Prisma client, ready for the first query
+    "src/lib/db.ts"
+  ],
+  "ignoreDependencies": [
+    // Imported by the generated client in src/generated/prisma (gitignored)
+    "@prisma/client",
+    // Peer dependency of @prisma/adapter-pg, and its types
+    "pg",
+    "@types/pg"
+  ],
+  "ignoreIssues": {
+    // shadcn/ui components ship their full API on purpose
+    "src/components/ui/**": ["exports", "types"],
+    // Locale-aware navigation API; `redirect` replaces next/navigation's
+    "src/i18n/navigation.ts": ["exports"]
+  }
+}

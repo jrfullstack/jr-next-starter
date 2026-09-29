@@ -1,9 +1,11 @@
+import type { Locale } from "next-intl";
 import { describe, expect, it } from "vitest";
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
 import { routing } from "./routing";
 
-const messages: Record<string, object> = { es, en };
+// Typed by Locale: adding a locale without its messages file fails to compile
+const messages: Record<Locale, object> = { es, en };
 
 // Flatten nested messages into dot paths: { A: { b: "" } } -> ["A.b"]
 const keysOf = (obj: object, prefix = ""): string[] =>

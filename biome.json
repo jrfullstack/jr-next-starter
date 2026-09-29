@@ -22,7 +22,79 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        },
+        "noExcessiveLinesPerFunction": {
+          "level": "error",
+          "options": {
+            "maxLines": 80,
+            "skipBlankLines": true
+          }
+        }
+      },
+      "correctness": {
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "noUnusedFunctionParameters": "error",
+        "useExhaustiveDependencies": "error"
+      },
+      "performance": {
+        "noBarrelFile": "error",
+        "noReExportAll": "error"
+      },
+      "style": {
+        "noDefaultExport": "error",
+        "noNonNullAssertion": "error",
+        "noParameterAssign": "error",
+        "noNestedTernary": "error",
+        "noUselessElse": "error",
+        "useCollapsedIf": "error",
+        "useConst": "error",
+        "useImportType": "error",
+        "useExportType": "error",
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "filenameCases": ["kebab-case"]
+          }
+        },
+        "noProcessEnv": "error",
+        "noJsxLiterals": {
+          "level": "error",
+          "options": {
+            "ignoreProps": true,
+            "allowedStrings": ["404"]
+          }
+        },
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "next/link": "Usa `Link` de `@/i18n/navigation` para mantener el idioma en la URL.",
+              "next/navigation": {
+                "importNames": [
+                  "redirect",
+                  "permanentRedirect",
+                  "useRouter",
+                  "usePathname"
+                ],
+                "message": "Usa las versiones de `@/i18n/navigation`, que mantienen el idioma en la URL."
+              }
+            }
+          }
+        }
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noConsole": "error",
+        "noShadow": "error"
+      }
     },
     "domains": {
       "next": "recommended",
@@ -35,5 +107,57 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "src/app/**",
+        "src/proxy.ts",
+        "src/i18n/request.ts",
+        "*.config.ts",
+        "*.config.mts",
+        "*.config.mjs"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/env.ts", "prisma.config.ts", "playwright.config.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noProcessEnv": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.test.ts", "**/*.test.tsx", "e2e/**", "src/test/**"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
+          },
+          "style": {
+            "noJsxLiterals": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/lib/utils.ts"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
+    }
+  ]
 }

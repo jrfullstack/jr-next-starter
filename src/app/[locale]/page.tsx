@@ -20,6 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { siteConfig } from "@/config/site";
 import { pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -60,7 +61,7 @@ export default function Home() {
             {t("primaryCta")}
           </a>
           <a
-            href="https://nextjs.org/docs"
+            href={siteConfig.links.nextDocs}
             target="_blank"
             rel="noopener noreferrer"
             className={buttonVariants({ variant: "outline", size: "lg" })}
