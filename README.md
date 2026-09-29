@@ -8,6 +8,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
   <a href="#-librerías"><strong>Librerías</strong></a> ·
   <a href="#-primeros-pasos"><strong>Primeros pasos</strong></a> ·
   <a href="#-scripts"><strong>Scripts</strong></a> ·
+  <a href="#-commits"><strong>Commits</strong></a> ·
   <a href="#-estructura-del-proyecto"><strong>Estructura</strong></a> ·
   <a href="#-seguridad-y-dependencias"><strong>Seguridad</strong></a>
 </p>
@@ -22,7 +23,11 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🔹 Iconos de Lucide
 - 🗄️ Prisma 7 + PostgreSQL - ORM con driver adapter `pg`
 - 🔍 Zod 4 - Validación de esquemas
+- ⚙️ T3-env - Variables de entorno tipadas y validadas al arrancar
+- 🌑 Dark mode con `next-themes` (claro / oscuro / sistema)
 - 💅 Biome - Linter y formatter ultrarrápido
+- 🐶 Husky + lint-staged - Lint y formato de los archivos en stage antes de cada commit
+- 📝 Commitlint - Commits convencionales (`feat:`, `fix:`…)
 - 📈 Alias de imports con el prefijo `@/`
 - 🔒 Cadena de suministro protegida con pnpm 12 (`minimumReleaseAge`, builds aprobados)
 
@@ -47,12 +52,12 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] Scripts de base de datos, lint y typecheck
 - [x] `.env.example`
 
-### ⏳ Fase 2 - Calidad y DX
+### ✅ Fase 2 - Calidad y DX
 
-- [ ] Dark mode con `next-themes`
-- [ ] Husky + lint-staged - Revisar los archivos antes de cada commit
-- [ ] Commitlint - Commits convencionales
-- [ ] T3-env - Variables de entorno tipadas y validadas
+- [x] Dark mode con `next-themes` + selector de tema (`ModeToggle`)
+- [x] Husky + lint-staged - Biome revisa los archivos en stage antes de cada commit
+- [x] Commitlint - Commits convencionales
+- [x] T3-env - Variables de entorno tipadas y validadas (`src/env.ts`)
 
 ### 🔜 Próximas fases (por definir)
 
@@ -83,6 +88,8 @@ Versiones instaladas a fecha de la última actualización del README.
 | `class-variance-authority` | 0.7.1 | Define variantes de componentes (tamaño, color…) con clases de Tailwind |
 | `cn` | 0.4.0 | Combina clases de Tailwind resolviendo conflictos (reemplaza clsx + tailwind-merge) |
 | `lucide-react` | 1.48.0 | Iconos SVG como componentes de React |
+| `next-themes` | 0.4.6 | Tema claro/oscuro/sistema sin parpadeo; guarda la preferencia del usuario |
+| `@t3-oss/env-nextjs` | 0.13.11 | Valida con Zod las variables de entorno al arrancar y las expone tipadas en `env` |
 | `tw-animate-css` | 1.4.0 | Animaciones de Tailwind CSS 4 que usan los componentes de shadcn |
 
 ### Dependencias de desarrollo
@@ -96,6 +103,10 @@ Versiones instaladas a fecha de la última actualización del README.
 | `babel-plugin-react-compiler` | 1.0.0 | React Compiler: memoiza componentes automáticamente |
 | `prisma` | 7.10.0 | CLI de Prisma: migraciones, generación del cliente y Prisma Studio |
 | `dotenv` | 18.0.4 | Carga `.env` en `prisma.config.ts` |
+| `husky` | 9.1.7 | Ejecuta scripts en los hooks de git (`pre-commit`, `commit-msg`) |
+| `lint-staged` | 17.6.0 | Pasa Biome solo sobre los archivos en stage del commit |
+| `@commitlint/cli` | 21.2.3 | Valida que el mensaje de commit siga el formato convencional |
+| `@commitlint/config-conventional` | 21.2.3 | Reglas de Conventional Commits para commitlint |
 | `@types/node`, `@types/react`, `@types/react-dom`, `@types/pg` | - | Tipos de TypeScript |
 
 ## 🎯 Primeros pasos
@@ -120,11 +131,15 @@ nvm use
 pnpm install
 ```
 
-El `postinstall` genera automáticamente el cliente de Prisma.
+Al instalar se ejecutan automáticamente:
+- `prepare`: activa los hooks de git con Husky.
+- `postinstall`: genera el cliente de Prisma.
 
 ### 4. Configura las variables de entorno
 
 Crea un archivo `.env` a partir de `.env.example` y define `DATABASE_URL` con la conexión a tu PostgreSQL.
+
+Las variables se validan con T3-env en [`src/env.ts`](src/env.ts): si falta alguna o tiene un formato incorrecto, `pnpm dev` y `pnpm build` se detienen con un error que indica cuál. Para añadir una variable nueva, sigue las instrucciones comentadas en ese archivo.
 
 ### 5. Crea las tablas de la base de datos
 
@@ -156,23 +171,48 @@ y abre http://localhost:3000.
 | `db:push` | Sincroniza el esquema con la base de datos sin migraciones |
 | `db:studio` | Abre Prisma Studio para ver y editar datos |
 | `postinstall` | Genera el cliente de Prisma tras cada `pnpm install` |
+| `prepare` | Activa los hooks de git de Husky tras cada `pnpm install` |
+
+## 📝 Commits
+
+Cada commit pasa por dos hooks de Husky:
+
+1. **`pre-commit`**: lint-staged ejecuta `biome check --write` sobre los archivos en stage. Corrige lo que puede y bloquea el commit si quedan errores.
+2. **`commit-msg`**: commitlint exige el formato [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/): `tipo: descripción`.
+
+| Tipo | Cuándo usarlo |
+|---|---|
+| `feat` | Nueva funcionalidad |
+| `fix` | Corrección de un bug |
+| `docs` | Solo documentación |
+| `style` | Formato, sin cambios de lógica |
+| `refactor` | Cambio de código que no añade funcionalidad ni corrige bugs |
+| `test` | Añadir o corregir tests |
+| `chore` | Mantenimiento, dependencias, configuración |
+
+Ejemplo: `feat: add dark mode toggle`
 
 ## 📁 Estructura del proyecto
 
 ```bash
 .
+├── .husky                          # Hooks de git (pre-commit, commit-msg)
 ├── prisma
 │   └── schema.prisma               # Modelos de la base de datos
 ├── public                          # Archivos estáticos
 ├── src
 │   ├── app                         # Next.js App Router (layout, páginas, estilos globales)
 │   ├── components
-│   │   └── ui                      # Componentes de shadcn/ui
+│   │   ├── ui                      # Componentes de shadcn/ui
+│   │   ├── mode-toggle.tsx         # Selector de tema claro/oscuro/sistema
+│   │   └── theme-provider.tsx      # Provider de next-themes
 │   ├── generated/prisma            # Cliente de Prisma generado (ignorado por git)
-│   └── lib
-│       ├── db.ts                   # Cliente de Prisma singleton
-│       └── utils.ts                # Utilidades (cn)
+│   ├── lib
+│   │   ├── db.ts                   # Cliente de Prisma singleton
+│   │   └── utils.ts                # Utilidades (cn)
+│   └── env.ts                      # Variables de entorno validadas (T3-env)
 ├── biome.json                      # Configuración de Biome
+├── commitlint.config.mjs           # Configuración de commitlint
 ├── components.json                 # Configuración de shadcn/ui
 ├── prisma.config.ts                # Configuración del CLI de Prisma
 ├── pnpm-workspace.yaml             # Políticas de pnpm (builds permitidos, overrides)
