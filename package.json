@@ -6,11 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check && pnpm lint:tw && pnpm lint:md",
+    "lint": "biome check && pnpm lint:tw && pnpm lint:md && pnpm lint:spell",
     "format": "biome format --write",
     "lint:fix": "biome check --write && node scripts/oxlint-fix.mjs && markdownlint-cli2 --fix",
     "lint:tw": "oxlint",
     "lint:md": "markdownlint-cli2",
+    "lint:spell": "cspell --no-progress --dot \"**\"",
     "typecheck": "next typegen && tsc --noEmit",
     "knip": "knip",
     "dup": "jscpd",
@@ -51,6 +52,7 @@
     "@biomejs/biome": "2.5.14",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
+    "@cspell/dict-es-es": "^3.0.8",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/dom": "^10.4.2",
@@ -63,6 +65,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
     "babel-plugin-react-compiler": "1.0.0",
+    "cspell": "^10.3.5",
     "dotenv": "^18.0.4",
     "eslint-plugin-better-tailwindcss": "^4.7.0",
     "husky": "^9.1.7",
@@ -94,6 +97,9 @@
     ],
     "src/**/*.{ts,tsx}": [
       "vitest related --run"
+    ],
+    "*": [
+      "cspell --no-progress --no-summary --no-must-find-files"
     ]
   }
 }
