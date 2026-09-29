@@ -149,6 +149,23 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] Release PR automático con el `CHANGELOG.md` en español y el bump de `package.json`
 - [x] Al fusionarlo: tag `vX.Y.Z` y GitHub Release
 
+### ✅ Fase 11 - Publicación en GitHub y pulido
+
+- [x] Repositorio publicado en GitHub; `main` protegida (PR obligatorio + checks del CI), solo *squash merge* y borrado automático de ramas
+- [x] Token `RELEASE_PLEASE_TOKEN` para que el CI también se ejecute en el PR de release; primera versión publicada: `v0.2.0`
+- [x] CI: build en un paso propio, reporte de Playwright siempre disponible y corrección del cuelgue al cerrar el servidor en Linux
+- [x] Corregido el aviso de React sobre `<script>` de next-themes al cambiar de idioma
+- [x] Suite de tests reducida a lo necesario (23 unitarios, 10 e2e) con el criterio documentado en `AGENTS.md`
+- [x] Ortografía en español e inglés con cspell (editor, commit y CI)
+- [x] Hook `pre-push` con `pnpm check`
+- [x] Prettier desactivado en el proyecto para que Biome sea el único formateador
+- [x] GitHub CLI (`gh`) para crear PRs, seguir checks y leer logs del CI desde la terminal
+
+### 🔜 Próximos pasos
+
+- [ ] Actualizar `next` y `@next/third-parties` a 16.3.7 (en espera de las 24 h de `minimumReleaseAge`)
+- [ ] Despliegue (pospuesto; de momento se trabaja en local): `NEXT_PUBLIC_APP_URL`, ID de Google Analytics y activar Speed Insights / Analytics en Vercel
+
 ### 🧭 Fase avanzada
 
 - [ ] Autenticación
@@ -514,7 +531,8 @@ Si marca una palabra correcta (un nombre de librería, un término técnico), a�
 
    Abre el PR en GitHub. En la pestaña **Checks** (o en **Actions**) ves cada job en vivo, con su log. Si un e2e falla, descarga el artefacto `playwright-report` del resumen del run y abre `index.html`.
 4. **Re-ejecutar:** en el run, **Re-run jobs** (útil si falló algo puntual de red).
-5. **Secretos:** si un job necesita credenciales reales, añádelas en **Settings → Secrets and variables → Actions** y úsalas como `${{ secrets.NOMBRE }}`.
+5. **Desde la terminal con `gh`** (GitHub CLI): `gh pr create --fill` abre el PR de la rama actual, `gh pr checks --watch` sigue los checks en vivo, `gh pr merge --squash` lo fusiona y `gh run view --log-failed` muestra el log de un job que falló.
+6. **Secretos:** si un job necesita credenciales reales, añádelas en **Settings → Secrets and variables → Actions** y úsalas como `${{ secrets.NOMBRE }}`.
 
 ## 🚀 Versionado y releases
 
