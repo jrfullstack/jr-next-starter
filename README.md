@@ -92,9 +92,17 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] `NEXT_PUBLIC_APP_URL` validada con T3-env como base de todas las URLs absolutas
 - [x] Tests unitarios del helper SEO, sitemap y robots, y e2e de lo que sirve el servidor
 
+### ✅ Fase 6 - Página de inicio
+
+- [x] Landing propia: hero y tarjetas con el stack (shadcn `card` y `badge`)
+- [x] Header (marca, idioma y tema) y footer en el layout
+- [x] Página 404 traducida (`not-found.tsx` + ruta comodín `[...rest]`)
+- [x] Eliminados los assets de la demo de Next.js
+- [x] Corregida la fuente: `shadcn init` dejó `--font-sans` apuntándose a sí misma y se veía Times en vez de Geist
+- [x] Tests del header, footer, landing, 404 y de regresión de la fuente
+
 ### 🔜 Próximas fases
 
-- [ ] **Fase 6 - Página de inicio propia** (reemplazar la demo de Next.js) y página 404 traducida
 - [ ] **Fase 7 - GitHub Actions:** lint, typecheck y tests en cada PR
 
 ### 🧭 Fase avanzada
@@ -336,7 +344,8 @@ Ejemplo: `feat: add dark mode toggle`
 ├── public                          # Archivos estáticos
 ├── src
 │   ├── app
-│   │   ├── [locale]                # Layout raíz, páginas e imagen Open Graph, por idioma
+│   │   ├── [locale]                # Layout raíz, páginas, 404 e imagen Open Graph, por idioma
+│   │   │   └── [...rest]           # Envía las rutas desconocidas al 404 traducido
 │   │   ├── globals.css             # Estilos globales y tema de Tailwind
 │   │   ├── robots.ts               # robots.txt
 │   │   └── sitemap.ts              # sitemap.xml
@@ -344,6 +353,8 @@ Ejemplo: `feat: add dark mode toggle`
 │   │   ├── ui                      # Componentes de shadcn/ui
 │   │   ├── locale-switcher.tsx     # Selector de idioma
 │   │   ├── mode-toggle.tsx         # Selector de tema claro/oscuro/sistema
+│   │   ├── site-footer.tsx         # Pie de página
+│   │   ├── site-header.tsx         # Cabecera con marca, idioma y tema
 │   │   └── theme-provider.tsx      # Provider de next-themes
 │   ├── generated/prisma            # Cliente de Prisma generado (ignorado por git)
 │   ├── i18n

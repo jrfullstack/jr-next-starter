@@ -4,10 +4,47 @@
     "description": "Starter template to kick off Next.js 16 projects in minutes."
   },
   "HomePage": {
-    "title": "To get started, edit the page.tsx file.",
-    "description": "Looking for a starting point or more instructions? Head over to Templates or the Learning center.",
-    "deploy": "Deploy Now",
-    "docs": "Documentation"
+    "badge": "Next.js 16 · React 19 · TypeScript",
+    "title": "Kick off your next project in minutes",
+    "description": "A production-ready foundation with everything set up: UI, database, i18n, SEO, testing and code quality. Clone it and start building.",
+    "primaryCta": "See the stack",
+    "secondaryCta": "Next.js documentation",
+    "stackTitle": "Everything you need, already set up",
+    "stackDescription": "Installed with the official CLIs, on their latest stable versions and with no known vulnerabilities.",
+    "features": {
+      "nextjs": {
+        "title": "Next.js 16",
+        "description": "App Router, Turbopack and React Compiler with React 19."
+      },
+      "typescript": {
+        "title": "TypeScript",
+        "description": "Strict typing across the project, including environment variables and translations."
+      },
+      "ui": {
+        "title": "Tailwind CSS & shadcn/ui",
+        "description": "Accessible, customizable components, Lucide icons and dark mode."
+      },
+      "database": {
+        "title": "Prisma & PostgreSQL",
+        "description": "Typed ORM with migrations and environment variables validated with T3-env."
+      },
+      "i18n": {
+        "title": "Internationalization",
+        "description": "Locale-based routing with next-intl and typed messages in Spanish and English."
+      },
+      "seo": {
+        "title": "SEO",
+        "description": "Metadata, per-locale Open Graph, sitemap, robots and hreflang."
+      },
+      "testing": {
+        "title": "Testing",
+        "description": "Vitest and Testing Library for unit tests, Playwright for end-to-end."
+      },
+      "quality": {
+        "title": "Code quality",
+        "description": "Biome, Husky, lint-staged and conventional commits on every commit."
+      }
+    }
   },
   "ModeToggle": {
     "label": "Toggle theme",
@@ -18,5 +55,17 @@
   "LocaleSwitcher": {
     "label": "Change language",
     "locale": "{locale, select, es {Español} en {English} other {Unknown}}"
+  },
+  "SiteHeader": {
+    "home": "Go to home"
+  },
+  "SiteFooter": {
+    "madeBy": "Made by {author}",
+    "rights": "© {year} JR Next Starter"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for doesn't exist or has been moved.",
+    "back": "Back to home"
   }
 }

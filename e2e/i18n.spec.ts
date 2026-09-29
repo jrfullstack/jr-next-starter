@@ -29,7 +29,7 @@ test.describe("i18n routing", () => {
     await expect(page).toHaveTitle("JR Next Starter");
     await expect(
       page.getByRole("heading", {
-        name: "To get started, edit the page.tsx file.",
+        name: "Kick off your next project in minutes",
       }),
     ).toBeVisible();
     await expect(

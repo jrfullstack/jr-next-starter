@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { env } from "@/env";
 import { routing } from "@/i18n/routing";
@@ -73,7 +75,9 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <SiteHeader />
             {children}
+            <SiteFooter />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
