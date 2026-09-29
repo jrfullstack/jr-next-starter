@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { renderWithIntl } from "@/test/render";
 import { ModeToggle } from "./mode-toggle";
 
 const setTheme = vi.fn();
@@ -15,10 +16,18 @@ describe("ModeToggle", () => {
   });
 
   it("renders an accessible trigger button", () => {
-    render(<ModeToggle />);
+    renderWithIntl(<ModeToggle />);
 
     expect(
       screen.getByRole("button", { name: "Cambiar tema" }),
+    ).toBeInTheDocument();
+  });
+
+  it("is translated to English", () => {
+    renderWithIntl(<ModeToggle />, { locale: "en" });
+
+    expect(
+      screen.getByRole("button", { name: "Toggle theme" }),
     ).toBeInTheDocument();
   });
 
@@ -28,7 +37,7 @@ describe("ModeToggle", () => {
     ["Sistema", "system"],
   ])("selecting %s sets the %s theme", async (label, theme) => {
     const user = userEvent.setup();
-    render(<ModeToggle />);
+    renderWithIntl(<ModeToggle />);
 
     await user.click(screen.getByRole("button", { name: "Cambiar tema" }));
     await user.click(await screen.findByRole("menuitem", { name: label }));

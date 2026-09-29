@@ -8,6 +8,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
   <a href="#-librerías"><strong>Librerías</strong></a> ·
   <a href="#-primeros-pasos"><strong>Primeros pasos</strong></a> ·
   <a href="#-scripts"><strong>Scripts</strong></a> ·
+  <a href="#-internacionalización"><strong>i18n</strong></a> ·
   <a href="#-testing"><strong>Testing</strong></a> ·
   <a href="#-commits"><strong>Commits</strong></a> ·
   <a href="#-estructura-del-proyecto"><strong>Estructura</strong></a> ·
@@ -26,6 +27,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🔍 Zod 4 - Validación de esquemas
 - ⚙️ T3-env - Variables de entorno tipadas y validadas al arrancar
 - 🌑 Dark mode con `next-themes` (claro / oscuro / sistema)
+- 🌐 i18n con `next-intl` - Español e inglés con rutas `/es` y `/en`
 - 🧪 Vitest + React Testing Library - Tests unitarios y de componentes
 - 🎭 Playwright - Tests end-to-end en navegador real
 - 💅 Biome - Linter y formatter ultrarrápido
@@ -69,13 +71,25 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] Tests de ejemplo: `cn`, `ModeToggle`, validación de `env` y página de inicio
 - [x] lint-staged ejecuta los tests relacionados con los archivos del commit
 
-### 🔜 Próximas fases (por definir)
+### ✅ Fase 4 - Internacionalización
+
+- [x] `next-intl` con rutas por idioma (`/es`, `/en`); español por defecto
+- [x] `src/proxy.ts` redirige `/` al idioma del navegador
+- [x] Locale leído con `next/root-params` (Next 16.3)
+- [x] Mensajes tipados: autocompletado y errores de compilación en las claves
+- [x] Selector de idioma (`LocaleSwitcher`) que mantiene la página actual
+- [x] `ModeToggle` y página demo traducidos
+- [x] Tests: paridad de claves entre idiomas, componentes y rutas e2e
+
+### 🔜 Próximas fases
+
+- [ ] **Fase 5 - SEO:** metadata, Open Graph, `sitemap.xml`, `robots.txt` y `hreflang` por idioma
+- [ ] **Fase 6 - Página de inicio propia** (reemplazar la demo de Next.js) y página 404 traducida
+- [ ] **Fase 7 - GitHub Actions:** lint, typecheck y tests en cada PR
+
+### 🧭 Fase avanzada
 
 - [ ] Autenticación
-- [ ] Internacionalización con `next-intl`
-- [ ] SEO: metadata, Open Graph, `sitemap.xml` y `robots.txt`
-- [ ] GitHub Actions - Lint, typecheck y tests en cada PR
-- [ ] Página de inicio propia (reemplazar la demo de Next.js)
 
 ## 📦 Librerías
 
@@ -96,6 +110,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `class-variance-authority` | 0.7.1 | Define variantes de componentes (tamaño, color…) con clases de Tailwind |
 | `cn` | 0.4.0 | Combina clases de Tailwind resolviendo conflictos (reemplaza clsx + tailwind-merge) |
 | `lucide-react` | 1.48.0 | Iconos SVG como componentes de React |
+| `next-intl` | 4.14.7 | Traducciones, formato de fechas/números y rutas por idioma para el App Router |
 | `next-themes` | 0.4.6 | Tema claro/oscuro/sistema sin parpadeo; guarda la preferencia del usuario |
 | `@t3-oss/env-nextjs` | 0.13.11 | Valida con Zod las variables de entorno al arrancar y las expone tipadas en `env` |
 | `tw-animate-css` | 1.4.0 | Animaciones de Tailwind CSS 4 que usan los componentes de shadcn |
@@ -193,6 +208,35 @@ y abre http://localhost:3000.
 | `postinstall` | Genera el cliente de Prisma tras cada `pnpm install` |
 | `prepare` | Activa los hooks de git de Husky tras cada `pnpm install` |
 
+## 🌐 Internacionalización
+
+Los textos viven en `messages/<idioma>.json`, agrupados por componente o página. `es.json` es la referencia de tipos: si usas una clave que no existe, TypeScript da error.
+
+**Usar un texto**
+
+```tsx
+// Server o Client Component
+import { useTranslations } from "next-intl";
+
+const t = useTranslations("HomePage");
+t("title");
+
+// Server Component async o generateMetadata
+import { getTranslations } from "next-intl/server";
+
+const t = await getTranslations("HomePage");
+```
+
+**Enlaces y navegación:** importa `Link`, `redirect`, `useRouter` y `usePathname` desde `@/i18n/navigation` (no desde `next/link` ni `next/navigation`) para que mantengan el idioma actual.
+
+**Añadir un texto:** agrégalo con la misma clave en todos los archivos de `messages/`. Un test comprueba que todos los idiomas tengan las mismas claves y que ninguna esté vacía.
+
+**Añadir un idioma**
+
+1. Añade el código en `locales` de `src/i18n/routing.ts`.
+2. Crea `messages/<idioma>.json` con las mismas claves que `es.json`.
+3. Añade su nombre en `LocaleSwitcher.locale` de cada archivo de mensajes.
+
 ## 🧪 Testing
 
 | Tipo | Herramienta | Dónde van | Para qué |
@@ -208,7 +252,8 @@ pnpm e2e:ui        # e2e con interfaz visual
 ```
 
 - La primera vez, descarga el navegador de Playwright con `pnpm exec playwright install chromium`.
-- Si ya tienes `pnpm dev` en el puerto 3000, Playwright lo reutiliza. Para usar otro puerto: `PORT=3100 pnpm e2e`.
+- Si ya tienes `pnpm dev` corriendo, Playwright lo reutiliza (Next 16 no permite dos `next dev` en la misma carpeta). Para probar el build de producción en otro puerto: `CI=1 PORT=3100 pnpm e2e`.
+- Para renderizar componentes que usan traducciones, usa `renderWithIntl` de `@/test/render`: carga los mensajes reales.
 - Con `CI=1`, Playwright prueba el build de producción (`pnpm build && pnpm start`).
 - **Limitación:** Vitest no puede renderizar Server Components `async`. Esos se prueban con Playwright.
 - En cada commit, lint-staged ejecuta `vitest related --run`: solo los tests afectados por los archivos que cambiaste.
@@ -238,20 +283,32 @@ Ejemplo: `feat: add dark mode toggle`
 .
 ├── .husky                          # Hooks de git (pre-commit, commit-msg)
 ├── e2e                             # Tests end-to-end de Playwright (*.spec.ts)
+├── messages                        # Traducciones por idioma (es.json, en.json)
 ├── prisma
 │   └── schema.prisma               # Modelos de la base de datos
 ├── public                          # Archivos estáticos
 ├── src
-│   ├── app                         # Next.js App Router (layout, páginas, estilos globales)
+│   ├── app
+│   │   ├── [locale]                # Layout raíz y páginas, una versión por idioma
+│   │   └── globals.css             # Estilos globales y tema de Tailwind
 │   ├── components
 │   │   ├── ui                      # Componentes de shadcn/ui
+│   │   ├── locale-switcher.tsx     # Selector de idioma
 │   │   ├── mode-toggle.tsx         # Selector de tema claro/oscuro/sistema
 │   │   └── theme-provider.tsx      # Provider de next-themes
 │   ├── generated/prisma            # Cliente de Prisma generado (ignorado por git)
+│   ├── i18n
+│   │   ├── navigation.ts           # Link, useRouter… con idioma
+│   │   ├── request.ts              # Carga los mensajes del idioma actual
+│   │   └── routing.ts              # Idiomas soportados e idioma por defecto
 │   ├── lib
 │   │   ├── db.ts                   # Cliente de Prisma singleton
 │   │   └── utils.ts                # Utilidades (cn)
+│   ├── test
+│   │   └── render.tsx              # renderWithIntl para tests de componentes
 │   ├── env.ts                      # Variables de entorno validadas (T3-env)
+│   ├── global.ts                   # Tipos de next-intl (idiomas y claves de mensajes)
+│   ├── proxy.ts                    # Redirección por idioma (antes middleware.ts)
 │   └── **/*.test.ts(x)             # Tests unitarios junto a su archivo
 ├── biome.json                      # Configuración de Biome
 ├── commitlint.config.mjs           # Configuración de commitlint
@@ -269,7 +326,7 @@ Ejemplo: `feat: add dark mode toggle`
 - **Siempre las últimas versiones estables.** Antes de añadir o actualizar algo, comprueba con `npm view <paquete> dist-tags` que `latest` no apunte a una prerelease.
 - **Prisma fijado en `7.10.0`.** En npm, el `latest` de `prisma` apunta a `8.0.0-rc`, una release candidate que no coincide con `@prisma/client` 7.x. Por eso `pnpm outdated` lo muestra a propósito.
 - **`minimumReleaseAge`.** pnpm 12 rechaza por defecto paquetes publicados hace menos de 24 h. Si falla la instalación por esto, ejecuta `pnpm clean --lockfile && pnpm install`.
-- **Builds aprobados.** Solo los paquetes listados en `allowBuilds` de `pnpm-workspace.yaml` pueden ejecutar scripts de instalación (`pnpm approve-builds`).
+- **Builds aprobados.** Solo los paquetes listados en `allowBuilds` de `pnpm-workspace.yaml` pueden ejecutar scripts de instalación (`pnpm approve-builds`). Los denegados (`sharp`, `@swc/core`, `@parcel/watcher`…) ya traen sus binarios precompilados y no los necesitan.
 - **Overrides.** Hay `overrides` en `pnpm-workspace.yaml` que corrigen vulnerabilidades en dependencias del CLI de Prisma. Se pueden quitar cuando Prisma las actualice (`pnpm audit`).
 
 ## 🤝 Contribución

@@ -1,0 +1,22 @@
+{
+  "Metadata": {
+    "title": "JR Next Starter",
+    "description": "Plantilla base para arrancar proyectos con Next.js 16 en minutos."
+  },
+  "HomePage": {
+    "title": "Para empezar, edita el archivo page.tsx.",
+    "description": "¿Buscas un punto de partida o más instrucciones? Visita las plantillas o el centro de aprendizaje.",
+    "deploy": "Desplegar",
+    "docs": "Documentación"
+  },
+  "ModeToggle": {
+    "label": "Cambiar tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "LocaleSwitcher": {
+    "label": "Cambiar idioma",
+    "locale": "{locale, select, es {Español} en {English} other {Desconocido}}"
+  }
+}

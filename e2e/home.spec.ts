@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Home page", () => {
   test("loads in Spanish", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/es");
 
     await expect(page.locator("html")).toHaveAttribute("lang", "es");
     await expect(
@@ -12,14 +12,14 @@ test.describe("Home page", () => {
 
   test("follows the system color scheme by default", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
-    await page.goto("/");
+    await page.goto("/es");
 
     await expect(page.locator("html")).toHaveClass(/dark/);
   });
 
   test("switches theme and keeps it after reload", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
-    await page.goto("/");
+    await page.goto("/es");
     const html = page.locator("html");
     await expect(html).not.toHaveClass(/dark/);
 
