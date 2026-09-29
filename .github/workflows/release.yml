@@ -1,0 +1,26 @@
+name: Release
+
+# On every push to main, release-please reads the Conventional Commits since the
+# last release and keeps a "release PR" up to date (version bump + CHANGELOG.md).
+# Merging that PR creates the git tag (vX.Y.Z) and the GitHub Release.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Release PR / GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: googleapis/release-please-action@v5.0.0
+        with:
+          # PRs created with the default GITHUB_TOKEN don't trigger other workflows (CI).
+          # Add a RELEASE_PLEASE_TOKEN secret (fine-grained PAT) to run CI on release PRs.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

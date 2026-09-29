@@ -51,4 +51,4 @@ Cada dato vive en **un solo lugar**. Antes de escribir un valor, búscalo aquí;
 2. **Tests con cada cambio:** unitarios junto al archivo (`*.test.ts(x)`) y e2e en `e2e/` para páginas y flujos.
 3. **Antes del commit:** `pnpm check` (lint, typecheck, knip, jscpd y tests unitarios). Si cambian páginas o rutas, ejecuta también `pnpm e2e`.
 4. **README:** actualiza el roadmap, la tabla de librerías, los scripts y la estructura.
-5. **Commits:** Conventional Commits (`feat:`, `fix:`, `docs:`…) 🔒 commitlint.
+5. **Commits:** Conventional Commits (`feat:`, `fix:`, `docs:`…) 🔒 commitlint. El tipo decide la versión (release-please): `fix` → parche, `feat` → menor, `!`/`BREAKING CHANGE` → mayor. No edites la versión de `package.json` ni `CHANGELOG.md` a mano.

@@ -15,6 +15,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
   <a href="#-testing"><strong>Testing</strong></a> ·
   <a href="#-commits"><strong>Commits</strong></a> ·
   <a href="#-ci"><strong>CI</strong></a> ·
+  <a href="#-versionado-y-releases"><strong>Versionado</strong></a> ·
   <a href="#-estructura-del-proyecto"><strong>Estructura</strong></a> ·
   <a href="#-seguridad-y-dependencias"><strong>Seguridad</strong></a>
 </p>
@@ -44,6 +45,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 📝 Markdown sin avisos: markdownlint corrige los `.md` al guardar y en cada commit
 - 📐 Fuentes de verdad únicas y convenciones documentadas en [`AGENTS.md`](AGENTS.md)
 - 🤖 GitHub Actions - Lint, typecheck, tests unitarios, e2e y commits en cada PR
+- 🚀 Versionado semántico automático con release-please: CHANGELOG, tags y GitHub Releases
 - 🐶 Husky + lint-staged - Lint y formato de los archivos en stage antes de cada commit
 - 📝 Commitlint - Commits convencionales (`feat:`, `fix:`…)
 - 📈 Alias de imports con el prefijo `@/`
@@ -138,6 +140,12 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] Oxlint + `eslint-plugin-better-tailwindcss`: clases canónicas de Tailwind 4, ordenadas, sin duplicados ni obsoletas
 - [x] markdownlint con configuración compartida por el editor y el CLI
 - [x] Los arreglos automáticos se aplican al guardar (editor), con `pnpm lint:fix` y en cada commit
+
+### ✅ Fase 10 - Versionado
+
+- [x] release-please: versión semántica calculada a partir de los Conventional Commits
+- [x] Release PR automático con el `CHANGELOG.md` en español y el bump de `package.json`
+- [x] Al fusionarlo: tag `vX.Y.Z` y GitHub Release
 
 ### 🧭 Fase avanzada
 
@@ -463,13 +471,61 @@ Ejemplo: `feat: add dark mode toggle`
 - Usa valores de ejemplo para `DATABASE_URL` y `NEXT_PUBLIC_APP_URL` (y no define `NEXT_PUBLIC_GA_MEASUREMENT_ID`), para que pase la validación de T3-env. Ningún job se conecta a una base de datos. Si en el futuro necesitas secretos reales, añádelos en **Settings → Secrets and variables → Actions**.
 - La configuración común (pnpm, Node, caché e instalación) está en la action `.github/actions/setup`.
 
+### Cómo se usa GitHub Actions
+
+1. **Sube el repo a GitHub.** Los workflows de `.github/workflows/` se activan solos; no hay nada que instalar.
+2. **Configura el repositorio** (una sola vez), en **Settings**:
+   - **Actions → General → Workflow permissions**: marca *Allow GitHub Actions to create and approve pull requests* (lo necesita release-please).
+   - **Branches → Add branch ruleset** para `main`: *Require a pull request before merging* y *Require status checks to pass*, y elige los checks `Lint, typecheck, dead code, duplicates & unit tests`, `E2E tests` y `Commit messages`. Así nada entra en `main` sin pasar el CI.
+3. **Trabaja con ramas y PRs:**
+
+   ```bash
+   git switch -c feat/mi-cambio
+   git commit -m "feat: add contact page"
+   git push -u origin feat/mi-cambio
+   ```
+
+   Abre el PR en GitHub. En la pestaña **Checks** (o en **Actions**) ves cada job en vivo, con su log. Si un e2e falla, descarga el artefacto `playwright-report` del resumen del run y abre `index.html`.
+4. **Re-ejecutar:** en el run, **Re-run jobs** (útil si falló algo puntual de red).
+5. **Secretos:** si un job necesita credenciales reales, añádelas en **Settings → Secrets and variables → Actions** y úsalas como `${{ secrets.NOMBRE }}`.
+
+## 🚀 Versionado y releases
+
+La versión sigue [Semantic Versioning](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`) y la calcula [release-please](https://github.com/googleapis/release-please) a partir de los mensajes de commit, que commitlint ya obliga a escribir en formato convencional.
+
+| Commit | Efecto en la versión (desde 1.0.0) | Mientras la versión sea 0.x |
+| --- | --- | --- |
+| `fix: …` | Parche: 1.2.3 → 1.2.4 | 0.1.0 → 0.1.1 |
+| `feat: …` | Menor: 1.2.3 → 1.3.0 | 0.1.0 → 0.2.0 |
+| `feat!: …` o `BREAKING CHANGE:` en el cuerpo | Mayor: 1.2.3 → 2.0.0 | 0.1.0 → 0.2.0 |
+| `docs`, `refactor`, `perf` | Aparecen en el CHANGELOG; sin nuevas funcionalidades suben el parche | |
+| `chore`, `ci`, `test`, `style`, `build` | No generan release | |
+
+### Flujo
+
+1. Fusionas PRs en `main` con commits convencionales.
+2. El workflow **Release** (`.github/workflows/release.yml`) abre o actualiza un PR llamado **"chore(main): release X.Y.Z"** con la nueva versión en `package.json` y las notas en `CHANGELOG.md`.
+3. Cuando quieras publicar, **fusionas ese PR**: release-please crea el tag `vX.Y.Z` y la **GitHub Release** con las notas.
+
+No hay que tocar la versión a mano. Para forzar una versión concreta, añade `Release-As: 1.0.0` en el cuerpo de un commit.
+
+| Archivo | Para qué |
+| --- | --- |
+| `release-please-config.json` | Tipo de proyecto (`node`) y secciones del CHANGELOG en español |
+| `.release-please-manifest.json` | Última versión publicada (lo actualiza release-please) |
+| `CHANGELOG.md` | Lo genera release-please; no lo edites a mano |
+
+> **CI en el PR de release:** los PRs creados con el `GITHUB_TOKEN` por defecto no disparan otros workflows. Si quieres que el CI también se ejecute en el PR de release, crea un *fine-grained personal access token* (permisos: Contents y Pull requests, lectura y escritura) y guárdalo como secreto `RELEASE_PLEASE_TOKEN`; el workflow lo usará automáticamente.
+
 ## 📁 Estructura del proyecto
 
 ```bash
 .
 ├── .github
 │   ├── actions/setup               # Setup compartido: pnpm, Node, caché e instalación
-│   └── workflows/ci.yml            # Pipeline de CI
+│   └── workflows
+│       ├── ci.yml                  # Pipeline de CI (en cada push a main y PR)
+│       └── release.yml             # release-please: PR de release, tags y GitHub Releases
 ├── .husky                          # Hooks de git (pre-commit, commit-msg)
 ├── .vscode                         # Biome como formateador por defecto y extensiones recomendadas
 ├── e2e                             # Tests end-to-end de Playwright (*.spec.ts)
@@ -515,6 +571,7 @@ Ejemplo: `feat: add dark mode toggle`
 │   └── oxlint-fix.mjs              # Repite `oxlint --fix` hasta que no quede nada corregible
 ├── .jscpd.json                     # Configuración de detección de duplicados
 ├── .markdownlint-cli2.jsonc        # Reglas de Markdown (CLI y extensión del editor)
+├── .release-please-manifest.json   # Versión actual publicada (release-please)
 ├── AGENTS.md                       # Convenciones del proyecto (personas y agentes de IA)
 ├── biome.json                      # Configuración de Biome (reglas estrictas)
 ├── commitlint.config.mjs           # Configuración de commitlint
@@ -522,6 +579,7 @@ Ejemplo: `feat: add dark mode toggle`
 ├── knip.jsonc                      # Configuración de knip (excepciones justificadas)
 ├── oxlint.config.mts               # Reglas de clases de Tailwind
 ├── playwright.config.ts            # Configuración de Playwright
+├── release-please-config.json      # Configuración del versionado y del CHANGELOG
 ├── prisma.config.ts                # Configuración del CLI de Prisma
 ├── pnpm-workspace.yaml             # Políticas de pnpm (builds permitidos, overrides)
 ├── vitest.config.mts               # Configuración de Vitest
