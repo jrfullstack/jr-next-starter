@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import robots from "./robots";
 import sitemap from "./sitemap";
 
 describe("sitemap", () => {
@@ -17,14 +16,5 @@ describe("sitemap", () => {
         "x-default": "https://example.com/es",
       });
     }
-  });
-});
-
-describe("robots", () => {
-  it("allows crawling and points to the sitemap", () => {
-    expect(robots()).toEqual({
-      rules: { userAgent: "*", allow: "/", disallow: "/api/" },
-      sitemap: "https://example.com/sitemap.xml",
-    });
   });
 });

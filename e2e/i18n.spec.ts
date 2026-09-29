@@ -1,21 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("i18n routing", () => {
-  test.describe("with a Spanish browser", () => {
-    test.use({ locale: "es-ES" });
-
-    test("redirects / to /es", async ({ page }) => {
-      await page.goto("/");
-
-      await expect(page).toHaveURL(/\/es$/);
-      await expect(page.locator("html")).toHaveAttribute("lang", "es");
-    });
-  });
-
+test.describe("i18n", () => {
   test.describe("with an English browser", () => {
     test.use({ locale: "en-US" });
 
-    test("redirects / to /en", async ({ page }) => {
+    test("redirects / to the browser language", async ({ page }) => {
       await page.goto("/");
 
       await expect(page).toHaveURL(/\/en$/);
@@ -23,35 +12,8 @@ test.describe("i18n routing", () => {
     });
   });
 
-  test("renders English content on /en", async ({ page }) => {
-    await page.goto("/en");
-
-    await expect(page).toHaveTitle("JR Next Starter");
-    await expect(
-      page.getByRole("heading", {
-        name: "Kick off your next project in minutes",
-      }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Toggle theme" }),
-    ).toBeVisible();
-  });
-
-  test("switches language from the locale switcher", async ({ page }) => {
-    await page.goto("/es");
-
-    await page.getByRole("button", { name: "Cambiar idioma" }).click();
-    await page.getByRole("menuitemradio", { name: "English" }).click();
-
-    await expect(page).toHaveURL(/\/en$/);
-    await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(
-      page.getByRole("button", { name: "Change language" }),
-    ).toBeVisible();
-  });
-
-  // next-themes renders an inline <script>; React warns when the root layout remounts on locale change
-  test("switching language logs no console errors", async ({ page }) => {
+  // Also guards against the React <script> warning when the root layout remounts (next-themes#397)
+  test("switches language without console errors", async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error") errors.push(message.text());
@@ -60,8 +22,11 @@ test.describe("i18n routing", () => {
 
     await page.getByRole("button", { name: "Cambiar idioma" }).click();
     await page.getByRole("menuitemradio", { name: "English" }).click();
-    await expect(page.locator("html")).toHaveAttribute("lang", "en");
 
+    await expect(page).toHaveURL(/\/en$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Kick off your next project in minutes",
+    );
     expect(errors).toEqual([]);
   });
 

@@ -16,10 +16,6 @@ const keysOf = (obj: object, prefix = ""): string[] =>
   );
 
 describe("messages", () => {
-  it("has a messages file for every locale", () => {
-    expect(Object.keys(messages).sort()).toEqual([...routing.locales].sort());
-  });
-
   it.each(routing.locales.filter((locale) => locale !== routing.defaultLocale))(
     "%s has the same keys as the default locale",
     (locale) => {

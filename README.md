@@ -83,7 +83,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 
 - [x] Vitest + React Testing Library + jest-dom (tests unitarios y de componentes)
 - [x] Playwright (tests e2e con Chromium; arranca Next.js automáticamente)
-- [x] Tests de ejemplo: `cn`, `ModeToggle`, validación de `env` y página de inicio
+- [x] Tests de ejemplo: `ModeToggle`, validación de `env` y página de inicio
 - [x] lint-staged ejecuta los tests relacionados con los archivos del commit
 
 ### ✅ Fase 4 - Internacionalización
@@ -445,6 +445,7 @@ pnpm e2e:ui        # e2e con interfaz visual
 - Con `CI=1`, Playwright prueba el build de producción con `pnpm start`, así que antes hay que ejecutar `pnpm build`: `pnpm build && CI=1 PORT=3100 pnpm e2e`.
 - **Limitación:** Vitest no puede renderizar Server Components `async`. Esos se prueban con Playwright.
 - En cada commit, lint-staged ejecuta `vitest related --run`: solo los tests afectados por los archivos que cambiaste.
+- **Qué testear y qué no:** criterio en [`AGENTS.md`](AGENTS.md#qué-testear-y-qué-no). En resumen: solo lógica o configuración propia, flujos de usuario en e2e agrupados, y nada que ya garanticen TypeScript o las librerías.
 
 ## 📝 Commits
 

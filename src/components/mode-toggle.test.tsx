@@ -15,22 +15,6 @@ describe("ModeToggle", () => {
     setTheme.mockClear();
   });
 
-  it("renders an accessible trigger button", () => {
-    renderWithIntl(<ModeToggle />);
-
-    expect(
-      screen.getByRole("button", { name: "Cambiar tema" }),
-    ).toBeInTheDocument();
-  });
-
-  it("is translated to English", () => {
-    renderWithIntl(<ModeToggle />, { locale: "en" });
-
-    expect(
-      screen.getByRole("button", { name: "Toggle theme" }),
-    ).toBeInTheDocument();
-  });
-
   it.each([
     ["Claro", "light"],
     ["Oscuro", "dark"],

@@ -16,28 +16,6 @@ describe("LocaleSwitcher", () => {
     replace.mockClear();
   });
 
-  it("renders an accessible trigger button", () => {
-    renderWithIntl(<LocaleSwitcher />);
-
-    expect(
-      screen.getByRole("button", { name: "Cambiar idioma" }),
-    ).toBeInTheDocument();
-  });
-
-  it("lists every locale by its own name and marks the active one", async () => {
-    const user = userEvent.setup();
-    renderWithIntl(<LocaleSwitcher />);
-
-    await user.click(screen.getByRole("button", { name: "Cambiar idioma" }));
-
-    expect(
-      await screen.findByRole("menuitemradio", { name: "Español" }),
-    ).toHaveAttribute("aria-checked", "true");
-    expect(
-      screen.getByRole("menuitemradio", { name: "English" }),
-    ).toHaveAttribute("aria-checked", "false");
-  });
-
   it("keeps the current page when switching locale", async () => {
     const user = userEvent.setup();
     renderWithIntl(<LocaleSwitcher />);

@@ -45,10 +45,25 @@ Cada dato vive en **un solo lugar**. Antes de escribir un valor, búscalo aquí;
 - Comentarios solo para el **porqué**, no para el qué.
 - Server Components por defecto; `"use client"` solo cuando haga falta (estado, efectos, eventos).
 
+### Qué testear (y qué no)
+
+Un test se escribe solo si protege **lógica o configuración nuestra** que podría romperse sin que nadie lo note.
+
+| ✅ Sí | ❌ No |
+| --- | --- |
+| Lógica propia: helpers, validaciones, condiciones (`parseLocale`, `pageAlternates`, `<Analytics />` solo con ID) | Librerías de terceros (`cn`, next-intl generando `/en/...`, `z.url()`) |
+| Esquemas de `src/env.ts` con formato especial | Lo que TypeScript ya garantiza (p. ej. `Record<Locale, …>`) |
+| Flujos de usuario en e2e: navegación, idioma, tema, 404 | Textos concretos traducidos (lo cubre la paridad de `messages/`) |
+| Regresiones de bugs reales (fuente Geist, aviso de `<script>`) | Componentes puramente de presentación sin lógica |
+| | Lo mismo en dos niveles: si hay unitario, no repetirlo en e2e |
+
+- **e2e: pocos y completos.** Cada test abre una página (es lo más lento): agrupa en un mismo test los pasos de un flujo.
+- **Unitarios junto al archivo** (`*.test.ts(x)`); `it.each` para variantes del mismo caso.
+
 ### Flujo de trabajo
 
 1. **Librerías:** instálalas con su CLI oficial y en su **última versión estable** (`npm view <pkg> dist-tags`). Después, adapta los archivos que generen. Respeta `minimumReleaseAge` de pnpm (24 h): nunca añadas excepciones para instalar algo recién publicado.
-2. **Tests con cada cambio:** unitarios junto al archivo (`*.test.ts(x)`) y e2e en `e2e/` para páginas y flujos.
+2. **Tests con cada cambio que lo merezca** (ver "Qué testear"): unitarios junto al archivo y e2e en `e2e/` para flujos.
 3. **Antes del commit:** `pnpm check` (lint, typecheck, knip, jscpd y tests unitarios). Si cambian páginas o rutas, ejecuta también `pnpm e2e`.
 4. **README:** actualiza el roadmap, la tabla de librerías, los scripts y la estructura.
 5. **Commits:** Conventional Commits (`feat:`, `fix:`, `docs:`…) 🔒 commitlint. El tipo decide la versión (release-please): `fix` → parche, `feat` → menor, `!`/`BREAKING CHANGE` → mayor. No edites la versión de `package.json` ni `CHANGELOG.md` a mano.
