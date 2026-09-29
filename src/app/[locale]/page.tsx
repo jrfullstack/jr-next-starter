@@ -83,7 +83,7 @@ export default function Home() {
           >
             {t("stackTitle")}
           </h2>
-          <p className="mt-3 text-muted-foreground text-pretty">
+          <p className="mt-3 text-pretty text-muted-foreground">
             {t("stackDescription")}
           </p>
         </div>

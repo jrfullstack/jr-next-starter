@@ -3,11 +3,26 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "explicit",
-    "source.organizeImports.biome": "explicit"
+    "source.organizeImports.biome": "explicit",
+    "source.fixAll.oxc": "explicit",
+    "source.fixAll.markdownlint": "explicit"
   },
-  "[json]": { "editor.defaultFormatter": "biomejs.biome" },
-  "[jsonc]": { "editor.defaultFormatter": "biomejs.biome" },
-  "[typescript]": { "editor.defaultFormatter": "biomejs.biome" },
-  "[typescriptreact]": { "editor.defaultFormatter": "biomejs.biome" },
-  "[css]": { "editor.defaultFormatter": "biomejs.biome" }
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[markdown]": {
+    "editor.formatOnSave": false
+  }
 }

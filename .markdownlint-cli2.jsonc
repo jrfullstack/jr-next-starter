@@ -1,0 +1,23 @@
+// Shared by markdownlint-cli2 (pnpm lint:md, pre-commit) and the markdownlint editor extension
+{
+  "config": {
+    "default": true,
+    // Prose and tables: long lines are fine
+    "MD013": false,
+    // HTML used on purpose (centered nav in README)
+    "MD033": { "allowed_elements": ["p", "a", "strong", "br", "img"] },
+    // Tables: pipes with spaces, not aligned (stable diffs)
+    "MD060": { "style": "compact" }
+  },
+  // Files checked by `markdownlint-cli2` with no arguments (pnpm lint:md)
+  "globs": ["**/*.md"],
+  "ignores": [
+    "node_modules/**",
+    ".next/**",
+    // Generated files
+    "CLAUDE.md",
+    "CHANGELOG.md",
+    "playwright-report/**",
+    "test-results/**"
+  ]
+}

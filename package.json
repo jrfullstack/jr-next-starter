@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check",
+    "lint": "biome check && pnpm lint:tw && pnpm lint:md",
     "format": "biome format --write",
-    "lint:fix": "biome check --write",
+    "lint:fix": "biome check --write && node scripts/oxlint-fix.mjs && markdownlint-cli2 --fix",
+    "lint:tw": "oxlint",
+    "lint:md": "markdownlint-cli2",
     "typecheck": "next typegen && tsc --noEmit",
     "knip": "knip",
     "dup": "jscpd",
@@ -62,11 +64,14 @@
     "@vitejs/plugin-react": "^6.1.1",
     "babel-plugin-react-compiler": "1.0.0",
     "dotenv": "^18.0.4",
+    "eslint-plugin-better-tailwindcss": "^4.7.0",
     "husky": "^9.1.7",
     "jscpd": "^5.3.3",
     "jsdom": "^30.1.1",
     "knip": "^6.38.0",
     "lint-staged": "^17.6.0",
+    "markdownlint-cli2": "^0.23.3",
+    "oxlint": "^1.86.0",
     "prisma": "7.10.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
@@ -77,8 +82,15 @@
     "node": ">=24"
   },
   "lint-staged": {
-    "*": [
+    "*.{ts,tsx,mts}": [
+      "node scripts/oxlint-fix.mjs",
+      "biome check --write --no-errors-on-unmatched"
+    ],
+    "*.{js,mjs,cjs,json,jsonc,css}": [
       "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
+    ],
+    "*.md": [
+      "markdownlint-cli2 --fix"
     ],
     "src/**/*.{ts,tsx}": [
       "vitest related --run"

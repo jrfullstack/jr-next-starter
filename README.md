@@ -40,6 +40,8 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🎭 Playwright - Tests end-to-end en navegador real
 - 💅 Biome - Linter y formatter con reglas estrictas de código limpio
 - 🧹 knip y jscpd - Detectan código sin usar y código duplicado
+- 🎨 Clases de Tailwind siempre en su forma moderna (canónica, v4), ordenadas y sin duplicados, corregidas automáticamente
+- 📝 Markdown sin avisos: markdownlint corrige los `.md` al guardar y en cada commit
 - 📐 Fuentes de verdad únicas y convenciones documentadas en [`AGENTS.md`](AGENTS.md)
 - 🤖 GitHub Actions - Lint, typecheck, tests unitarios, e2e y commits en cada PR
 - 🐶 Husky + lint-staged - Lint y formato de los archivos en stage antes de cada commit
@@ -129,6 +131,14 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] knip (código sin usar) y jscpd (duplicados, umbral 0 %) en `pnpm check` y en el CI
 - [x] Convenciones documentadas en `AGENTS.md`, para personas y agentes de IA
 
+### ✅ Fase 9 - Rendimiento, telemetría y autofix
+
+- [x] Vercel Speed Insights y Web Analytics, solo en Vercel (`VERCEL=1`)
+- [x] Telemetría de Next.js y Prisma desactivada y documentada
+- [x] Oxlint + `eslint-plugin-better-tailwindcss`: clases canónicas de Tailwind 4, ordenadas, sin duplicados ni obsoletas
+- [x] markdownlint con configuración compartida por el editor y el CLI
+- [x] Los arreglos automáticos se aplican al guardar (editor), con `pnpm lint:fix` y en cada commit
+
 ### 🧭 Fase avanzada
 
 - [ ] Autenticación
@@ -140,7 +150,7 @@ Versiones instaladas a fecha de la última actualización del README.
 ### Dependencias
 
 | Librería | Versión | Para qué se usa |
-|---|---|---|
+| --- | --- | --- |
 | `next` | 16.3.6 | Framework: rutas (App Router), renderizado en servidor, build y servidor |
 | `react` / `react-dom` | 19.3.0 | Librería de UI y renderizado en el DOM |
 | `@prisma/client` | 7.10.0 | Cliente tipado para consultar la base de datos (se genera en `src/generated/prisma`) |
@@ -163,7 +173,7 @@ Versiones instaladas a fecha de la última actualización del README.
 ### Dependencias de desarrollo
 
 | Librería | Versión | Para qué se usa |
-|---|---|---|
+| --- | --- | --- |
 | `typescript` | 7.0.2 | Tipado estático y comprobación de tipos |
 | `tailwindcss` | 4.3.3 | Framework de CSS basado en utilidades |
 | `@tailwindcss/postcss` | 4.3.3 | Integra Tailwind en el pipeline de CSS de Next.js |
@@ -175,6 +185,9 @@ Versiones instaladas a fecha de la última actualización del README.
 | `lint-staged` | 17.6.0 | Pasa Biome solo sobre los archivos en stage del commit |
 | `@commitlint/cli` | 21.2.3 | Valida que el mensaje de commit siga el formato convencional |
 | `@commitlint/config-conventional` | 21.2.3 | Reglas de Conventional Commits para commitlint |
+| `oxlint` | 1.86.0 | Linter en Rust; aquí solo ejecuta las reglas de clases de Tailwind |
+| `eslint-plugin-better-tailwindcss` | 4.7.0 | Reglas de Tailwind: clases canónicas (v4), orden, duplicados, obsoletas, desconocidas y conflictivas |
+| `markdownlint-cli2` | 0.23.3 | Lint y autofix de Markdown (misma configuración que la extensión del editor) |
 | `knip` | 6.38.0 | Detecta archivos, exports y dependencias que no se usan |
 | `jscpd` | 5.3.3 | Detecta bloques de código duplicado (copy-paste) |
 | `vitest` | 5.0.2 | Ejecutor de tests unitarios y de componentes (API compatible con Jest) |
@@ -212,6 +225,7 @@ pnpm install
 ```
 
 Al instalar se ejecutan automáticamente:
+
 - `prepare`: activa los hooks de git con Husky.
 - `postinstall`: genera el cliente de Prisma.
 
@@ -231,17 +245,19 @@ pnpm db:migrate
 pnpm dev
 ```
 
-y abre http://localhost:3000.
+y abre <http://localhost:3000>.
 
 ## 📜 Scripts
 
 | Script | Descripción |
-|---|---|
+| --- | --- |
 | `dev` | Servidor de desarrollo |
 | `build` | Build de producción |
 | `start` | Servidor de producción |
-| `lint` | Revisa lint y formato con Biome |
-| `lint:fix` | Corrige lint y formato automáticamente |
+| `lint` | Revisa todo: Biome (código y formato), clases de Tailwind y Markdown |
+| `lint:fix` | Corrige automáticamente todo lo que se pueda corregir |
+| `lint:tw` | Revisa solo las clases de Tailwind (Oxlint) |
+| `lint:md` | Revisa solo los archivos Markdown |
 | `format` | Formatea el código con Biome |
 | `typecheck` | Genera los tipos de rutas de Next (`next typegen`) y comprueba tipos con TypeScript |
 | `knip` | Busca código, exports, archivos y dependencias sin usar |
@@ -266,7 +282,9 @@ Las reglas completas están en [`AGENTS.md`](AGENTS.md), la fuente de verdad que
 - **Código limpio verificado automáticamente**: si no se cumple, fallan el commit o el CI.
 
 | Herramienta | Qué verifica |
-|---|---|
+| --- | --- |
+| Oxlint | Clases de Tailwind canónicas (v4), ordenadas, sin duplicados, obsoletas ni desconocidas |
+| markdownlint | Markdown consistente |
 | Biome | Reglas estrictas: exports con nombre, archivos en kebab-case, funciones ≤ 80 líneas y complejidad ≤ 15, sin `any`/`!`/`console`, sin textos fuera de `messages/`, sin `process.env` fuera de `src/env.ts`, navegación con idioma |
 | TypeScript | `strict` + `noUncheckedIndexedAccess`, `noImplicitReturns`, `noImplicitOverride` |
 | knip | Nada sin usar: archivos, exports, dependencias (excepciones justificadas en `knip.jsonc`) |
@@ -274,12 +292,26 @@ Las reglas completas están en [`AGENTS.md`](AGENTS.md), la fuente de verdad que
 
 Ejecuta `pnpm check` antes de cada commit.
 
+### Arreglos automáticos
+
+Lo que se puede corregir solo se corrige en tres momentos:
+
+| Cuándo | Cómo |
+| --- | --- |
+| **Al guardar** (VS Code, Windsurf, Cursor) | `.vscode/settings.json` ejecuta Biome, Oxlint y markdownlint. Instala las extensiones recomendadas |
+| **A mano** | `pnpm lint:fix` |
+| **En cada commit** | lint-staged corrige los archivos en stage e incluye los cambios |
+
+**Tailwind:** Oxlint con `eslint-plugin-better-tailwindcss` usa la API oficial de Tailwind 4 para convertir las clases a su forma canónica (la misma sugerencia que ves en Tailwind IntelliSense), ordenarlas y reemplazar las obsoletas. Ejemplo: `text-sm  border-t backdrop-blur !mt-4 h-[14px] w-[14px]` → `mt-4! size-[14px] border-t text-sm backdrop-blur-sm`. Como Oxlint aplica una sola corrección por cadena en cada pasada, `scripts/oxlint-fix.mjs` repite las pasadas hasta que no queda nada por corregir.
+
+**Markdown:** la configuración (`.markdownlint-cli2.jsonc`) la comparten el CLI y la extensión de markdownlint del editor, así que ambos muestran lo mismo.
+
 ## 🔑 Variables de entorno
 
 [`.env.example`](.env.example) es la documentación completa: cada variable tiene una ficha con qué es, si es obligatoria, su formato, dónde se obtiene y dónde se usa. Todas se validan al arrancar en [`src/env.ts`](src/env.ts) con T3-env.
 
 | Variable | Tipo | Obligatoria | Para qué |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `DATABASE_URL` | Servidor (secreta) | Sí | Conexión a PostgreSQL para Prisma |
 | `NEXT_PUBLIC_APP_URL` | Pública | Sí | URL del sitio, base de las URLs absolutas del SEO |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Pública | No | ID de Google Analytics 4 (`G-XXXXXXXXXX`). Si está vacía, Analytics no se carga |
@@ -316,7 +348,7 @@ Define `NEXT_PUBLIC_GA_MEASUREMENT_ID` con tu ID (`G-XXXXXXXXXX`) y el component
 
 Los textos viven en `messages/<idioma>.json`, agrupados por componente o página. `es.json` es la referencia de tipos: si usas una clave que no existe, TypeScript da error.
 
-**Usar un texto**
+### Usar un texto
 
 ```tsx
 // Server o Client Component
@@ -335,7 +367,7 @@ const t = await getTranslations("HomePage");
 
 **Añadir un texto:** agrégalo con la misma clave en todos los archivos de `messages/`. Un test comprueba que todos los idiomas tengan las mismas claves y que ninguna esté vacía.
 
-**Añadir un idioma**
+### Añadir un idioma
 
 1. Añade el código en `locales` de `src/i18n/routing.ts`.
 2. Crea `messages/<idioma>.json` con las mismas claves que `es.json`.
@@ -347,7 +379,7 @@ const t = await getTranslations("HomePage");
 Todas las URLs absolutas (canonical, `hreflang`, sitemap, Open Graph) se construyen con `NEXT_PUBLIC_APP_URL`. **En producción debe ser tu dominio real** (por ejemplo, `https://midominio.com`).
 
 | Qué | Dónde |
-|---|---|
+| --- | --- |
 | Metadata global (título, descripción, Open Graph) | `generateMetadata` de `src/app/[locale]/layout.tsx` |
 | Textos de la metadata | `Metadata` en `messages/*.json` |
 | Imagen Open Graph (1200×630, una por idioma) | `src/app/[locale]/opengraph-image.tsx` |
@@ -355,7 +387,7 @@ Todas las URLs absolutas (canonical, `hreflang`, sitemap, Open Graph) se constru
 | `robots.txt` | `src/app/robots.ts` |
 | Helpers: `absoluteUrl`, `pageAlternates`… | `src/lib/seo.ts` |
 
-**Al crear una página nueva**
+### Al crear una página nueva
 
 1. Exporta `generateMetadata` con su título y `alternates: pageAlternates("/ruta", locale)`, para que tenga su URL canónica y sus `hreflang`.
 2. Añade la ruta a `routes` en `src/app/sitemap.ts`.
@@ -375,7 +407,7 @@ export async function generateMetadata(): Promise<Metadata> {
 ## 🧪 Testing
 
 | Tipo | Herramienta | Dónde van | Para qué |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Unitarios y de componentes | Vitest + Testing Library | Junto al archivo que prueban: `button.tsx` → `button.test.tsx` | Funciones, hooks y componentes aislados. Rápidos. |
 | End-to-end | Playwright | Carpeta `e2e/` (`*.spec.ts`) | Flujos completos en un navegador real: páginas, navegación, formularios. |
 
@@ -397,11 +429,17 @@ pnpm e2e:ui        # e2e con interfaz visual
 
 Cada commit pasa por dos hooks de Husky:
 
-1. **`pre-commit`**: lint-staged ejecuta `biome check --write` sobre los archivos en stage (corrige lo que puede) y los tests de Vitest relacionados. Bloquea el commit si queda algún error o falla algún test.
+1. **`pre-commit`**: lint-staged corrige automáticamente los archivos en stage (las correcciones se incluyen en el commit):
+   - `.ts`/`.tsx`: clases de Tailwind a su forma moderna y ordenadas (Oxlint) y lint/formato (Biome).
+   - `.md`: markdownlint.
+   - `.json`/`.css`: Biome.
+   - Tests de Vitest relacionados con los archivos cambiados.
+
+   Si queda algo que no se puede corregir solo (por ejemplo, una clase de Tailwind que no existe) o falla un test, el commit se bloquea.
 2. **`commit-msg`**: commitlint exige el formato [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/): `tipo: descripción`.
 
 | Tipo | Cuándo usarlo |
-|---|---|
+| --- | --- |
 | `feat` | Nueva funcionalidad |
 | `fix` | Corrección de un bug |
 | `docs` | Solo documentación |
@@ -417,7 +455,7 @@ Ejemplo: `feat: add dark mode toggle`
 `.github/workflows/ci.yml` se ejecuta en cada push a `main` y en cada pull request:
 
 | Job | Qué hace |
-|---|---|
+| --- | --- |
 | **Lint, typecheck, dead code, duplicates & unit tests** | `pnpm lint`, `pnpm typecheck`, `pnpm knip`, `pnpm dup` y `pnpm test` |
 | **E2E tests** | Instala Chromium y ejecuta `pnpm e2e` contra el build de producción. Si falla, sube `playwright-report` como artefacto (7 días). |
 | **Commit messages** | Solo en PRs: valida con commitlint todos los commits del PR |
@@ -473,12 +511,16 @@ Ejemplo: `feat: add dark mode toggle`
 │   ├── global.ts                   # Tipos de next-intl (idiomas y claves de mensajes)
 │   ├── proxy.ts                    # Redirección por idioma (antes middleware.ts)
 │   └── **/*.test.ts(x)             # Tests unitarios junto a su archivo
+├── scripts
+│   └── oxlint-fix.mjs              # Repite `oxlint --fix` hasta que no quede nada corregible
 ├── .jscpd.json                     # Configuración de detección de duplicados
+├── .markdownlint-cli2.jsonc        # Reglas de Markdown (CLI y extensión del editor)
 ├── AGENTS.md                       # Convenciones del proyecto (personas y agentes de IA)
 ├── biome.json                      # Configuración de Biome (reglas estrictas)
 ├── commitlint.config.mjs           # Configuración de commitlint
 ├── components.json                 # Configuración de shadcn/ui
 ├── knip.jsonc                      # Configuración de knip (excepciones justificadas)
+├── oxlint.config.mts               # Reglas de clases de Tailwind
 ├── playwright.config.ts            # Configuración de Playwright
 ├── prisma.config.ts                # Configuración del CLI de Prisma
 ├── pnpm-workspace.yaml             # Políticas de pnpm (builds permitidos, overrides)
@@ -493,7 +535,8 @@ Ejemplo: `feat: add dark mode toggle`
 - **Prisma fijado en `7.10.0`.** En npm, el `latest` de `prisma` apunta a `8.0.0-rc`, una release candidate que no coincide con `@prisma/client` 7.x. Por eso `pnpm outdated` lo muestra a propósito.
 - **`minimumReleaseAge`.** pnpm 12 rechaza por defecto paquetes publicados hace menos de 24 h. Si falla la instalación por esto, ejecuta `pnpm clean --lockfile && pnpm install`.
 - **Builds aprobados.** Solo los paquetes listados en `allowBuilds` de `pnpm-workspace.yaml` pueden ejecutar scripts de instalación (`pnpm approve-builds`). Los denegados (`sharp`, `@swc/core`, `@parcel/watcher`…) ya traen sus binarios precompilados y no los necesitan.
-- **Overrides.** Hay `overrides` en `pnpm-workspace.yaml` que corrigen vulnerabilidades en dependencias del CLI de Prisma. Se pueden quitar cuando Prisma las actualice (`pnpm audit`).
+- **Overrides.** Hay `overrides` en `pnpm-workspace.yaml` que corrigen vulnerabilidades en dependencias del CLI de Prisma y un conflicto de versiones de `valibot`. Se pueden quitar cuando Prisma las actualice (`pnpm audit`, `pnpm peers check`).
+- **Nunca añadas excepciones a `minimumReleaseAge`** (`minimumReleaseAgeExclude`) para instalar una versión recién publicada: espera 24 h.
 
 ## 🤝 Contribución
 
