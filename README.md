@@ -9,6 +9,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
   <a href="#-primeros-pasos"><strong>Primeros pasos</strong></a> ·
   <a href="#-scripts"><strong>Scripts</strong></a> ·
   <a href="#-internacionalización"><strong>i18n</strong></a> ·
+  <a href="#️-seo"><strong>SEO</strong></a> ·
   <a href="#-testing"><strong>Testing</strong></a> ·
   <a href="#-commits"><strong>Commits</strong></a> ·
   <a href="#-estructura-del-proyecto"><strong>Estructura</strong></a> ·
@@ -28,6 +29,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - ⚙️ T3-env - Variables de entorno tipadas y validadas al arrancar
 - 🌑 Dark mode con `next-themes` (claro / oscuro / sistema)
 - 🌐 i18n con `next-intl` - Español e inglés con rutas `/es` y `/en`
+- 🗺️ SEO - Metadata, Open Graph generada por idioma, `sitemap.xml`, `robots.txt` y `hreflang`
 - 🧪 Vitest + React Testing Library - Tests unitarios y de componentes
 - 🎭 Playwright - Tests end-to-end en navegador real
 - 💅 Biome - Linter y formatter ultrarrápido
@@ -81,9 +83,17 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [x] `ModeToggle` y página demo traducidos
 - [x] Tests: paridad de claves entre idiomas, componentes y rutas e2e
 
+### ✅ Fase 5 - SEO
+
+- [x] Metadata global traducida (título con plantilla `%s | JR Next Starter`, descripción)
+- [x] URL canónica y `hreflang` (incluido `x-default`) en cada página
+- [x] Open Graph y Twitter/X card, con imagen generada por código para cada idioma
+- [x] `sitemap.xml` con las versiones de cada idioma y `robots.txt`
+- [x] `NEXT_PUBLIC_APP_URL` validada con T3-env como base de todas las URLs absolutas
+- [x] Tests unitarios del helper SEO, sitemap y robots, y e2e de lo que sirve el servidor
+
 ### 🔜 Próximas fases
 
-- [ ] **Fase 5 - SEO:** metadata, Open Graph, `sitemap.xml`, `robots.txt` y `hreflang` por idioma
 - [ ] **Fase 6 - Página de inicio propia** (reemplazar la demo de Next.js) y página 404 traducida
 - [ ] **Fase 7 - GitHub Actions:** lint, typecheck y tests en cada PR
 
@@ -150,6 +160,8 @@ Versiones instaladas a fecha de la última actualización del README.
 git clone <url-del-repositorio> mi-proyecto
 ```
 
+> **Editor:** instala las extensiones recomendadas (Biome y Tailwind CSS IntelliSense). `.vscode/settings.json` configura Biome para formatear al guardar. Si tu editor usa Prettier, desactívalo en este proyecto: los dos formateadores chocan.
+
 ### 2. Activa la versión de Node
 
 ```bash
@@ -168,7 +180,10 @@ Al instalar se ejecutan automáticamente:
 
 ### 4. Configura las variables de entorno
 
-Crea un archivo `.env` a partir de `.env.example` y define `DATABASE_URL` con la conexión a tu PostgreSQL.
+Crea un archivo `.env` a partir de `.env.example` y define:
+
+- `DATABASE_URL`: la conexión a tu PostgreSQL.
+- `NEXT_PUBLIC_APP_URL`: la URL pública del sitio (`http://localhost:3000` en local).
 
 Las variables se validan con T3-env en [`src/env.ts`](src/env.ts): si falta alguna o tiene un formato incorrecto, `pnpm dev` y `pnpm build` se detienen con un error que indica cuál. Para añadir una variable nueva, sigue las instrucciones comentadas en ese archivo.
 
@@ -236,6 +251,37 @@ const t = await getTranslations("HomePage");
 1. Añade el código en `locales` de `src/i18n/routing.ts`.
 2. Crea `messages/<idioma>.json` con las mismas claves que `es.json`.
 3. Añade su nombre en `LocaleSwitcher.locale` de cada archivo de mensajes.
+4. Añade su código de Open Graph en `ogLocales` de `src/lib/seo.ts` (TypeScript te avisa si falta).
+
+## 🗺️ SEO
+
+Todas las URLs absolutas (canonical, `hreflang`, sitemap, Open Graph) se construyen con `NEXT_PUBLIC_APP_URL`. **En producción debe ser tu dominio real** (por ejemplo, `https://midominio.com`).
+
+| Qué | Dónde |
+|---|---|
+| Metadata global (título, descripción, Open Graph) | `generateMetadata` de `src/app/[locale]/layout.tsx` |
+| Textos de la metadata | `Metadata` en `messages/*.json` |
+| Imagen Open Graph (1200×630, una por idioma) | `src/app/[locale]/opengraph-image.tsx` |
+| `sitemap.xml` | `src/app/sitemap.ts` |
+| `robots.txt` | `src/app/robots.ts` |
+| Helpers: `absoluteUrl`, `pageAlternates`… | `src/lib/seo.ts` |
+
+**Al crear una página nueva**
+
+1. Exporta `generateMetadata` con su título y `alternates: pageAlternates("/ruta", locale)`, para que tenga su URL canónica y sus `hreflang`.
+2. Añade la ruta a `routes` en `src/app/sitemap.ts`.
+
+```tsx
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations("AboutPage");
+
+  return {
+    title: t("title"), // se muestra como "Título | JR Next Starter"
+    alternates: pageAlternates("/about", locale),
+  };
+}
+```
 
 ## 🧪 Testing
 
@@ -282,6 +328,7 @@ Ejemplo: `feat: add dark mode toggle`
 ```bash
 .
 ├── .husky                          # Hooks de git (pre-commit, commit-msg)
+├── .vscode                         # Biome como formateador por defecto y extensiones recomendadas
 ├── e2e                             # Tests end-to-end de Playwright (*.spec.ts)
 ├── messages                        # Traducciones por idioma (es.json, en.json)
 ├── prisma
@@ -289,8 +336,10 @@ Ejemplo: `feat: add dark mode toggle`
 ├── public                          # Archivos estáticos
 ├── src
 │   ├── app
-│   │   ├── [locale]                # Layout raíz y páginas, una versión por idioma
-│   │   └── globals.css             # Estilos globales y tema de Tailwind
+│   │   ├── [locale]                # Layout raíz, páginas e imagen Open Graph, por idioma
+│   │   ├── globals.css             # Estilos globales y tema de Tailwind
+│   │   ├── robots.ts               # robots.txt
+│   │   └── sitemap.ts              # sitemap.xml
 │   ├── components
 │   │   ├── ui                      # Componentes de shadcn/ui
 │   │   ├── locale-switcher.tsx     # Selector de idioma
@@ -303,6 +352,7 @@ Ejemplo: `feat: add dark mode toggle`
 │   │   └── routing.ts              # Idiomas soportados e idioma por defecto
 │   ├── lib
 │   │   ├── db.ts                   # Cliente de Prisma singleton
+│   │   ├── seo.ts                  # URLs absolutas, canonical y hreflang
 │   │   └── utils.ts                # Utilidades (cn)
 │   ├── test
 │   │   └── render.tsx              # renderWithIntl para tests de componentes

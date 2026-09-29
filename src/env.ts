@@ -48,11 +48,13 @@ export const env = createEnv({
    * CLIENTE: variables públicas que viajan al navegador.
    * Next.js obliga a que empiecen por `NEXT_PUBLIC_`, y T3-env lo comprueba.
    * ⚠️ Nunca pongas aquí claves secretas: cualquiera puede verlas.
-   *
-   * Ejemplo:
-   *   NEXT_PUBLIC_APP_URL: z.url(),
    */
-  client: {},
+  client: {
+    // URL pública del sitio, sin "/" final. Se usa para las URLs absolutas
+    // del SEO: canonical, sitemap.xml, robots.txt y Open Graph.
+    // En local: http://localhost:3000 · En producción: https://tu-dominio.com
+    NEXT_PUBLIC_APP_URL: z.url(),
+  },
 
   /**
    * COMPARTIDAS: disponibles en servidor y cliente sin prefijo.
@@ -68,12 +70,10 @@ export const env = createEnv({
    * al compilar, pero solo si aparecen escritas literalmente
    * (`process.env.NEXT_PUBLIC_X`). Por eso hay que listar aquí las de
    * `client`. Las de `server` se leen solas de `process.env`.
-   *
-   * Ejemplo:
-   *   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
    */
   experimental__runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
 
   /**

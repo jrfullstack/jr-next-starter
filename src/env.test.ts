@@ -30,6 +30,13 @@ describe("env", () => {
     await expect(loadEnv()).rejects.toThrow("Invalid environment variables");
   });
 
+  it("fails when NEXT_PUBLIC_APP_URL is not a URL", async () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "example.com");
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(loadEnv()).rejects.toThrow("Invalid environment variables");
+  });
+
   it("treats an empty DATABASE_URL as missing", async () => {
     vi.stubEnv("DATABASE_URL", "");
     vi.spyOn(console, "error").mockImplementation(() => {});

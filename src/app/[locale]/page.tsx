@@ -1,7 +1,18 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
+import { pageAlternates } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+
+  return {
+    alternates: pageAlternates("/", locale),
+  };
+}
 
 export default function Home() {
   const t = useTranslations("HomePage");
