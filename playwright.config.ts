@@ -26,7 +26,11 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   /* On CI: annotate failures in the PR and keep the HTML report as an artifact */
-  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "html",
+  reporter: process.env.CI
+    ? [["list"], ["github"], ["html", { open: "never" }]]
+    : "html",
+  /* On CI, stop before the job timeout (20 min) so failures are still reported */
+  globalTimeout: process.env.CI ? 12 * 60_000 : undefined,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
@@ -74,9 +78,9 @@ export default defineConfig({
     // },
   ],
 
-  /* Locally reuse `pnpm dev` if running; on CI test the production build */
+  /* Locally reuse `pnpm dev` if running; on CI serve the production build made by the Build step */
   webServer: {
-    command: process.env.CI ? "pnpm build && pnpm start" : "pnpm dev",
+    command: process.env.CI ? "pnpm start" : "pnpm dev",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },

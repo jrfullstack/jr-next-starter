@@ -56,12 +56,15 @@ jobs:
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
-      # CI=true (set by GitHub) makes Playwright build and start the production app
+      - name: Build
+        run: pnpm build
+
+      # CI=true (set by GitHub) makes Playwright start the production build
       - name: E2E tests
         run: pnpm e2e
 
       - name: Upload Playwright report
-        if: failure()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: playwright-report

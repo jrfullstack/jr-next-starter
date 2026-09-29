@@ -440,9 +440,9 @@ pnpm e2e:ui        # e2e con interfaz visual
 ```
 
 - La primera vez, descarga el navegador de Playwright con `pnpm exec playwright install chromium`.
-- Si ya tienes `pnpm dev` corriendo, Playwright lo reutiliza (Next 16 no permite dos `next dev` en la misma carpeta). Para probar el build de producción en otro puerto: `CI=1 PORT=3100 pnpm e2e`.
+- Si ya tienes `pnpm dev` corriendo, Playwright lo reutiliza (Next 16 no permite dos `next dev` en la misma carpeta).
 - Para renderizar componentes que usan traducciones, usa `renderWithIntl` de `@/test/render`: carga los mensajes reales.
-- Con `CI=1`, Playwright prueba el build de producción (`pnpm build && pnpm start`).
+- Con `CI=1`, Playwright prueba el build de producción con `pnpm start`, así que antes hay que ejecutar `pnpm build`: `pnpm build && CI=1 PORT=3100 pnpm e2e`.
 - **Limitación:** Vitest no puede renderizar Server Components `async`. Esos se prueban con Playwright.
 - En cada commit, lint-staged ejecuta `vitest related --run`: solo los tests afectados por los archivos que cambiaste.
 
@@ -478,7 +478,7 @@ Ejemplo: `feat: add dark mode toggle`
 | Job | Qué hace |
 | --- | --- |
 | **Lint, typecheck, dead code, duplicates & unit tests** | `pnpm lint`, `pnpm typecheck`, `pnpm knip`, `pnpm dup` y `pnpm test` |
-| **E2E tests** | Instala Chromium y ejecuta `pnpm e2e` contra el build de producción. Si falla, sube `playwright-report` como artefacto (7 días). |
+| **E2E tests** | Instala Chromium, compila (`pnpm build`) y ejecuta `pnpm e2e` contra el build de producción. Sube `playwright-report` como artefacto (7 días). |
 | **Commit messages** | Solo en PRs: valida con commitlint todos los commits del PR |
 
 - Usa valores de ejemplo para `DATABASE_URL` y `NEXT_PUBLIC_APP_URL` (y no define `NEXT_PUBLIC_GA_MEASUREMENT_ID`), para que pase la validación de T3-env. Ningún job se conecta a una base de datos. Si en el futuro necesitas secretos reales, añádelos en **Settings → Secrets and variables → Actions**.
