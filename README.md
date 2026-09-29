@@ -231,7 +231,7 @@ Elige una de estas tres formas:
 
 Después, en tu proyecto: cambia `name` y `author` en `src/config/site.ts`, `name` en `package.json` y la versión en `package.json` y `.release-please-manifest.json` (por ejemplo, `0.1.0`).
 
-> **Editor:** instala las extensiones recomendadas (Biome y Tailwind CSS IntelliSense). `.vscode/settings.json` configura Biome para formatear al guardar. Si tu editor usa Prettier, desactívalo en este proyecto: los dos formateadores chocan.
+> **Editor:** instala las extensiones recomendadas (Biome y Tailwind CSS IntelliSense). `.vscode/settings.json` configura Biome para formatear al guardar. Prettier queda desactivado en este proyecto (`prettier.enable: false`) para que no choque con Biome.
 
 ### 2. Activa la versión de Node
 
