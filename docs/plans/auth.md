@@ -1,6 +1,6 @@
 # Plan: autenticación y panel de administración
 
-> Estado: **propuesta en revisión**. No se escribe código de autenticación hasta aprobar este plan.
+> Estado: **aprobado**. Paso 1 (Base) hecho; el resto, pendiente.
 
 ## 1. Objetivo
 

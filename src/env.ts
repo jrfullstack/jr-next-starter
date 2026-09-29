@@ -54,6 +54,14 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
 
     /**
+     * BETTER_AUTH_SECRET · obligatoria
+     * Clave con la que Better Auth firma y cifra sesiones y tokens.
+     * Mínimo 32 caracteres aleatorios. Si cambia, se cierran todas las sesiones.
+     * Generar: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+     */
+    BETTER_AUTH_SECRET: z.string().min(32),
+
+    /**
      * VERCEL · la define Vercel automáticamente (no la pongas en `.env`)
      * Vale "1" en los builds y servidores de Vercel. Activa Speed Insights
      * y Web Analytics de Vercel (`<VercelInsights />`); fuera de Vercel no

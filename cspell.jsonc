@@ -12,6 +12,7 @@
     "pnpm-workspace.yaml",
     // Generated
     "CHANGELOG.md",
+    "prisma/migrations/**",
     "src/generated/**",
     "src/components/ui/**"
   ],
@@ -44,6 +45,7 @@
     "hreflang",
     "indexables",
     "instálalas",
+    "isready",
     "knip",
     "memoiza",
     "menuitemradio",
@@ -52,6 +54,7 @@
     "nvmrc",
     "Opengraph",
     "opengraph",
+    "postgres",
     "postgresql",
     "precompilados",
     "prerenders",
