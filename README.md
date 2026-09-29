@@ -43,6 +43,8 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🧹 knip y jscpd - Detectan código sin usar y código duplicado
 - 🎨 Clases de Tailwind siempre en su forma moderna (canónica, v4), ordenadas y sin duplicados, corregidas automáticamente
 - 📝 Markdown sin avisos: markdownlint corrige los `.md` al guardar y en cada commit
+- 🔤 Ortografía en español e inglés revisada con cspell (editor, commit y CI)
+- 🚦 Hook pre-push: `pnpm check` antes de cada push
 - 📐 Fuentes de verdad únicas y convenciones documentadas en [`AGENTS.md`](AGENTS.md)
 - 🤖 GitHub Actions - Lint, typecheck, tests unitarios, e2e y commits en cada PR
 - 🚀 Versionado semántico automático con release-please: CHANGELOG, tags y GitHub Releases
@@ -189,12 +191,14 @@ Versiones instaladas a fecha de la última actualización del README.
 | `babel-plugin-react-compiler` | 1.0.0 | React Compiler: memoiza componentes automáticamente |
 | `prisma` | 7.10.0 | CLI de Prisma: migraciones, generación del cliente y Prisma Studio |
 | `dotenv` | 18.0.4 | Carga `.env` en `prisma.config.ts` |
-| `husky` | 9.1.7 | Ejecuta scripts en los hooks de git (`pre-commit`, `commit-msg`) |
+| `husky` | 9.1.7 | Ejecuta scripts en los hooks de git (`pre-commit`, `commit-msg`, `pre-push`) |
 | `lint-staged` | 17.6.0 | Pasa Biome solo sobre los archivos en stage del commit |
 | `@commitlint/cli` | 21.2.3 | Valida que el mensaje de commit siga el formato convencional |
 | `@commitlint/config-conventional` | 21.2.3 | Reglas de Conventional Commits para commitlint |
 | `oxlint` | 1.86.0 | Linter en Rust; aquí solo ejecuta las reglas de clases de Tailwind |
 | `eslint-plugin-better-tailwindcss` | 4.7.0 | Reglas de Tailwind: clases canónicas (v4), orden, duplicados, obsoletas, desconocidas y conflictivas |
+| `cspell` | 10.3.5 | Corrector ortográfico de código y documentación (mismo motor que la extensión Code Spell Checker) |
+| `@cspell/dict-es-es` | 3.0.8 | Diccionario de español para cspell |
 | `markdownlint-cli2` | 0.23.3 | Lint y autofix de Markdown (misma configuración que la extensión del editor) |
 | `knip` | 6.38.0 | Detecta archivos, exports y dependencias que no se usan |
 | `jscpd` | 5.3.3 | Detecta bloques de código duplicado (copy-paste) |
@@ -275,10 +279,11 @@ y abre <http://localhost:3000>.
 | `dev` | Servidor de desarrollo |
 | `build` | Build de producción |
 | `start` | Servidor de producción |
-| `lint` | Revisa todo: Biome (código y formato), clases de Tailwind y Markdown |
+| `lint` | Revisa todo: Biome (código y formato), clases de Tailwind, Markdown y ortografía |
 | `lint:fix` | Corrige automáticamente todo lo que se pueda corregir |
 | `lint:tw` | Revisa solo las clases de Tailwind (Oxlint) |
 | `lint:md` | Revisa solo los archivos Markdown |
+| `lint:spell` | Revisa la ortografía (español e inglés) con cspell |
 | `format` | Formatea el código con Biome |
 | `typecheck` | Genera los tipos de rutas de Next (`next typegen`) y comprueba tipos con TypeScript |
 | `knip` | Busca código, exports, archivos y dependencias sin usar |
@@ -306,6 +311,7 @@ Las reglas completas están en [`AGENTS.md`](AGENTS.md), la fuente de verdad que
 | --- | --- |
 | Oxlint | Clases de Tailwind canónicas (v4), ordenadas, sin duplicados, obsoletas ni desconocidas |
 | markdownlint | Markdown consistente |
+| cspell | Ortografía en español e inglés |
 | Biome | Reglas estrictas: exports con nombre, archivos en kebab-case, funciones ≤ 80 líneas y complejidad ≤ 15, sin `any`/`!`/`console`, sin textos fuera de `messages/`, sin `process.env` fuera de `src/env.ts`, navegación con idioma |
 | TypeScript | `strict` + `noUncheckedIndexedAccess`, `noImplicitReturns`, `noImplicitOverride` |
 | knip | Nada sin usar: archivos, exports, dependencias (excepciones justificadas en `knip.jsonc`) |
@@ -449,7 +455,7 @@ pnpm e2e:ui        # e2e con interfaz visual
 
 ## 📝 Commits
 
-Cada commit pasa por dos hooks de Husky:
+Husky ejecuta tres hooks de git:
 
 1. **`pre-commit`**: lint-staged corrige automáticamente los archivos en stage (las correcciones se incluyen en el commit):
    - `.ts`/`.tsx`: clases de Tailwind a su forma moderna y ordenadas (Oxlint) y lint/formato (Biome).
@@ -459,6 +465,7 @@ Cada commit pasa por dos hooks de Husky:
 
    Si queda algo que no se puede corregir solo (por ejemplo, una clase de Tailwind que no existe) o falla un test, el commit se bloquea.
 2. **`commit-msg`**: commitlint exige el formato [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/): `tipo: descripción`.
+3. **`pre-push`**: ejecuta `pnpm check` (lint, typecheck, knip, jscpd y tests unitarios) antes de subir nada. Así no llega a GitHub un commit que el CI vaya a rechazar. En caso de urgencia, `git push --no-verify` lo salta.
 
 | Tipo | Cuándo usarlo |
 | --- | --- |
@@ -471,6 +478,12 @@ Cada commit pasa por dos hooks de Husky:
 | `chore` | Mantenimiento, dependencias, configuración |
 
 Ejemplo: `feat: add dark mode toggle`
+
+### Ortografía
+
+cspell revisa el código y la documentación en **español e inglés** (`cspell.jsonc`). Lo usan tanto el CLI (`pnpm lint:spell`, pre-commit y CI) como la extensión **Code Spell Checker** del editor, así que ambos muestran lo mismo.
+
+Si marca una palabra correcta (un nombre de librería, un término técnico), añádela a `words` en `cspell.jsonc`, en orden alfabético. En el editor también puedes usar la acción rápida *Add to workspace settings* sobre la palabra.
 
 ## 🤖 CI
 
@@ -540,7 +553,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   └── workflows
 │       ├── ci.yml                  # Pipeline de CI (en cada push a main y PR)
 │       └── release.yml             # release-please: PR de release, tags y GitHub Releases
-├── .husky                          # Hooks de git (pre-commit, commit-msg)
+├── .husky                          # Hooks de git (pre-commit, commit-msg, pre-push)
 ├── .vscode                         # Biome como formateador por defecto y extensiones recomendadas
 ├── e2e                             # Tests end-to-end de Playwright (*.spec.ts)
 ├── messages                        # Traducciones por idioma (es.json, en.json)
@@ -590,6 +603,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 ├── biome.json                      # Configuración de Biome (reglas estrictas)
 ├── commitlint.config.mjs           # Configuración de commitlint
 ├── components.json                 # Configuración de shadcn/ui
+├── cspell.jsonc                    # Idiomas y vocabulario del corrector ortográfico
 ├── knip.jsonc                      # Configuración de knip (excepciones justificadas)
 ├── oxlint.config.mts               # Reglas de clases de Tailwind
 ├── playwright.config.ts            # Configuración de Playwright

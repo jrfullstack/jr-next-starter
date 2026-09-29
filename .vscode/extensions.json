@@ -3,6 +3,7 @@
     "biomejs.biome",
     "oxc.oxc-vscode",
     "bradlc.vscode-tailwindcss",
-    "davidanson.vscode-markdownlint"
+    "davidanson.vscode-markdownlint",
+    "streetsidesoftware.code-spell-checker"
   ]
 }

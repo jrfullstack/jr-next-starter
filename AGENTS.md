@@ -39,6 +39,7 @@ Cada dato vive en **un solo lugar**. Antes de escribir un valor, búscalo aquí;
 - 🔒 **Sin código duplicado** (jscpd, umbral 0 %). Si copias un bloque, extráelo a una función compartida.
 - 🔒 **Sin barrel files** (`index.ts` que solo reexporta): importa desde el archivo real.
 - 🔒 **Clases de Tailwind en su forma canónica (v4)**, ordenadas, sin duplicados ni obsoletas (Oxlint + `eslint-plugin-better-tailwindcss`). Se corrigen solas con `pnpm lint:fix` y en el commit.
+- 🔒 **Ortografía correcta en español e inglés** (cspell). Los términos técnicos válidos se añaden a `words` en `cspell.jsonc`, en orden alfabético.
 - 🔒 **Markdown sin avisos** (markdownlint). Se corrige solo con `pnpm lint:fix` y en el commit.
 - 🔒 **TypeScript estricto**: `strict`, `noUncheckedIndexedAccess`, `noImplicitReturns`, `noImplicitOverride`.
 - Nombres que expliquen la intención; evita abreviaturas.
@@ -64,6 +65,6 @@ Un test se escribe solo si protege **lógica o configuración nuestra** que podr
 
 1. **Librerías:** instálalas con su CLI oficial y en su **última versión estable** (`npm view <pkg> dist-tags`). Después, adapta los archivos que generen. Respeta `minimumReleaseAge` de pnpm (24 h): nunca añadas excepciones para instalar algo recién publicado.
 2. **Tests con cada cambio que lo merezca** (ver "Qué testear"): unitarios junto al archivo y e2e en `e2e/` para flujos.
-3. **Antes del commit:** `pnpm check` (lint, typecheck, knip, jscpd y tests unitarios). Si cambian páginas o rutas, ejecuta también `pnpm e2e`.
+3. **Antes del commit:** `pnpm check` (el hook pre-push lo ejecuta de todos modos) (lint, typecheck, knip, jscpd y tests unitarios). Si cambian páginas o rutas, ejecuta también `pnpm e2e`.
 4. **README:** actualiza el roadmap, la tabla de librerías, los scripts y la estructura.
 5. **Commits:** Conventional Commits (`feat:`, `fix:`, `docs:`…) 🔒 commitlint. El tipo decide la versión (release-please): `fix` → parche, `feat` → menor, `!`/`BREAKING CHANGE` → mayor. No edites la versión de `package.json` ni `CHANGELOG.md` a mano.
