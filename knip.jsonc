@@ -5,7 +5,9 @@
     // Type augmentation for next-intl, picked up implicitly by TypeScript
     "src/global.ts",
     // Prisma client, ready for the first query
-    "src/lib/db.ts"
+    "src/lib/db.ts",
+    // shadcn alias (components.json "utils"): registry components import cn from here
+    "src/lib/utils.ts"
   ],
   "ignoreDependencies": [
     // Imported by the generated client in src/generated/prisma (gitignored)
