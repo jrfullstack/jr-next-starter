@@ -50,6 +50,21 @@ test.describe("i18n routing", () => {
     ).toBeVisible();
   });
 
+  // next-themes renders an inline <script>; React warns when the root layout remounts on locale change
+  test("switching language logs no console errors", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+    await page.goto("/es");
+
+    await page.getByRole("button", { name: "Cambiar idioma" }).click();
+    await page.getByRole("menuitemradio", { name: "English" }).click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+
+    expect(errors).toEqual([]);
+  });
+
   test("returns 404 for an unsupported locale", async ({ page }) => {
     const response = await page.goto("/fr");
 
