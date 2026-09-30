@@ -1,6 +1,6 @@
 # Plan: autenticación y panel de administración
 
-> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios) y 4 (Sistema) hechos; el resto, pendiente.
+> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios), 4 (Sistema) y 5 (Magic link) hechos; el resto, pendiente.
 
 ## 1. Objetivo
 
@@ -176,7 +176,43 @@ Cada paso deja la app funcionando, con sus tests, y actualiza el README (roadmap
 - **Unitarios**: esquema de la política (defaults, límites), salvaguardas (función pura: política nueva + usuarios afectados → errores), mapa ruta de la API → método/acción del hook.
 - **E2E** (serie, restaurando la política al terminar): el `superadmin` cierra los registros → `/sign-up` muestra el aviso y la API lo rechaza → aparece en el historial → los vuelve a abrir; un `admin` recibe 404 en `/admin/system`. El `superadmin` de los e2e usa un email de `SUPER_ADMIN_EMAILS` (en CI, `dev@example.com`).
 
-## 14. Fuera de alcance
+## 14. Paso 5 en detalle: Magic link
+
+> Estado: **hecho**. El login usa un solo formulario (un campo de email) con dos botones, para no duplicar el campo.
+
+### Política (sin migración)
+
+Nueva tarjeta **Magic link** en Sistema; los campos nuevos entran con su valor por defecto:
+
+| Opción | Por defecto |
+| --- | --- |
+| Acceso (entrar con un enlace por email) | Activado |
+| Registro automático (un email desconocido crea la cuenta) | Desactivado |
+| Caducidad del enlace | 5 minutos (entre 1 y 60) |
+
+- Better Auth lo aplica de forma nativa: `magicLink({ disableSignUp, expiresIn })` sale de la política, como email + contraseña.
+- El hook rechaza `/sign-in/magic-link` y `/magic-link/verify` con el acceso desactivado (un enlace ya enviado deja de valer).
+- Entrar con el enlace **verifica el email** (lo hace Better Auth): el enlace llegó a esa bandeja.
+
+### Salvaguardas, ahora con dos métodos
+
+- El magic link sirve a **cualquier cuenta** (solo hace falta el email), así que cuenta como método de **acceso y de recuperación** para todos.
+- Consecuencia: con el magic link activo, ya **se puede desactivar el acceso con contraseña**. Los afectados entran con el enlace y siguen pudiendo fijar contraseña si se reactiva.
+- El diálogo de confirmación cuenta los usuarios que se quedarían **sin ningún** método con la configuración nueva (no solo "los que usan este método").
+
+### Interfaz
+
+- **Login**: si el magic link está activo, debajo del formulario aparece "o" y un formulario "Enviar enlace de acceso" (solo email) que confirma "Revisa tu email". Si el acceso con contraseña está desactivado, solo se muestra el del enlace.
+- **Registro**: si el registro con contraseña está cerrado pero el registro automático por enlace está abierto, `/sign-up` muestra el formulario del enlace con nombre + email.
+- **Enlace caducado o usado**: vuelve al login con un aviso traducido para pedir otro.
+- **Email** con React Email (es/en), como los de verificación y recuperación; en local, a la bandeja de desarrollo.
+
+### Tests del magic link
+
+- **Unitarios**: salvaguardas con dos métodos (la contraseña se puede desactivar si el enlace está activo, nunca los dos), conteo de afectados, rutas del hook.
+- **E2E**: entrar con el enlace leído de la bandeja de desarrollo; el superadmin desactiva el acceso con contraseña → el login con contraseña lo rechaza con su mensaje y el enlace sigue funcionando → lo reactiva.
+
+## 15. Fuera de alcance
 
 - Suplantar usuarios (fase posterior, solo `superadmin`, con aviso visible, salida y registro).
 - Otros proveedores OAuth (GitHub, Microsoft, Apple…): la arquitectura los admite, se añadirán cuando hagan falta.

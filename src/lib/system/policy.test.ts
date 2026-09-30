@@ -7,22 +7,30 @@ import {
   parseAuthPolicy,
   policyChanges,
   policyViolations,
+  usersLockedOut,
 } from "./policy";
 
-function withChanges(changes: {
-  general?: Partial<AuthPolicy["general"]>;
-  emailPassword?: Partial<AuthPolicy["emailPassword"]>;
-}): AuthPolicy {
+type PolicyChanges = {
+  [Section in keyof AuthPolicy]?: Partial<AuthPolicy[Section]>;
+};
+
+function withChanges(changes: PolicyChanges): AuthPolicy {
   return {
     general: { ...defaultAuthPolicy.general, ...changes.general },
     emailPassword: {
       ...defaultAuthPolicy.emailPassword,
       ...changes.emailPassword,
     },
+    magicLink: { ...defaultAuthPolicy.magicLink, ...changes.magicLink },
   };
 }
 
 const passwordOff = withChanges({ emailPassword: { access: false } });
+const magicLinkOff = withChanges({ magicLink: { access: false } });
+const everythingOff = withChanges({
+  emailPassword: { access: false },
+  magicLink: { access: false },
+});
 
 describe("parseAuthPolicy", () => {
   it("defaults to the current behavior when nothing is stored", () => {
@@ -34,53 +42,72 @@ describe("parseAuthPolicy", () => {
         requireEmailVerification: true,
         minPasswordLength: 8,
       },
+      magicLink: { access: true, signUp: false, expiresInMinutes: 5 },
     });
   });
 
   it("fills in fields that a stored policy doesn't have yet", () => {
     const policy = parseAuthPolicy({ general: { signUp: false } });
     expect(policy.general.signUp).toBe(false);
-    expect(policy.emailPassword.access).toBe(true);
+    expect(policy.magicLink.access).toBe(true);
   });
 
-  it.each([7, 129, 8.5])(
-    "rejects a minimum password length of %s",
-    (minPasswordLength) => {
-      expect(() =>
-        parseAuthPolicy({ emailPassword: { minPasswordLength } }),
-      ).toThrow();
-    },
-  );
+  it.each([
+    { emailPassword: { minPasswordLength: 7 } },
+    { emailPassword: { minPasswordLength: 8.5 } },
+    { magicLink: { expiresInMinutes: 0 } },
+    { magicLink: { expiresInMinutes: 61 } },
+  ])("rejects %j", (stored) => {
+    expect(() => parseAuthPolicy(stored)).toThrow();
+  });
 });
 
 describe("canSignUp", () => {
   it.each([
-    [{}, true],
-    [{ general: { signUp: false } }, false],
-    [{ emailPassword: { signUp: false } }, false],
-  ] as const)("%j → %s", (changes, expected) => {
-    expect(canSignUp(withChanges(changes), "emailPassword")).toBe(expected);
+    [{}, "emailPassword", true],
+    [{}, "magicLink", false],
+    [{ magicLink: { signUp: true } }, "magicLink", true],
+    [{ general: { signUp: false } }, "emailPassword", false],
+    [{ emailPassword: { signUp: false } }, "emailPassword", false],
+  ] as const)("%j allows %s: %s", (changes, method, expected) => {
+    expect(canSignUp(withChanges(changes), method)).toBe(expected);
   });
 });
 
 describe("policyViolations", () => {
-  it("accepts the defaults", () => {
-    expect(policyViolations(defaultAuthPolicy, [["emailPassword"]])).toEqual(
-      [],
-    );
+  const passwordSuperadmin = [["emailPassword"] as const];
+
+  it("accepts turning off either method while the other one works", () => {
+    expect(policyViolations(passwordOff, passwordSuperadmin)).toEqual([]);
+    expect(policyViolations(magicLinkOff, passwordSuperadmin)).toEqual([]);
   });
 
-  it("refuses turning off the last way to sign in and recover", () => {
-    expect(policyViolations(passwordOff, [])).toEqual([
+  it("refuses turning off every way to sign in", () => {
+    expect(policyViolations(everythingOff, passwordSuperadmin)).toEqual([
       "noAccessMethod",
       "noRecoveryMethod",
+      "superadminLockedOut",
     ]);
   });
 
-  it("refuses leaving a superadmin without any of their methods", () => {
-    expect(policyViolations(passwordOff, [["emailPassword"]])).toContain(
+  it("refuses leaving a superadmin without a usable method", () => {
+    // Only magic link is universal: a superadmin without a password relies on it
+    expect(policyViolations(magicLinkOff, [[]])).toEqual([
       "superadminLockedOut",
-    );
+    ]);
+  });
+});
+
+describe("usersLockedOut", () => {
+  const groups = [
+    { methods: ["emailPassword" as const], count: 5 },
+    { methods: [], count: 2 },
+  ];
+
+  it("counts users left without any usable method", () => {
+    expect(usersLockedOut(passwordOff, groups)).toBe(0);
+    expect(usersLockedOut(magicLinkOff, groups)).toBe(2);
+    expect(usersLockedOut(everythingOff, groups)).toBe(7);
   });
 });
 
@@ -97,16 +124,11 @@ describe("policyChanges", () => {
   it("returns only the fields that changed", () => {
     const after = withChanges({
       general: { signUp: false },
-      emailPassword: { minPasswordLength: 12 },
+      magicLink: { expiresInMinutes: 15 },
     });
     expect(policyChanges(defaultAuthPolicy, after)).toEqual([
       { section: "general", field: "signUp", from: true, to: false },
-      {
-        section: "emailPassword",
-        field: "minPasswordLength",
-        from: 8,
-        to: 12,
-      },
+      { section: "magicLink", field: "expiresInMinutes", from: 5, to: 15 },
     ]);
   });
 });

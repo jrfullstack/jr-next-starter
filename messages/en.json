@@ -148,7 +148,18 @@
       "invalidDescription": "The link is invalid or has expired.",
       "requestNew": "Request a new link"
     },
-    "showPassword": "Show password"
+    "showPassword": "Show password",
+    "magicLink": {
+      "divider": "or",
+      "signInDescription": "We'll email you a link to sign in, no password needed.",
+      "signUpDescription": "We'll email you a link to create your account.",
+      "submit": "Email me a sign-in link",
+      "sent": "If {email} can sign in, we've sent a link. It expires in {minutes, plural, one {# minute} other {# minutes}}.",
+      "linkErrors": {
+        "invalid": "The link isn't valid, was already used or has expired. Ask for a new one.",
+        "noAccount": "There's no account with that email and registrations are closed."
+      }
+    }
   },
   "UserMenu": {
     "signIn": "Sign in",
@@ -178,6 +189,13 @@
       "body": "Hi {name}. We received a request to change your password. Click the button to choose a new one.",
       "cta": "Change password",
       "footnote": "The link expires in 1 hour. If you didn't request it, ignore this message: your password won't change."
+    },
+    "magicLink": {
+      "subject": "Your sign-in link",
+      "heading": "Sign in to your account",
+      "body": "Press the button to sign in. No password needed.",
+      "cta": "Sign in",
+      "footnote": "The link expires in {minutes, plural, one {# minute} other {# minutes}} and can only be used once. If you didn't ask for it, ignore this message."
     }
   },
   "DevOutbox": {
@@ -275,6 +293,10 @@
         "emailPassword": {
           "title": "Email and password",
           "description": "Registration and sign-in with email and password."
+        },
+        "magicLink": {
+          "title": "Magic link",
+          "description": "Sign in with a one-time link sent by email, no password."
         }
       },
       "fields": {
@@ -300,6 +322,20 @@
           "minPasswordLength": {
             "label": "Minimum password length",
             "description": "Between {min} and {max} characters. Applies to new passwords."
+          }
+        },
+        "magicLink": {
+          "access": {
+            "label": "Sign-in",
+            "description": "Sign in with a link sent by email. Works for any account, also to recover it."
+          },
+          "signUp": {
+            "label": "Automatic registration",
+            "description": "An email without an account creates it when opening the link."
+          },
+          "expiresInMinutes": {
+            "label": "Link expiry",
+            "description": "Between {min} and {max} minutes."
           }
         }
       },

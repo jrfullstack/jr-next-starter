@@ -10,7 +10,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
 import { authRoutes, withLocale } from "@/lib/auth/routes";
-import { forgotPasswordSchema } from "@/lib/auth/schemas";
+import { emailSchema } from "@/lib/auth/schemas";
 import { AuthCard } from "./auth-card";
 import { EmailField } from "./auth-form-field";
 import { useAuthForm } from "./use-auth-form";
@@ -19,7 +19,7 @@ export function ForgotPasswordForm() {
   const t = useTranslations("Auth");
   const locale = useLocale();
   const { onSubmit, invalid, error, succeeded, submitDisabled } = useAuthForm({
-    schema: forgotPasswordSchema,
+    schema: emailSchema,
     submit: ({ email }) =>
       authClient.requestPasswordReset({
         email,

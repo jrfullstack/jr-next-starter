@@ -148,7 +148,18 @@
       "invalidDescription": "El enlace no es válido o ha caducado.",
       "requestNew": "Pedir otro enlace"
     },
-    "showPassword": "Mostrar contraseña"
+    "showPassword": "Mostrar contraseña",
+    "magicLink": {
+      "divider": "o",
+      "signInDescription": "Te enviaremos un enlace por email para entrar, sin contraseña.",
+      "signUpDescription": "Te enviaremos un enlace por email para crear tu cuenta.",
+      "submit": "Enviar enlace de acceso",
+      "sent": "Si {email} puede entrar, te hemos enviado un enlace. Caduca en {minutes, plural, one {# minuto} other {# minutos}}.",
+      "linkErrors": {
+        "invalid": "El enlace no es válido, ya se usó o ha caducado. Pide otro.",
+        "noAccount": "No hay ninguna cuenta con ese email y los registros están cerrados."
+      }
+    }
   },
   "UserMenu": {
     "signIn": "Iniciar sesión",
@@ -178,6 +189,13 @@
       "body": "Hola, {name}. Hemos recibido una solicitud para cambiar tu contraseña. Pulsa el botón para elegir una nueva.",
       "cta": "Cambiar contraseña",
       "footnote": "El enlace caduca en 1 hora. Si no lo has pedido tú, ignora este mensaje: tu contraseña no cambiará."
+    },
+    "magicLink": {
+      "subject": "Tu enlace para entrar",
+      "heading": "Entra en tu cuenta",
+      "body": "Pulsa el botón para iniciar sesión. No necesitas contraseña.",
+      "cta": "Iniciar sesión",
+      "footnote": "El enlace caduca en {minutes, plural, one {# minuto} other {# minutos}} y solo se puede usar una vez. Si no lo has pedido tú, ignora este mensaje."
     }
   },
   "DevOutbox": {
@@ -275,6 +293,10 @@
         "emailPassword": {
           "title": "Email y contraseña",
           "description": "Registro y acceso con email y contraseña."
+        },
+        "magicLink": {
+          "title": "Magic link",
+          "description": "Entrar con un enlace de un solo uso enviado por email, sin contraseña."
         }
       },
       "fields": {
@@ -300,6 +322,20 @@
           "minPasswordLength": {
             "label": "Longitud mínima de la contraseña",
             "description": "Entre {min} y {max} caracteres. Se aplica a contraseñas nuevas."
+          }
+        },
+        "magicLink": {
+          "access": {
+            "label": "Acceso",
+            "description": "Iniciar sesión con un enlace por email. Sirve a cualquier cuenta, también para recuperarla."
+          },
+          "signUp": {
+            "label": "Registro automático",
+            "description": "Un email sin cuenta la crea al abrir el enlace."
+          },
+          "expiresInMinutes": {
+            "label": "Caducidad del enlace",
+            "description": "Entre {min} y {max} minutos."
           }
         }
       },

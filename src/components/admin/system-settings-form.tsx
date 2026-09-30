@@ -14,11 +14,13 @@ import {
   type AuthPolicy,
   authPolicySchema,
   disabledAccessMethods,
-  PASSWORD_LENGTH,
   policyViolations,
+  type UserMethodGroup,
+  usersLockedOut,
 } from "@/lib/system/policy";
 import { ConfirmActionDialog } from "./confirm-action-dialog";
 import {
+  numberSettings,
   type SettingField,
   SystemSettingsLayout,
   settingId,
@@ -29,8 +31,8 @@ type Props = {
   policy: AuthPolicy;
   /** Methods linked to each superadmin, for the safeguards */
   superadminMethods: AccessMethod[][];
-  /** Users who can only sign in with each method */
-  usersOnlyWith: Record<AccessMethod, number>;
+  /** Users grouped by linked methods, to count who'd be left without a way in */
+  userGroups: UserMethodGroup[];
 };
 
 function settingValue(policy: AuthPolicy, field: SettingField) {
@@ -50,7 +52,7 @@ function withValue(
 export function SystemSettingsForm({
   policy: saved,
   superadminMethods,
-  usersOnlyWith,
+  userGroups,
 }: Props) {
   const t = useTranslations("Admin.system");
   const [policy, setPolicy] = useState(saved);
@@ -86,14 +88,21 @@ export function SystemSettingsForm({
         />
       );
     }
+    if (value === undefined) return null;
+    const bounds = numberSettings[field];
+    const inRange =
+      Number.isInteger(value) &&
+      bounds !== undefined &&
+      value >= bounds.min &&
+      value <= bounds.max;
     return (
       <Input
         id={settingId(field)}
         type="number"
-        min={PASSWORD_LENGTH.min}
-        max={PASSWORD_LENGTH.max}
+        min={bounds?.min}
+        max={bounds?.max}
         value={Number.isNaN(value) ? "" : value}
-        aria-invalid={!valid}
+        aria-invalid={!inRange}
         disabled={locked}
         onChange={(event) =>
           setPolicy(withValue(policy, field, event.target.valueAsNumber))
@@ -131,10 +140,7 @@ export function SystemSettingsForm({
         open={confirming}
         title={t("confirm.title")}
         description={t("confirm.description", {
-          count: disabling.reduce(
-            (sum, method) => sum + usersOnlyWith[method],
-            0,
-          ),
+          count: usersLockedOut(policy, userGroups),
         })}
         pending={pending}
         onConfirm={save}
