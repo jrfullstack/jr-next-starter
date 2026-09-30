@@ -56,8 +56,9 @@ jobs:
         image: postgres:18
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: e2e
+          # No password: the database only exists inside this job
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
@@ -66,7 +67,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
+      DATABASE_URL: postgresql://postgres@localhost:5432/e2e
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: ./.github/actions/setup

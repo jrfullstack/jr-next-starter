@@ -20,20 +20,12 @@ export const roles = {
     user: ["create", "list", "ban", "get", "update"],
     session: ["list", "revoke"],
   }),
-  // Developer: everything except impersonation (planned for a later phase)
+  // Developer: every user/session action except impersonation (planned for a later phase)
   superadmin: ac.newRole({
-    user: [
-      "create",
-      "list",
-      "set-role",
-      "ban",
-      "delete",
-      "set-password",
-      "set-email",
-      "get",
-      "update",
-    ],
-    session: ["list", "revoke", "delete"],
+    user: defaultStatements.user.filter(
+      (action) => !action.startsWith("impersonate"),
+    ),
+    session: [...defaultStatements.session],
     system: ["read", "update"],
   }),
 };
