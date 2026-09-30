@@ -96,16 +96,12 @@ test("sign up requires verifying the email before signing in", async ({
   await expect(page).toHaveURL(/\/es\/dashboard$/);
 });
 
-test("a forgotten password can be reset from the email link", async ({
+test("resetting a forgotten password from the email link also verifies the email", async ({
   page,
 }) => {
+  // Never verified: resetting through the emailed link must also verify the email
   const email = newTestUserEmail();
   await signUp(page, email);
-  await openEmailLink(page, email);
-  await expect(
-    page.getByRole("heading", { name: "Email verificado" }),
-  ).toBeVisible();
-  await signOut(page);
 
   await page.goto("/es/sign-in");
   await page.getByRole("link", { name: "¿Olvidaste tu contraseña?" }).click();

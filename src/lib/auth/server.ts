@@ -20,6 +20,14 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     // A password change signs out every other device
     revokeSessionsOnPasswordReset: true,
+    // The reset link was sent to that inbox, so resetting proves the email is theirs
+    onPasswordReset: async ({ user }) => {
+      if (user.emailVerified) return;
+      await db.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true },
+      });
+    },
     // Sent after the response so timing doesn't reveal whether the email exists
     sendResetPassword: async ({ user, url }) => {
       after(() =>
