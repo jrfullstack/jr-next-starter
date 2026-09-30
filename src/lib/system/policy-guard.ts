@@ -1,10 +1,30 @@
 import { APIError } from "better-auth/api";
+import { safeCallbackPath } from "@/lib/auth/routes";
 import { type AccessMethod, type AuthPolicy, canSignIn } from "./policy";
 
 /** Better Auth endpoints that sign in with each method */
 const signInPaths: Record<string, AccessMethod> = {
   "/sign-in/email": "emailPassword",
+  "/sign-in/magic-link": "magicLink",
+  "/magic-link/verify": "magicLink",
 };
+
+const SIGN_IN_METHOD_DISABLED = "SIGN_IN_METHOD_DISABLED";
+
+/**
+ * Where a magic link opened after its method was turned off lands: the
+ * errorCallbackURL the sign-in form set (same-site paths only) with the code.
+ */
+export function disabledMagicLinkRedirect(query: unknown) {
+  const { errorCallbackURL } = (query ?? {}) as { errorCallbackURL?: unknown };
+  const path = safeCallbackPath(
+    typeof errorCallbackURL === "string" ? errorCallbackURL : undefined,
+  );
+  const [pathname = "/", search = ""] = path.split("?");
+  const params = new URLSearchParams(search);
+  params.set("error", SIGN_IN_METHOD_DISABLED);
+  return `${pathname}?${params}`;
+}
 
 /** Admin endpoints that set a password; Better Auth only checks the maximum length there */
 const adminPasswordPaths = new Set([
@@ -32,7 +52,7 @@ export function assertPolicyAllows(
   const method = signInPaths[path];
   if (method && !canSignIn(policy, method)) {
     throw new APIError("FORBIDDEN", {
-      code: "SIGN_IN_METHOD_DISABLED",
+      code: SIGN_IN_METHOD_DISABLED,
       message: "This sign-in method is disabled",
     });
   }

@@ -75,6 +75,37 @@ export async function createSuperadmin(request: APIRequestContext) {
   });
 }
 
+/**
+ * Follows the Better Auth link of the latest email sent to `to`, read from the
+ * dev outbox (emails are sent right after the response, so it may take a moment).
+ * Returns the link, e.g. to check that it can't be used twice.
+ */
+export async function openEmailLink(page: Page, to: string) {
+  let link: string | null = null;
+  await expect(async () => {
+    await page.goto("/es/dev/outbox");
+    link = await page
+      .getByRole("listitem")
+      .filter({ hasText: to })
+      .first()
+      .locator('a[href*="/api/auth/"]')
+      .first()
+      .getAttribute("href");
+    expect(link).toBeTruthy();
+  }).toPass();
+  await page.goto(link ?? "");
+  return link ?? "";
+}
+
+/** Asks for a magic link on the sign-in page and opens it from the dev outbox */
+export async function signInWithMagicLink(page: Page, email: string) {
+  await page.goto("/es/sign-in");
+  await page.getByLabel("Email").fill(email);
+  await page.getByRole("button", { name: "Enviar enlace de acceso" }).click();
+  await expect(page.locator("form").getByRole("status")).toContainText(email);
+  return openEmailLink(page, email);
+}
+
 export async function signInAs(page: Page, email: string, password: string) {
   await page.goto("/es/sign-in");
   await page.getByLabel("Email").fill(email);

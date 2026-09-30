@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { AuthCard } from "@/components/auth/auth-card";
+import { MagicLinkSignUpForm } from "@/components/auth/magic-link-sign-up-form";
 import { SignUpForm } from "@/components/auth/sign-up-form";
 import { parseLocale } from "@/i18n/locale";
 import { Link, redirect } from "@/i18n/navigation";
@@ -24,22 +25,26 @@ export default async function SignUpPage({
   }
 
   const policy = await getAuthPolicy();
-  // Registrations closed in Admin → System (the API refuses them as well)
-  if (!canSignUp(policy, "emailPassword")) {
-    const t = await getTranslations("Auth.signUp");
+  if (canSignUp(policy, "emailPassword")) {
     return (
-      <AuthCard
-        title={t("closedTitle")}
-        description={t("closedDescription")}
-        footer={<Link href={authRoutes.signIn}>{t("signInLink")}</Link>}
+      <SignUpForm
+        minPasswordLength={policy.emailPassword.minPasswordLength}
+        requireEmailVerification={policy.emailPassword.requireEmailVerification}
       />
     );
   }
+  // Only the magic link accepts new accounts: the link creates it
+  if (canSignUp(policy, "magicLink")) {
+    return <MagicLinkSignUpForm minutes={policy.magicLink.expiresInMinutes} />;
+  }
 
+  // Registrations closed in Admin → System (the API refuses them as well)
+  const t = await getTranslations("Auth.signUp");
   return (
-    <SignUpForm
-      minPasswordLength={policy.emailPassword.minPasswordLength}
-      requireEmailVerification={policy.emailPassword.requireEmailVerification}
+    <AuthCard
+      title={t("closedTitle")}
+      description={t("closedDescription")}
+      footer={<Link href={authRoutes.signIn}>{t("signInLink")}</Link>}
     />
   );
 }

@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuditLogCard, AuditLogEntriesSkeleton } from "./system-audit-log";
-import { SystemSettingsLayout } from "./system-settings-layout";
+import { numberSettings, SystemSettingsLayout } from "./system-settings-layout";
 
 /** Same cards and labels as the form; placeholders where the switches, input and button go */
 export function SystemSettingsSkeleton() {
@@ -8,7 +8,7 @@ export function SystemSettingsSkeleton() {
     <div aria-busy>
       <SystemSettingsLayout
         control={(field) =>
-          field === "emailPassword.minPasswordLength" ? (
+          numberSettings[field] ? (
             <Skeleton className="h-8 w-20 rounded-lg" />
           ) : (
             <Skeleton className="h-[18.4px] w-8 rounded-full" />

@@ -1,13 +1,18 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { connection } from "next/server";
 import { db } from "@/lib/db";
-import { type AccessMethod, accessMethods, parseAuthPolicy } from "./policy";
+import {
+  type AccessMethod,
+  accessMethods,
+  parseAuthPolicy,
+  type UserMethodGroup,
+} from "./policy";
 
 export const AUTH_POLICY_TAG = "auth-policy";
 export const POLICY_ROW_ID = "global";
 
-/** Account providerId that each method leaves in the account table */
-const methodProviders: Record<AccessMethod, string> = {
+/** Account providerId that each method leaves in the account table (magic link leaves none) */
+const methodProviders: Partial<Record<AccessMethod, string>> = {
   emailPassword: "credential",
 };
 
@@ -28,9 +33,9 @@ export async function getAuthPolicy() {
   return readAuthPolicy();
 }
 
-function methodsOf(accounts: { providerId: string }[]) {
+function methodsOf(providerIds: readonly string[]) {
   return accessMethods.filter((method) =>
-    accounts.some(({ providerId }) => providerId === methodProviders[method]),
+    providerIds.some((providerId) => providerId === methodProviders[method]),
   );
 }
 
@@ -40,15 +45,33 @@ export async function superadminAccessMethods() {
     where: { role: "superadmin" },
     select: { accounts: { select: { providerId: true } } },
   });
-  return superadmins.map(({ accounts }) => methodsOf(accounts));
+  return superadmins.map(({ accounts }) =>
+    methodsOf(accounts.map(({ providerId }) => providerId)),
+  );
 }
 
-/** Users who could only sign in with this method (shown before turning it off) */
-export function countUsersOnlyWith(method: AccessMethod) {
-  const providerId = methodProviders[method];
-  return db.user.count({
-    where: {
-      accounts: { some: { providerId }, every: { providerId } },
-    },
-  });
+/**
+ * Users grouped by the providers linked to their account, counted in the
+ * database (never loads the users). The form uses it to say how many would
+ * be left without a way in.
+ */
+export async function userMethodGroups(): Promise<UserMethodGroup[]> {
+  const rows = await db.$queryRaw<{ providers: string[]; count: number }[]>`
+    SELECT providers, COUNT(*)::int AS count
+    FROM (
+      SELECT COALESCE(
+        array_agg(DISTINCT a."providerId" ORDER BY a."providerId")
+          FILTER (WHERE a."providerId" IS NOT NULL),
+        '{}'
+      ) AS providers
+      FROM "user" u
+      LEFT JOIN account a ON a."userId" = u.id
+      GROUP BY u.id
+    ) linked
+    GROUP BY providers
+  `;
+  return rows.map(({ providers, count }) => ({
+    methods: methodsOf(providers),
+    count,
+  }));
 }

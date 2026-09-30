@@ -56,12 +56,23 @@ export function AuditLogEntriesSkeleton() {
   );
 }
 
+type SystemTranslator = ReturnType<typeof useTranslations<"Admin.system">>;
+
+/** Label of the changed field; the switch narrows `field` to that section's keys */
+function fieldLabel(t: SystemTranslator, change: PolicyChange) {
+  switch (change.section) {
+    case "general":
+      return t(`fields.general.${change.field}.label`);
+    case "emailPassword":
+      return t(`fields.emailPassword.${change.field}.label`);
+    case "magicLink":
+      return t(`fields.magicLink.${change.field}.label`);
+  }
+}
+
 function ChangeLine({ change }: { change: PolicyChange }) {
   const t = useTranslations("Admin.system");
-  const field =
-    change.section === "general"
-      ? t(`fields.general.${change.field}.label`)
-      : t(`fields.emailPassword.${change.field}.label`);
+  const field = fieldLabel(t, change);
   const format = (value: boolean | number) => {
     if (typeof value === "number") return String(value);
     return t(value ? "value.on" : "value.off");

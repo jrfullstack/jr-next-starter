@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Field, FieldGroup } from "@/components/ui/field";
+import { Field, FieldGroup, FieldSeparator } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthCard } from "./auth-card";
 
@@ -22,11 +22,14 @@ export function AuthFormSkeleton({
   description,
   fields,
   withFooter = true,
+  secondaryAction,
 }: {
   title: string;
   description: string;
   fields: number;
   withFooter?: boolean;
+  /** Sign-in: the "or" separator and the magic link button (on by default in the policy) */
+  secondaryAction?: string;
 }) {
   return (
     <AuthCard
@@ -40,6 +43,12 @@ export function AuthFormSkeleton({
           <FieldSkeleton key={index} />
         ))}
         <Skeleton className="h-8 w-full rounded-lg" />
+        {secondaryAction && (
+          <>
+            <FieldSeparator>{secondaryAction}</FieldSeparator>
+            <Skeleton className="h-8 w-full rounded-lg" />
+          </>
+        )}
       </FieldGroup>
     </AuthCard>
   );

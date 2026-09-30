@@ -4,31 +4,46 @@ import { ActionEmail } from "@/emails/action-email";
 import { sendEmail } from "@/lib/email/send";
 import { localeFromAuthUrl } from "./routes";
 
-type AuthEmailKind = "verifyEmail" | "resetPassword";
+type AuthEmail =
+  | { kind: "verifyEmail" | "resetPassword"; name: string }
+  /** No name: the address may not have an account yet */
+  | { kind: "magicLink"; expiresInMinutes: number };
 
-/** Sends a translated auth email with a single action link (verification, password reset) */
-export async function sendAuthEmail(
-  kind: AuthEmailKind,
-  { to, name, url }: { to: string; name: string; url: string },
-) {
+async function authEmailTexts(email: AuthEmail, url: string) {
   const locale = localeFromAuthUrl(url);
   const t = await getTranslations({ locale, namespace: "Emails" });
-  const subject = t(`${kind}.subject`);
+  const texts =
+    email.kind === "magicLink"
+      ? {
+          body: t("magicLink.body"),
+          footnote: t("magicLink.footnote", {
+            minutes: email.expiresInMinutes,
+          }),
+        }
+      : {
+          body: t(`${email.kind}.body`, { name: email.name }),
+          footnote: t(`${email.kind}.footnote`),
+        };
+  return {
+    ...texts,
+    locale,
+    subject: t(`${email.kind}.subject`),
+    heading: t(`${email.kind}.heading`),
+    cta: t(`${email.kind}.cta`),
+    footer: t("footer", { name: siteConfig.name }),
+  };
+}
+
+/** Sends a translated auth email with a single action link (verification, password reset, magic link) */
+export async function sendAuthEmail(
+  email: AuthEmail,
+  { to, url }: { to: string; url: string },
+) {
+  const { locale, subject, ...texts } = await authEmailTexts(email, url);
 
   await sendEmail({
     to,
     subject,
-    react: (
-      <ActionEmail
-        lang={locale}
-        preview={subject}
-        heading={t(`${kind}.heading`)}
-        body={t(`${kind}.body`, { name })}
-        cta={t(`${kind}.cta`)}
-        url={url}
-        footnote={t(`${kind}.footnote`)}
-        footer={t("footer", { name: siteConfig.name })}
-      />
-    ),
+    react: <ActionEmail lang={locale} preview={subject} url={url} {...texts} />,
   });
 }

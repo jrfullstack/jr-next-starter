@@ -30,3 +30,16 @@ export function authErrorKey(
   }
   return "generic";
 }
+
+/** Message for the ?error= Better Auth adds when a magic link can't sign in */
+export function magicLinkErrorMessage(error: unknown) {
+  if (typeof error !== "string") return undefined;
+  if (error === "SIGN_IN_METHOD_DISABLED") {
+    return "errors.signInMethodDisabled" as const;
+  }
+  if (error === "new_user_signup_disabled") {
+    return "magicLink.linkErrors.noAccount" as const;
+  }
+  // Expired, already used or tampered with
+  return "magicLink.linkErrors.invalid" as const;
+}

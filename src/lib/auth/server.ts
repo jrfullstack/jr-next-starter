@@ -2,12 +2,15 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
-import { admin } from "better-auth/plugins";
+import { admin, magicLink } from "better-auth/plugins";
 import { after } from "next/server";
 import { env } from "@/env";
 import { db } from "@/lib/db";
-import { type AuthPolicy, canSignUp } from "@/lib/system/policy";
-import { assertPolicyAllows } from "@/lib/system/policy-guard";
+import { type AuthPolicy, canSignIn, canSignUp } from "@/lib/system/policy";
+import {
+  assertPolicyAllows,
+  disabledMagicLinkRedirect,
+} from "@/lib/system/policy-guard";
 import { getAuthPolicy } from "@/lib/system/policy-store";
 import { sendAuthEmail } from "./emails";
 import { ac, roles } from "./permissions";
@@ -48,11 +51,10 @@ function emailAndPassword(policy: AuthPolicy) {
       url: string;
     }) => {
       after(() =>
-        sendAuthEmail("resetPassword", {
-          to: user.email,
-          name: user.name,
-          url,
-        }),
+        sendAuthEmail(
+          { kind: "resetPassword", name: user.name },
+          { to: user.email, url },
+        ),
       );
     },
   };
@@ -71,10 +73,30 @@ const emailVerification = {
     url: string;
   }) => {
     after(() =>
-      sendAuthEmail("verifyEmail", { to: user.email, name: user.name, url }),
+      sendAuthEmail(
+        { kind: "verifyEmail", name: user.name },
+        { to: user.email, url },
+      ),
     );
   },
 };
+
+/** Magic link, shaped by the policy; opening the link also verifies the email */
+function magicLinkPlugin(policy: AuthPolicy) {
+  const { expiresInMinutes } = policy.magicLink;
+  return magicLink({
+    disableSignUp: !canSignUp(policy, "magicLink"),
+    expiresIn: expiresInMinutes * 60,
+    sendMagicLink: async ({ email, url }) => {
+      after(() =>
+        sendAuthEmail(
+          { kind: "magicLink", expiresInMinutes },
+          { to: email, url },
+        ),
+      );
+    },
+  });
+}
 
 function createAuth(policy: AuthPolicy) {
   return betterAuth({
@@ -91,6 +113,13 @@ function createAuth(policy: AuthPolicy) {
     },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
+        // A link opened in the browser gets the sign-in page with a message, not JSON
+        if (
+          ctx.path === "/magic-link/verify" &&
+          !canSignIn(policy, "magicLink")
+        ) {
+          throw ctx.redirect(disabledMagicLinkRedirect(ctx.query));
+        }
         // Disabled methods are refused here, even when the API is called directly
         assertPolicyAllows(policy, ctx.path, ctx.body);
         if (
@@ -110,6 +139,7 @@ function createAuth(policy: AuthPolicy) {
         defaultRole: "user",
         adminRoles: ["admin", "superadmin"],
       }),
+      magicLinkPlugin(policy),
       // Must be the last plugin: sets cookies from Server Actions
       nextCookies(),
     ],

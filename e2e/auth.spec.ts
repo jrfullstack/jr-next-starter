@@ -1,26 +1,12 @@
 import { expect, type Page } from "@playwright/test";
 import { test } from "./fixtures";
-import { newTestUserEmail, testPassword as password } from "./test-users";
-
-/**
- * Follows the Better Auth link of the latest email sent to `to`, read from the
- * dev outbox (emails are sent right after the response, so it may take a moment).
- */
-async function openEmailLink(page: Page, to: string) {
-  let link: string | null = null;
-  await expect(async () => {
-    await page.goto("/es/dev/outbox");
-    link = await page
-      .getByRole("listitem")
-      .filter({ hasText: to })
-      .first()
-      .locator('a[href*="/api/auth/"]')
-      .first()
-      .getAttribute("href");
-    expect(link).toBeTruthy();
-  }).toPass();
-  await page.goto(link ?? "");
-}
+import {
+  createTestUser,
+  newTestUserEmail,
+  openEmailLink,
+  testPassword as password,
+  signInWithMagicLink,
+} from "./test-users";
 
 async function signUp(page: Page, email: string) {
   await page.goto("/es/sign-up");
@@ -100,7 +86,8 @@ test("resetting a forgotten password from the email link also verifies the email
   await expect(
     page.getByRole("heading", { name: "Recupera tu contraseña" }),
   ).toBeVisible();
-  await page.getByLabel("Email").fill(email);
+  // The sign-in page stays in the DOM, hidden (<Activity>): use the visible field
+  await page.getByLabel("Email").filter({ visible: true }).fill(email);
   await page.getByRole("button", { name: "Enviar enlace" }).click();
   await expect(page.getByRole("status")).toContainText("te hemos enviado");
 
@@ -115,4 +102,22 @@ test("resetting a forgotten password from the email link also verifies the email
   );
   await signIn(page, email, newPassword);
   await expect(page).toHaveURL(/\/es\/dashboard$/);
+});
+
+test("signs in with a magic link, which works only once", async ({
+  page,
+  request,
+}) => {
+  const user = await createTestUser(request);
+
+  const link = await signInWithMagicLink(page, user.email);
+  await expect(page).toHaveURL(/\/es\/dashboard$/);
+
+  // Links are single-use: opening it again lands on sign-in with the reason
+  await signOut(page);
+  await page.goto(link);
+  await expect(page).toHaveURL(/\/es\/sign-in/);
+  await expect(page.locator("form").getByRole("status")).toHaveText(
+    "El enlace no es válido, ya se usó o ha caducado. Pide otro.",
+  );
 });

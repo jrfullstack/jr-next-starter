@@ -35,7 +35,14 @@ export function signUpSchema(minPasswordLength: number) {
     .refine(...passwordsMatch);
 }
 
-export const forgotPasswordSchema = z.object({ email: z.email() });
+/** Forms that only ask for the email: forgot password, magic link */
+export const emailSchema = z.object({ email: z.email() });
+
+/** Magic link sign-up: the name is stored if the link creates the account */
+export const magicLinkSignUpSchema = z.object({
+  name: z.string().trim().min(1),
+  email: z.email(),
+});
 
 /** Admin panel: new account (it verifies its email on first sign-in) */
 export function createUserSchema(minPasswordLength: number) {

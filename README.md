@@ -176,7 +176,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
   - [x] **3. Panel `/admin` y usuarios:** menú lateral según permisos; usuarios con búsqueda, filtros por rol y estado, orden por columna y paginación (todo en el servidor), crear, bloquear/desbloquear, cerrar sesiones y (solo superadmin) cambiar rol; las cuentas superadmin no se pueden gestionar
   - [x] **Carga moderna:** Cache Components activado (shell estático + streaming), `loading.tsx` con skeletons idénticos al diseño en cada página (verificado por un test) y Suspense granular en el panel
   - [x] **4. Sistema:** `/admin/system` (solo superadmin) para abrir o cerrar registros y configurar email + contraseña (registro, acceso, verificación obligatoria, longitud mínima) sin tocar código; Better Auth se construye con esa configuración, un hook bloquea los métodos desactivados, salvaguardas para no dejar a nadie sin acceso e historial de cambios
-  - [ ] 5. Magic link
+  - [x] **5. Magic link:** entrar con un enlace de un solo uso por email (verifica el email), registro automático y caducidad del enlace se configuran en Sistema; un solo formulario de login para contraseña y enlace, y la contraseña ya se puede desactivar mientras el enlace esté activo
   - [ ] 6. Google
   - [ ] 7. 2FA
   - [ ] 8. Passkeys
@@ -413,7 +413,7 @@ Define `NEXT_PUBLIC_GA_MEASUREMENT_ID` con tu ID (`G-XXXXXXXXXX`) y el component
 
 ## ✉️ Emails
 
-Los emails (verificación, recuperar contraseña) se escriben como componentes de React en `src/emails/` y se envían desde `src/lib/email/send.ts`:
+Los emails (verificación, recuperar contraseña, magic link) se escriben como componentes de React en `src/emails/` y se envían desde `src/lib/email/send.ts`:
 
 | Situación | Qué pasa |
 | --- | --- |

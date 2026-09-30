@@ -14,14 +14,25 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { PASSWORD_LENGTH } from "@/lib/system/policy";
+import { MAGIC_LINK_MINUTES, PASSWORD_LENGTH } from "@/lib/system/policy";
 
 export type SettingField =
   | "general.signUp"
   | "emailPassword.signUp"
   | "emailPassword.access"
   | "emailPassword.requireEmailVerification"
-  | "emailPassword.minPasswordLength";
+  | "emailPassword.minPasswordLength"
+  | "magicLink.access"
+  | "magicLink.signUp"
+  | "magicLink.expiresInMinutes";
+
+/** Settings edited as a number, with their bounds; the rest are switches */
+export const numberSettings: Partial<
+  Record<SettingField, { min: number; max: number }>
+> = {
+  "emailPassword.minPasswordLength": PASSWORD_LENGTH,
+  "magicLink.expiresInMinutes": MAGIC_LINK_MINUTES,
+};
 
 /** DOM id of a setting's control, so its label points at it */
 export function settingId(field: SettingField) {
@@ -130,6 +141,29 @@ export function SystemSettingsLayout({
           t("fields.emailPassword.minPasswordLength.description", {
             min: PASSWORD_LENGTH.min,
             max: PASSWORD_LENGTH.max,
+          }),
+        )}
+      </SettingsCard>
+      <SettingsCard
+        title={t("sections.magicLink.title")}
+        description={t("sections.magicLink.description")}
+      >
+        {row(
+          "magicLink.access",
+          t("fields.magicLink.access.label"),
+          t("fields.magicLink.access.description"),
+        )}
+        {row(
+          "magicLink.signUp",
+          t("fields.magicLink.signUp.label"),
+          t("fields.magicLink.signUp.description"),
+        )}
+        {row(
+          "magicLink.expiresInMinutes",
+          t("fields.magicLink.expiresInMinutes.label"),
+          t("fields.magicLink.expiresInMinutes.description", {
+            min: MAGIC_LINK_MINUTES.min,
+            max: MAGIC_LINK_MINUTES.max,
           }),
         )}
       </SettingsCard>
