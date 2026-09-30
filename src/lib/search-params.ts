@@ -16,3 +16,9 @@ export function hasCanonicalParams(
     present.every(([key, value]) => canonical[key] === value)
   );
 }
+
+/** ?page= as a whole number from 1; anything else is page 1 */
+export function parsePage(value: unknown) {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 1 ? page : 1;
+}

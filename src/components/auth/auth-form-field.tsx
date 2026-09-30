@@ -7,7 +7,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { type AuthField, PASSWORD_MIN_LENGTH } from "@/lib/auth/schemas";
+import type { AuthField } from "@/lib/auth/schemas";
 import { PasswordInput } from "./password-input";
 
 type Props = Pick<
@@ -77,11 +77,13 @@ export function EmailField({ invalid }: { invalid?: boolean }) {
 /** New password + confirmation, shared by sign-up and reset password */
 export function NewPasswordFields({
   invalid,
+  min,
 }: {
   invalid: Partial<Record<AuthField, true>>;
+  /** Minimum length from the auth policy */
+  min: number;
 }) {
   const t = useTranslations("Auth");
-  const min = PASSWORD_MIN_LENGTH;
   return (
     <>
       <AuthFormField

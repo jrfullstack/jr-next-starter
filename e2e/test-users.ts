@@ -1,5 +1,5 @@
 import "dotenv/config";
-import type { APIRequestContext } from "@playwright/test";
+import { type APIRequestContext, expect, type Page } from "@playwright/test";
 import { Client } from "pg";
 import { env } from "@/env";
 
@@ -33,9 +33,12 @@ export async function withDatabase<T>(run: (client: Client) => Promise<T>) {
  */
 export async function createTestUser(
   request: APIRequestContext,
-  { name = "E2E User", role }: { name?: string; role?: "admin" } = {},
+  {
+    name = "E2E User",
+    role,
+    email = newTestUserEmail(),
+  }: { name?: string; role?: "admin"; email?: string } = {},
 ) {
-  const email = newTestUserEmail();
   const response = await request.post("/api/auth/sign-up/email", {
     data: { name, email, password: testPassword },
     // Better Auth checks the origin (CSRF) against the app URL
@@ -50,4 +53,32 @@ export async function createTestUser(
     ),
   );
   return { name, email, password: testPassword };
+}
+
+/**
+ * The e2e superadmin. Superadmin is computed from SUPER_ADMIN_EMAILS, so this
+ * address must be listed there (CI does it; locally, add it to .env).
+ */
+const e2eSuperadminEmail = `${prefix}superadmin${domain}`;
+
+export async function createSuperadmin(request: APIRequestContext) {
+  if (!env.SUPER_ADMIN_EMAILS.includes(e2eSuperadminEmail)) {
+    throw new Error(`Add ${e2eSuperadminEmail} to SUPER_ADMIN_EMAILS`);
+  }
+  // Left over by an interrupted run (global-teardown deletes it otherwise)
+  await withDatabase((db) =>
+    db.query('DELETE FROM "user" WHERE email = $1', [e2eSuperadminEmail]),
+  );
+  return createTestUser(request, {
+    name: "E2E Superadmin",
+    email: e2eSuperadminEmail,
+  });
+}
+
+export async function signInAs(page: Page, email: string, password: string) {
+  await page.goto("/es/sign-in");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Iniciar sesión" }).click();
+  await expect(page).toHaveURL(/\/es\/dashboard$/);
 }

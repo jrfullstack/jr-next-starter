@@ -8,13 +8,15 @@ const valid = {
   confirmPassword: "12345678",
 };
 
+const signUp = signUpSchema(8);
+
 describe("signUpSchema", () => {
   it("accepts a valid sign-up", () => {
-    expect(signUpSchema.safeParse(valid).success).toBe(true);
+    expect(signUp.safeParse(valid).success).toBe(true);
   });
 
   it("flags each invalid field, including a password mismatch", () => {
-    const result = signUpSchema.safeParse({
+    const result = signUp.safeParse({
       name: " ",
       email: "not-an-email",
       password: "short",
@@ -33,17 +35,23 @@ describe("signUpSchema", () => {
 });
 
 describe("resetPasswordSchema", () => {
-  it("requires a long enough password confirmed twice", () => {
-    const ok = resetPasswordSchema.safeParse({
+  it("requires a password of the configured length, confirmed twice", () => {
+    const schema = resetPasswordSchema(10);
+    const ok = schema.safeParse({
+      password: "1234567890",
+      confirmPassword: "1234567890",
+    });
+    const tooShort = schema.safeParse({
       password: "12345678",
       confirmPassword: "12345678",
     });
-    const mismatch = resetPasswordSchema.safeParse({
-      password: "12345678",
-      confirmPassword: "87654321",
+    const mismatch = schema.safeParse({
+      password: "1234567890",
+      confirmPassword: "0987654321",
     });
 
     expect(ok.success).toBe(true);
+    expect(tooShort.success).toBe(false);
     expect(mismatch.success).toBe(false);
   });
 });

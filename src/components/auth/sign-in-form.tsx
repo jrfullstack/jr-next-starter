@@ -19,8 +19,11 @@ import { useAuthForm } from "./use-auth-form";
 export function SignInForm({
   callbackPath,
   notice,
+  allowSignUp,
 }: {
   callbackPath: string;
+  /** From the auth policy: hides the sign-up link when registrations are closed */
+  allowSignUp: boolean;
   /** Confirmation shown above the form, e.g. after a password reset */
   notice?: string;
 }) {
@@ -43,10 +46,12 @@ export function SignInForm({
       title={t("signIn.title")}
       description={t("signIn.description")}
       footer={
-        <>
-          {t("signIn.noAccount")}{" "}
-          <Link href={authRoutes.signUp}>{t("signIn.signUpLink")}</Link>
-        </>
+        allowSignUp && (
+          <>
+            {t("signIn.noAccount")}{" "}
+            <Link href={authRoutes.signUp}>{t("signIn.signUpLink")}</Link>
+          </>
+        )
       }
     >
       <form method="post" onSubmit={onSubmit} noValidate>

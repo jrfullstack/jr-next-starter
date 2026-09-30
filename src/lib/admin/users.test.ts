@@ -145,7 +145,11 @@ describe("rowPermissions", () => {
 });
 
 describe("visibleSections", () => {
-  it("shows the users section to admins only", () => {
+  it("shows users to admins and system only to superadmins", () => {
+    expect(visibleSections("superadmin").map(({ id }) => id)).toEqual([
+      "users",
+      "system",
+    ]);
     expect(visibleSections("admin").map(({ id }) => id)).toEqual(["users"]);
     expect(visibleSections("user")).toEqual([]);
     expect(visibleSections(undefined)).toEqual([]);

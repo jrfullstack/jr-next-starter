@@ -16,16 +16,23 @@ import {
 import { useAuthForm } from "./use-auth-form";
 
 // Based on the shadcn/ui "signup-01" block
-export function SignUpForm() {
+export function SignUpForm({
+  minPasswordLength,
+  requireEmailVerification,
+}: {
+  minPasswordLength: number;
+  /** Without it Better Auth signs the new user in right away */
+  requireEmailVerification: boolean;
+}) {
   const t = useTranslations("Auth");
   const locale = useLocale();
   const { onSubmit, invalid, error, submitDisabled } = useAuthForm({
-    schema: signUpSchema,
-    // No session until the email is verified: show "check your email"
-    redirectTo: ({ email }) => ({
-      pathname: authRoutes.verifyEmail,
-      query: { email },
-    }),
+    schema: signUpSchema(minPasswordLength),
+    // With verification required there's no session yet: show "check your email"
+    redirectTo: ({ email }) =>
+      requireEmailVerification
+        ? { pathname: authRoutes.verifyEmail, query: { email } }
+        : authRoutes.afterSignIn,
     submit: ({ name, email, password }) =>
       authClient.signUp.email({
         name,
@@ -56,7 +63,7 @@ export function SignUpForm() {
             error={invalid.name && t("validation.name")}
           />
           <EmailField invalid={invalid.email} />
-          <NewPasswordFields invalid={invalid} />
+          <NewPasswordFields invalid={invalid} min={minPasswordLength} />
           {error && <FieldError>{t(`errors.${error}`)}</FieldError>}
           <Button type="submit" disabled={submitDisabled}>
             {t("signUp.submit")}

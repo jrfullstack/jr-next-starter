@@ -4,6 +4,7 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { Link } from "@/i18n/navigation";
 import { authRoutes } from "@/lib/auth/routes";
+import { getAuthPolicy } from "@/lib/system/policy-store";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Auth.resetPassword");
@@ -27,5 +28,11 @@ export default async function ResetPasswordPage({
     );
   }
 
-  return <ResetPasswordForm token={token} />;
+  const policy = await getAuthPolicy();
+  return (
+    <ResetPasswordForm
+      token={token}
+      minPasswordLength={policy.emailPassword.minPasswordLength}
+    />
+  );
 }

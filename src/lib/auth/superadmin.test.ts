@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   assertAssignableRole,
   assertNotSuperadminTarget,
+  assertSafeAdminUserInput,
   isSuperadmin,
   superadminRoleChange,
 } from "./superadmin";
@@ -76,5 +77,26 @@ describe("assertNotSuperadminTarget", () => {
     await expect(
       assertNotSuperadminTarget("/sign-in/email", "super-1"),
     ).resolves.toBeUndefined();
+  });
+});
+
+describe("assertSafeAdminUserInput", () => {
+  const listed = ["dev@example.com"];
+
+  it.each([
+    ["/admin/create-user", { email: "DEV@example.com" }],
+    ["/admin/create-user", { email: "a@b.com", data: { emailVerified: true } }],
+    ["/admin/update-user", { data: { email: "dev@example.com" } }],
+    ["/admin/update-user", { data: { emailVerified: true } }],
+  ])("refuses %s with %j", (path, body) => {
+    expect(() => assertSafeAdminUserInput(path, body, listed)).toThrow();
+  });
+
+  it.each([
+    ["/admin/create-user", { email: "a@b.com", name: "A" }],
+    ["/admin/update-user", { data: { name: "New name" } }],
+    ["/sign-up/email", { email: "dev@example.com" }],
+  ])("allows %s with %j", (path, body) => {
+    expect(() => assertSafeAdminUserInput(path, body, listed)).not.toThrow();
   });
 });

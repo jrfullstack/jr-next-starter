@@ -17,15 +17,15 @@ import {
 import { FieldError, FieldGroup } from "@/components/ui/field";
 import { useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
-import { createUserSchema, PASSWORD_MIN_LENGTH } from "@/lib/auth/schemas";
+import { createUserSchema } from "@/lib/auth/schemas";
 
-export function CreateUserDialog() {
+export function CreateUserDialog({ min }: { min: number }) {
   const t = useTranslations("Admin.users.create");
   const tAuth = useTranslations("Auth");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const { onSubmit, invalid, error, submitDisabled } = useAuthForm({
-    schema: createUserSchema,
+    schema: createUserSchema(min),
     submit: (data) => authClient.admin.createUser({ ...data, role: "user" }),
     onSuccess: () => {
       setOpen(false);
@@ -33,7 +33,6 @@ export function CreateUserDialog() {
       router.refresh();
     },
   });
-  const min = PASSWORD_MIN_LENGTH;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

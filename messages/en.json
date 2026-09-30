@@ -95,7 +95,9 @@
       "passwordHint": "At least {min} characters.",
       "submit": "Create account",
       "hasAccount": "Already have an account?",
-      "signInLink": "Sign in"
+      "signInLink": "Sign in",
+      "closedTitle": "Registrations closed",
+      "closedDescription": "New accounts can't be created right now."
     },
     "validation": {
       "name": "Enter your name.",
@@ -111,7 +113,9 @@
       "banned": "Your account is blocked. Contact the administrator.",
       "tooManyRequests": "Too many attempts. Wait a moment and try again.",
       "generic": "The operation could not be completed. Please try again.",
-      "emailNotVerified": "Your email isn't verified yet. We've sent you a new link."
+      "emailNotVerified": "Your email isn't verified yet. We've sent you a new link.",
+      "signUpClosed": "Registrations are closed.",
+      "signInMethodDisabled": "This sign-in method is disabled. Recover your account with another method or contact the administrator."
     },
     "verifyEmail": {
       "metaTitle": "Verify email",
@@ -188,7 +192,8 @@
     "metaTitle": "Administration",
     "panelTitle": "Administration",
     "sections": {
-      "users": "Users"
+      "users": "Users",
+      "system": "System"
     },
     "users": {
       "metaTitle": "Users",
@@ -215,11 +220,6 @@
         "unverified": "Unverified"
       },
       "empty": "No users match.",
-      "pagination": {
-        "summary": "{from}–{to} of {total}",
-        "previous": "Previous",
-        "next": "Next"
-      },
       "protected": "Protected account",
       "you": "You",
       "actions": {
@@ -257,6 +257,81 @@
         "clear": "Clear filters"
       },
       "sortBy": "Sort by {column}"
+    },
+    "pagination": {
+      "summary": "{from}–{to} of {total}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "system": {
+      "metaTitle": "System",
+      "title": "System",
+      "description": "Sign-in and registration methods of the site. Only superadmins see this section.",
+      "sections": {
+        "general": {
+          "title": "General",
+          "description": "Applies to every method."
+        },
+        "emailPassword": {
+          "title": "Email and password",
+          "description": "Registration and sign-in with email and password."
+        }
+      },
+      "fields": {
+        "general": {
+          "signUp": {
+            "label": "Allow new registrations",
+            "description": "Turn it off so nobody can create an account, with any method. Administrators can still create users."
+          }
+        },
+        "emailPassword": {
+          "signUp": {
+            "label": "Registration",
+            "description": "Create an account with email and password."
+          },
+          "access": {
+            "label": "Sign-in",
+            "description": "Sign in with email and password."
+          },
+          "requireEmailVerification": {
+            "label": "Require email verification",
+            "description": "Users can't sign in until they confirm their email."
+          },
+          "minPasswordLength": {
+            "label": "Minimum password length",
+            "description": "Between {min} and {max} characters. Applies to new passwords."
+          }
+        }
+      },
+      "value": {
+        "on": "on",
+        "off": "off"
+      },
+      "save": "Save changes",
+      "saved": "Settings saved.",
+      "invalid": "Check the highlighted values.",
+      "violations": {
+        "noAccessMethod": "At least one sign-in method must stay on.",
+        "noRecoveryMethod": "Some account recovery method must stay on.",
+        "superadminLockedOut": "A superadmin would be left without a way to sign in."
+      },
+      "errors": {
+        "forbidden": "You don't have permission to change the settings.",
+        "invalid": "Some value isn't valid.",
+        "unsafe": "The change would leave users without a way to sign in.",
+        "generic": "Couldn't save. Try again."
+      },
+      "confirm": {
+        "title": "Turn off sign-in?",
+        "description": "{count, plural, =0 {No user depends only on this method.} one {# user can only sign in with this method and will have to recover their account with another one.} other {# users can only sign in with this method and will have to recover their account with another one.}} Their open sessions stay active."
+      },
+      "history": {
+        "title": "Change history",
+        "description": "Who changed the settings and when.",
+        "empty": "No changes yet.",
+        "entry": "{actor} · {date}",
+        "change": "{section} · {field}: {from} → {to}"
+      }
     }
   },
   "UI": {

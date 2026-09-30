@@ -79,3 +79,27 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+/// App configuration chosen by the superadmin (Admin → System). Single row, id "global".
+/// The JSON is validated with Zod (src/lib/system/policy.ts), which fills in defaults.
+model SystemSetting {
+  id          String   @id
+  policy      Json
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+
+  @@map("system_setting")
+}
+
+/// Who changed the system configuration, from what to what, and when
+model SystemAuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  actorEmail String
+  before     Json
+  after      Json
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("system_audit_log")
+}

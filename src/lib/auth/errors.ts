@@ -8,6 +8,8 @@ const knownErrors = {
   BANNED_USER: "banned",
   EMAIL_NOT_VERIFIED: "emailNotVerified",
   TOO_MANY_REQUESTS: "tooManyRequests",
+  EMAIL_PASSWORD_SIGN_UP_DISABLED: "signUpClosed",
+  SIGN_IN_METHOD_DISABLED: "signInMethodDisabled",
 } as const;
 
 export type AuthErrorKey =

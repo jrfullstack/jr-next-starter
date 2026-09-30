@@ -5,6 +5,8 @@ import { parseLocale } from "@/i18n/locale";
 import { redirect } from "@/i18n/navigation";
 import { safeCallbackPath } from "@/lib/auth/routes";
 import { getSession } from "@/lib/auth/session";
+import { canSignUp } from "@/lib/system/policy";
+import { getAuthPolicy } from "@/lib/system/policy-store";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Auth.signIn");
@@ -27,9 +29,11 @@ export default async function SignInPage({
   }
 
   const t = await getTranslations("Auth.signIn");
+  const policy = await getAuthPolicy();
   return (
     <SignInForm
       callbackPath={callbackPath}
+      allowSignUp={canSignUp(policy, "emailPassword")}
       notice={reset === "success" ? t("resetDone") : undefined}
     />
   );
