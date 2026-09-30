@@ -51,6 +51,38 @@ export function assertAssignableRole(role: unknown) {
   }
 }
 
+/** Extra user fields (`body.data`) each admin endpoint may set */
+const adminUserDataFields: Record<string, readonly string[]> = {
+  "/admin/create-user": [],
+  "/admin/update-user": ["name", "image"],
+};
+
+/**
+ * Closes the back doors to superadmin: an admin could otherwise create or
+ * edit an account with a listed email and mark it verified (`data`), and
+ * that account would become superadmin on its next sign-in.
+ */
+export function assertSafeAdminUserInput(
+  path: string,
+  body: unknown,
+  superAdminEmails: readonly string[] = env.SUPER_ADMIN_EMAILS,
+) {
+  const allowed = adminUserDataFields[path];
+  if (!allowed) return;
+  const { email, data } = (body ?? {}) as { email?: unknown; data?: unknown };
+  const fields = typeof data === "object" && data !== null ? data : {};
+  const forbiddenField = Object.keys(fields).some(
+    (field) => !allowed.includes(field),
+  );
+  const listedEmail =
+    typeof email === "string" && superAdminEmails.includes(email.toLowerCase());
+  if (forbiddenField || listedEmail) {
+    throw new APIError("FORBIDDEN", {
+      message: "This account data can't be set from the admin panel",
+    });
+  }
+}
+
 /** Admin endpoints that act on another user through body.userId */
 const userTargetPaths = new Set([
   "/admin/set-role",

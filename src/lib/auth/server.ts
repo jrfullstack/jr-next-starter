@@ -6,26 +6,33 @@ import { admin } from "better-auth/plugins";
 import { after } from "next/server";
 import { env } from "@/env";
 import { db } from "@/lib/db";
+import { type AuthPolicy, canSignUp } from "@/lib/system/policy";
+import { assertPolicyAllows } from "@/lib/system/policy-guard";
+import { getAuthPolicy } from "@/lib/system/policy-store";
 import { sendAuthEmail } from "./emails";
 import { ac, roles } from "./permissions";
 import {
   assertAssignableRole,
   assertNotSuperadminTarget,
+  assertSafeAdminUserInput,
   syncSuperadminRole,
 } from "./superadmin";
 
-/** Better Auth server instance (docs/plans/auth.md). Import only from server code. */
-export const auth = betterAuth({
-  baseURL: env.NEXT_PUBLIC_APP_URL,
-  secret: env.BETTER_AUTH_SECRET,
-  database: prismaAdapter(db, { provider: "postgresql" }),
-  emailAndPassword: {
+/** Email + password, shaped by the policy (docs/plans/auth.md §5) */
+function emailAndPassword(policy: AuthPolicy) {
+  return {
     enabled: true,
-    requireEmailVerification: true,
+    disableSignUp: !canSignUp(policy, "emailPassword"),
+    requireEmailVerification: policy.emailPassword.requireEmailVerification,
+    minPasswordLength: policy.emailPassword.minPasswordLength,
     // A password change signs out every other device
     revokeSessionsOnPasswordReset: true,
     // The reset link was sent to that inbox, so resetting proves the email is theirs
-    onPasswordReset: async ({ user }) => {
+    onPasswordReset: async ({
+      user,
+    }: {
+      user: { id: string; emailVerified: boolean };
+    }) => {
       if (user.emailVerified) return;
       await db.user.update({
         where: { id: user.id },
@@ -33,7 +40,13 @@ export const auth = betterAuth({
       });
     },
     // Sent after the response so timing doesn't reveal whether the email exists
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({
+      user,
+      url,
+    }: {
+      user: { email: string; name: string };
+      url: string;
+    }) => {
       after(() =>
         sendAuthEmail("resetPassword", {
           to: user.email,
@@ -42,40 +55,82 @@ export const auth = betterAuth({
         }),
       );
     },
+  };
+}
+
+const emailVerification = {
+  sendOnSignUp: true,
+  // Signing in unverified sends a fresh link
+  sendOnSignIn: true,
+  autoSignInAfterVerification: true,
+  sendVerificationEmail: async ({
+    user,
+    url,
+  }: {
+    user: { email: string; name: string };
+    url: string;
+  }) => {
+    after(() =>
+      sendAuthEmail("verifyEmail", { to: user.email, name: user.name, url }),
+    );
   },
-  emailVerification: {
-    sendOnSignUp: true,
-    // Signing in unverified sends a fresh link
-    sendOnSignIn: true,
-    autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
-      after(() =>
-        sendAuthEmail("verifyEmail", { to: user.email, name: user.name, url }),
-      );
+};
+
+function createAuth(policy: AuthPolicy) {
+  return betterAuth({
+    baseURL: env.NEXT_PUBLIC_APP_URL,
+    secret: env.BETTER_AUTH_SECRET,
+    database: prismaAdapter(db, { provider: "postgresql" }),
+    emailAndPassword: emailAndPassword(policy),
+    emailVerification,
+    databaseHooks: {
+      session: {
+        // Every sign-in recomputes superadmin (docs/plans/auth.md §3)
+        create: { after: (session) => syncSuperadminRole(session.userId) },
+      },
     },
-  },
-  databaseHooks: {
-    session: {
-      // Every sign-in recomputes superadmin (docs/plans/auth.md §3)
-      create: { after: (session) => syncSuperadminRole(session.userId) },
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        // Disabled methods are refused here, even when the API is called directly
+        assertPolicyAllows(policy, ctx.path, ctx.body);
+        if (
+          ctx.path === "/admin/set-role" ||
+          ctx.path === "/admin/create-user"
+        ) {
+          assertAssignableRole(ctx.body?.role);
+        }
+        assertSafeAdminUserInput(ctx.path, ctx.body);
+        await assertNotSuperadminTarget(ctx.path, ctx.body?.userId);
+      }),
     },
-  },
-  hooks: {
-    before: createAuthMiddleware(async (ctx) => {
-      if (ctx.path === "/admin/set-role" || ctx.path === "/admin/create-user") {
-        assertAssignableRole(ctx.body?.role);
-      }
-      await assertNotSuperadminTarget(ctx.path, ctx.body?.userId);
-    }),
-  },
-  plugins: [
-    admin({
-      ac,
-      roles,
-      defaultRole: "user",
-      adminRoles: ["admin", "superadmin"],
-    }),
-    // Must be the last plugin: sets cookies from Server Actions
-    nextCookies(),
-  ],
-});
+    plugins: [
+      admin({
+        ac,
+        roles,
+        defaultRole: "user",
+        adminRoles: ["admin", "superadmin"],
+      }),
+      // Must be the last plugin: sets cookies from Server Actions
+      nextCookies(),
+    ],
+  });
+}
+
+type Auth = ReturnType<typeof createAuth>;
+
+let current: { policyKey: string; auth: Auth } | undefined;
+
+/**
+ * Better Auth instance for the current policy (docs/plans/auth.md §4).
+ * Rebuilt only when the superadmin changes the policy, so Better Auth itself
+ * enforces closed sign-ups, email verification and password length.
+ * Import only from server code.
+ */
+export async function getAuth() {
+  const policy = await getAuthPolicy();
+  const policyKey = JSON.stringify(policy);
+  if (current?.policyKey !== policyKey) {
+    current = { policyKey, auth: createAuth(policy) };
+  }
+  return current.auth;
+}

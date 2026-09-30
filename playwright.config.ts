@@ -47,6 +47,14 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      testIgnore: /system\.spec\.ts/,
+    },
+    /* Changes app-wide settings (e.g. closes registrations): runs alone, after the rest */
+    {
+      name: "system",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: /system\.spec\.ts/,
+      dependencies: ["chromium"],
     },
 
     // {

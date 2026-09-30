@@ -175,7 +175,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
   - [x] **2. Emails y superadmin:** verificación de email obligatoria, recuperar contraseña, Resend + React Email con bandeja de desarrollo, rol `superadmin` calculado desde `SUPER_ADMIN_EMAILS`
   - [x] **3. Panel `/admin` y usuarios:** menú lateral según permisos; usuarios con búsqueda, filtros por rol y estado, orden por columna y paginación (todo en el servidor), crear, bloquear/desbloquear, cerrar sesiones y (solo superadmin) cambiar rol; las cuentas superadmin no se pueden gestionar
   - [x] **Carga moderna:** Cache Components activado (shell estático + streaming), `loading.tsx` con skeletons idénticos al diseño en cada página (verificado por un test) y Suspense granular en el panel
-  - [ ] 4. Sistema (configuración de métodos)
+  - [x] **4. Sistema:** `/admin/system` (solo superadmin) para abrir o cerrar registros y configurar email + contraseña (registro, acceso, verificación obligatoria, longitud mínima) sin tocar código; Better Auth se construye con esa configuración, un hook bloquea los métodos desactivados, salvaguardas para no dejar a nadie sin acceso e historial de cambios
   - [ ] 5. Magic link
   - [ ] 6. Google
   - [ ] 7. 2FA
@@ -376,7 +376,7 @@ Lo que se puede corregir solo se corrige en tres momentos:
 | --- | --- | --- | --- |
 | `DATABASE_URL` | Servidor (secreta) | Sí | Conexión a PostgreSQL para Prisma |
 | `BETTER_AUTH_SECRET` | Servidor (secreta) | Sí | Firma de sesiones y tokens de Better Auth (mínimo 32 caracteres) |
-| `SUPER_ADMIN_EMAILS` | Servidor | Sí | Emails de los desarrolladores (`superadmin` si además están verificados) |
+| `SUPER_ADMIN_EMAILS` | Servidor | Sí | Emails de los desarrolladores (`superadmin` si además están verificados). Para los e2e en local, añade `e2e-superadmin@example.com` |
 | `RESEND_API_KEY` | Servidor (secreta) | No | Envío real de emails con Resend. Sin ella, van a la bandeja de desarrollo |
 | `EMAIL_FROM` | Servidor | Con Resend | Remitente, con dominio verificado en Resend |
 | `EMAIL_DEV_OUTBOX` | Servidor | No (solo CI) | Activa la bandeja de desarrollo en un build de producción |
@@ -510,7 +510,8 @@ pnpm e2e:ui        # e2e con interfaz visual
   NEXT_PUBLIC_APP_URL=http://localhost:3100 pnpm build && CI=1 PORT=3100 NEXT_PUBLIC_APP_URL=http://localhost:3100 pnpm e2e
   ```
 
-- **Base de datos en e2e:** los tests de autenticación usan la base de `DATABASE_URL`. Crean usuarios `e2e-…@example.com` y `e2e/global-teardown.ts` los borra al terminar. En CI, el job de E2E levanta su propio PostgreSQL temporal y aplica las migraciones.
+- **Base de datos en e2e:** los tests de autenticación usan la base de `DATABASE_URL`. Crean usuarios `e2e-…@example.com` y `e2e/global-teardown.ts` los borra al terminar (también los cambios que hicieron en Sistema). En CI, el job de E2E levanta su propio PostgreSQL temporal y aplica las migraciones.
+- **Superadmin en e2e:** `e2e/system.spec.ts` entra como `e2e-superadmin@example.com`, que tiene que estar en `SUPER_ADMIN_EMAILS` (en CI ya lo está). Cambia configuración de toda la app, así que corre en su propio proyecto de Playwright, después del resto.
 - **Limitación:** Vitest no puede renderizar Server Components `async`. Esos se prueban con Playwright.
 - En cada commit, lint-staged ejecuta `vitest related --run`: solo los tests afectados por los archivos que cambiaste.
 - **Qué testear y qué no:** criterio en [`AGENTS.md`](AGENTS.md#qué-testear-y-qué-no). En resumen: solo lógica o configuración propia, flujos de usuario en e2e agrupados, y nada que ya garanticen TypeScript o las librerías.
@@ -638,7 +639,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── robots.ts               # robots.txt
 │   │   └── sitemap.ts              # sitemap.xml
 │   ├── components
-│   │   ├── admin                   # Menú, lista de usuarios y sus skeletons
+│   │   ├── admin                   # Menú, usuarios, Sistema y sus skeletons
 │   │   ├── auth                    # Formularios de autenticación y sus skeletons
 │   │   ├── ui                      # Componentes de shadcn/ui
 │   │   ├── analytics.tsx           # Google Analytics (solo si hay ID)
@@ -663,6 +664,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── admin                   # Secciones del panel y lógica de la tabla de usuarios
 │   │   ├── auth                    # Better Auth: servidor, cliente, permisos, rutas, sesión, emails, superadmin
 │   │   ├── email                   # Envío (Resend) y bandeja de desarrollo
+│   │   ├── system                  # Configuración de autenticación: política, caché, hook, historial
 │   │   ├── db.ts                   # Cliente de Prisma singleton
 │   │   ├── seo.ts                  # URLs absolutas, canonical y hreflang
 │   │   └── utils.ts                # Utilidades (cn)

@@ -1,5 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { can } from "@/lib/auth/permissions";
+import { parsePage } from "@/lib/search-params";
 
 export const USERS_PAGE_SIZE = 20;
 
@@ -34,14 +35,13 @@ function pick<T extends string>(value: unknown, allowed: readonly T[]) {
 export function parseUsersQuery(searchParams: SearchParams): UsersQuery {
   const search =
     typeof searchParams.q === "string" ? searchParams.q.trim() : "";
-  const page = Number(searchParams.page);
   return {
     search,
     role: pick(searchParams.role, userRoles),
     status: pick(searchParams.status, userStatuses),
     sort: pick(searchParams.sort, userSortFields) ?? defaultSort.sort,
     order: pick(searchParams.order, ["asc", "desc"]) ?? defaultSort.order,
-    page: Number.isInteger(page) && page > 1 ? page : 1,
+    page: parsePage(searchParams.page),
   };
 }
 

@@ -95,7 +95,9 @@
       "passwordHint": "Mínimo {min} caracteres.",
       "submit": "Crear cuenta",
       "hasAccount": "¿Ya tienes cuenta?",
-      "signInLink": "Inicia sesión"
+      "signInLink": "Inicia sesión",
+      "closedTitle": "Registros cerrados",
+      "closedDescription": "Ahora mismo no se pueden crear cuentas nuevas."
     },
     "validation": {
       "name": "Introduce tu nombre.",
@@ -111,7 +113,9 @@
       "banned": "Tu cuenta está bloqueada. Contacta con el administrador.",
       "tooManyRequests": "Demasiados intentos. Espera un momento y vuelve a probar.",
       "generic": "No se pudo completar la operación. Inténtalo de nuevo.",
-      "emailNotVerified": "Tu email aún no está verificado. Te hemos enviado un nuevo enlace."
+      "emailNotVerified": "Tu email aún no está verificado. Te hemos enviado un nuevo enlace.",
+      "signUpClosed": "Los registros están cerrados.",
+      "signInMethodDisabled": "Este método de acceso está desactivado. Recupera tu cuenta con otro método o contacta con el administrador."
     },
     "verifyEmail": {
       "metaTitle": "Verificar email",
@@ -188,7 +192,8 @@
     "metaTitle": "Administración",
     "panelTitle": "Administración",
     "sections": {
-      "users": "Usuarios"
+      "users": "Usuarios",
+      "system": "Sistema"
     },
     "users": {
       "metaTitle": "Usuarios",
@@ -215,11 +220,6 @@
         "unverified": "Sin verificar"
       },
       "empty": "No hay usuarios que coincidan.",
-      "pagination": {
-        "summary": "{from}–{to} de {total}",
-        "previous": "Anterior",
-        "next": "Siguiente"
-      },
       "protected": "Cuenta protegida",
       "you": "Tú",
       "actions": {
@@ -257,6 +257,81 @@
         "clear": "Limpiar filtros"
       },
       "sortBy": "Ordenar por {column}"
+    },
+    "pagination": {
+      "summary": "{from}–{to} de {total}",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "system": {
+      "metaTitle": "Sistema",
+      "title": "Sistema",
+      "description": "Métodos de acceso y registro de la web. Solo los superadmins ven esta sección.",
+      "sections": {
+        "general": {
+          "title": "General",
+          "description": "Afecta a todos los métodos."
+        },
+        "emailPassword": {
+          "title": "Email y contraseña",
+          "description": "Registro y acceso con email y contraseña."
+        }
+      },
+      "fields": {
+        "general": {
+          "signUp": {
+            "label": "Permitir registros nuevos",
+            "description": "Desactívalo para que nadie pueda crear una cuenta, con ningún método. Los administradores pueden seguir creando usuarios."
+          }
+        },
+        "emailPassword": {
+          "signUp": {
+            "label": "Registro",
+            "description": "Crear una cuenta con email y contraseña."
+          },
+          "access": {
+            "label": "Acceso",
+            "description": "Iniciar sesión con email y contraseña."
+          },
+          "requireEmailVerification": {
+            "label": "Verificación de email obligatoria",
+            "description": "No se puede entrar hasta confirmar el email."
+          },
+          "minPasswordLength": {
+            "label": "Longitud mínima de la contraseña",
+            "description": "Entre {min} y {max} caracteres. Se aplica a contraseñas nuevas."
+          }
+        }
+      },
+      "value": {
+        "on": "activado",
+        "off": "desactivado"
+      },
+      "save": "Guardar cambios",
+      "saved": "Configuración guardada.",
+      "invalid": "Revisa los valores marcados.",
+      "violations": {
+        "noAccessMethod": "Tiene que quedar al menos un método de acceso activo.",
+        "noRecoveryMethod": "Tiene que quedar activo algún método para recuperar la cuenta.",
+        "superadminLockedOut": "Algún superadmin se quedaría sin forma de entrar."
+      },
+      "errors": {
+        "forbidden": "No tienes permiso para cambiar la configuración.",
+        "invalid": "Algún valor no es válido.",
+        "unsafe": "El cambio dejaría a usuarios sin forma de entrar.",
+        "generic": "No se pudo guardar. Inténtalo de nuevo."
+      },
+      "confirm": {
+        "title": "¿Desactivar el acceso?",
+        "description": "{count, plural, =0 {Ningún usuario depende solo de este método.} one {# usuario solo puede entrar con este método: tendrá que recuperar su cuenta con otro.} other {# usuarios solo pueden entrar con este método: tendrán que recuperar su cuenta con otro.}} Sus sesiones abiertas siguen activas."
+      },
+      "history": {
+        "title": "Historial de cambios",
+        "description": "Quién cambió la configuración y cuándo.",
+        "empty": "Todavía no hay cambios.",
+        "entry": "{actor} · {date}",
+        "change": "{section} · {field}: {from} → {to}"
+      }
     }
   },
   "UI": {

@@ -18,7 +18,8 @@ env:
   DATABASE_URL: postgresql://user:password@localhost:5432/ci
   NEXT_PUBLIC_APP_URL: http://localhost:3000
   BETTER_AUTH_SECRET: ci-only-secret-with-at-least-32-characters
-  SUPER_ADMIN_EMAILS: dev@example.com
+  # e2e-superadmin@example.com: the superadmin of the e2e tests (e2e/test-users.ts)
+  SUPER_ADMIN_EMAILS: dev@example.com,e2e-superadmin@example.com
   # Opt out of Next.js and Prisma CLI telemetry
   NEXT_TELEMETRY_DISABLED: 1
   CHECKPOINT_DISABLE: 1

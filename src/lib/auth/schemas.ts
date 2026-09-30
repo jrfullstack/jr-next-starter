@@ -1,12 +1,16 @@
 import { z } from "zod";
 
-/** Better Auth's default minimum; the System panel will make it configurable (step 4) */
-export const PASSWORD_MIN_LENGTH = 8;
+/*
+ * Forms that set a password take the minimum from the auth policy
+ * (Admin → System), read on the server and passed down to the form.
+ */
 
-const newPasswordFields = {
-  password: z.string().min(PASSWORD_MIN_LENGTH),
-  confirmPassword: z.string(),
-};
+function newPasswordFields(minPasswordLength: number) {
+  return {
+    password: z.string().min(minPasswordLength),
+    confirmPassword: z.string(),
+  };
+}
 
 const passwordsMatch: [
   (data: { password: string; confirmPassword: string }) => boolean,
@@ -21,29 +25,41 @@ export const signInSchema = z.object({
   password: z.string().min(1),
 });
 
-export const signUpSchema = z
-  .object({
-    name: z.string().trim().min(1),
-    email: z.email(),
-    ...newPasswordFields,
-  })
-  .refine(...passwordsMatch);
+export function signUpSchema(minPasswordLength: number) {
+  return z
+    .object({
+      name: z.string().trim().min(1),
+      email: z.email(),
+      ...newPasswordFields(minPasswordLength),
+    })
+    .refine(...passwordsMatch);
+}
 
 export const forgotPasswordSchema = z.object({ email: z.email() });
 
 /** Admin panel: new account (it verifies its email on first sign-in) */
-export const createUserSchema = z.object({
-  name: z.string().trim().min(1),
-  email: z.email(),
-  password: z.string().min(PASSWORD_MIN_LENGTH),
-});
+export function createUserSchema(minPasswordLength: number) {
+  return z.object({
+    name: z.string().trim().min(1),
+    email: z.email(),
+    password: z.string().min(minPasswordLength),
+  });
+}
 
-export const resetPasswordSchema = z
-  .object(newPasswordFields)
-  .refine(...passwordsMatch);
+export function resetPasswordSchema(minPasswordLength: number) {
+  return z
+    .object(newPasswordFields(minPasswordLength))
+    .refine(...passwordsMatch);
+}
+
+const authFields = ["name", "email", "password", "confirmPassword"] as const;
 
 /** Form fields that can show a validation message (keys of Auth.validation in messages) */
-export type AuthField = keyof z.input<typeof signUpSchema>;
+export type AuthField = (typeof authFields)[number];
+
+function isAuthField(field: unknown): field is AuthField {
+  return authFields.some((known) => known === field);
+}
 
 /** First invalid field of each path, e.g. { email: true, confirmPassword: true } */
 export function invalidFields(
@@ -52,9 +68,7 @@ export function invalidFields(
   const fields: Partial<Record<AuthField, true>> = {};
   for (const issue of error.issues) {
     const field = issue.path[0];
-    if (typeof field === "string" && field in signUpSchema.shape) {
-      fields[field as AuthField] = true;
-    }
+    if (isAuthField(field)) fields[field] = true;
   }
   return fields;
 }

@@ -1,11 +1,17 @@
-import { UsersPageHeader } from "@/components/admin/users-page-header";
+import { getTranslations } from "next-intl/server";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { CreateUserButtonSkeleton } from "@/components/admin/create-user-button";
 import { UsersListSkeleton } from "@/components/admin/users-skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
 
-export default function Loading() {
+export default async function Loading() {
+  const t = await getTranslations("Admin.users");
   return (
     <>
-      <UsersPageHeader action={<Skeleton className="h-8 w-32 rounded-lg" />} />
+      <AdminPageHeader
+        title={t("title")}
+        description={t("description")}
+        action={<CreateUserButtonSkeleton />}
+      />
       <UsersListSkeleton />
     </>
   );

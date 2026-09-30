@@ -1,6 +1,6 @@
 # Plan: autenticación y panel de administración
 
-> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin) y 3 (Panel y usuarios) hechos; el resto, pendiente.
+> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios) y 4 (Sistema) hechos; el resto, pendiente.
 
 ## 1. Objetivo
 
@@ -136,7 +136,47 @@ Una rama por paso, revisada en local antes de subir:
 
 Cada paso deja la app funcionando, con sus tests, y actualiza el README (roadmap, librerías, variables de entorno).
 
-## 13. Fuera de alcance
+## 13. Paso 4 en detalle: Sistema
+
+> Estado: **hecho**.
+
+### Datos (una migración)
+
+| Tabla | Contenido |
+| --- | --- |
+| `system_setting` | Una sola fila (`id = "global"`) con la política en JSON, `updatedAt` y `updatedById` |
+| `system_audit_log` | Cada cambio: quién (id y email), antes, después y cuándo |
+
+- La política se valida con un **esquema Zod con valores por defecto**: si la fila no existe o le faltan campos (métodos que se añadan en pasos futuros), se completan sin otra migración.
+- Valores por defecto = comportamiento actual: registros abiertos, email + contraseña con registro y acceso, verificación obligatoria, contraseña mínima de 8.
+
+### Aplicación de la política
+
+- **Instancia de Better Auth construida a partir de la política** (`getAuth()`), memorizada por versión de la política. Así, registro cerrado, verificación obligatoria y longitud mínima los aplica Better Auth de forma nativa (`disableSignUp`, `requireEmailVerification`, `minPasswordLength`), sin reimplementar su lógica.
+- **Before hook** para lo que Better Auth no separa: rechazar el **acceso** con un método desactivado (aunque se llame a la API directamente), con un código de error propio traducido.
+- **Lectura con caché**: `"use cache"` + `cacheTag("auth-policy")` y vida corta; al guardar, `updateTag` la invalida al instante.
+- **Interfaz**: el login y el registro reciben la política desde el servidor. Con los registros cerrados, `/sign-up` muestra un aviso y desaparecen los enlaces a registrarse; los formularios validan la longitud mínima configurada.
+
+### Página `/admin/system` (solo `superadmin`, permiso `system`)
+
+- Sección nueva en `src/lib/admin/sections.ts`; el menú la muestra solo al `superadmin`.
+- Tarjetas **General** y **Email + contraseña** con las opciones de la sección 5. Los métodos de los pasos 5 a 8 añadirán su tarjeta.
+- Guardado con **Server Action** (`requirePermission` de nuevo en el servidor, validación Zod, política y registro en una transacción).
+- **Historial de cambios** debajo, con paginación en el servidor.
+- `loading.tsx` con skeleton idéntico y Suspense, según `AGENTS.md`.
+
+### Salvaguardas
+
+- Desactivar el **acceso** de un método: el diálogo muestra cuántos usuarios dependen **solo** de él y pide confirmación.
+- El servidor lo **rechaza** si deja a un `superadmin` sin forma de entrar o si no queda ningún método de recuperación. En este paso, email + contraseña es el único método, así que su acceso **no se puede desactivar** hasta que exista el magic link (paso 5). La salvaguarda queda programada y probada desde ya.
+- Las sesiones abiertas siguen válidas.
+
+### Tests
+
+- **Unitarios**: esquema de la política (defaults, límites), salvaguardas (función pura: política nueva + usuarios afectados → errores), mapa ruta de la API → método/acción del hook.
+- **E2E** (serie, restaurando la política al terminar): el `superadmin` cierra los registros → `/sign-up` muestra el aviso y la API lo rechaza → aparece en el historial → los vuelve a abrir; un `admin` recibe 404 en `/admin/system`. El `superadmin` de los e2e usa un email de `SUPER_ADMIN_EMAILS` (en CI, `dev@example.com`).
+
+## 14. Fuera de alcance
 
 - Suplantar usuarios (fase posterior, solo `superadmin`, con aviso visible, salida y registro).
 - Otros proveedores OAuth (GitHub, Microsoft, Apple…): la arquitectura los admite, se añadirán cuando hagan falta.

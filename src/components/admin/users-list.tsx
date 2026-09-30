@@ -1,17 +1,22 @@
 import type { Locale } from "next-intl";
 import { Suspense } from "react";
 import { redirect } from "@/i18n/navigation";
-import { adminSections } from "@/lib/admin/sections";
-import { parseUsersQuery, type UsersQuery, usersHref } from "@/lib/admin/users";
+import { adminSection } from "@/lib/admin/sections";
+import {
+  parseUsersQuery,
+  USERS_PAGE_SIZE,
+  type UsersQuery,
+  usersHref,
+} from "@/lib/admin/users";
 import { findUsersPage } from "@/lib/admin/users-query";
 import { requirePermission } from "@/lib/auth/authorization";
 import { hasCanonicalParams } from "@/lib/search-params";
+import { ListPagination } from "./list-pagination";
 import { UsersFilters } from "./users-filters";
-import { UsersPagination } from "./users-pagination";
 import { UsersTableSkeleton } from "./users-skeletons";
 import { UsersTable } from "./users-table";
 
-const section = adminSections[0];
+const section = adminSection("users");
 
 type Actor = { id: string; role?: string | null };
 
@@ -27,7 +32,12 @@ async function UsersResults({
   return (
     <>
       <UsersTable users={users} actor={actor} query={query} />
-      <UsersPagination query={query} total={total} />
+      <ListPagination
+        page={query.page}
+        pageSize={USERS_PAGE_SIZE}
+        total={total}
+        hrefFor={(page) => usersHref(query, { page })}
+      />
     </>
   );
 }

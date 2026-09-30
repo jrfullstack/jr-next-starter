@@ -25,6 +25,7 @@ Cada dato vive en **un solo lugar**. Antes de escribir un valor, búscalo aquí;
 | Validar un locale / params estáticos | `src/i18n/locale.ts` | `parseLocale`, `localeStaticParams` |
 | Roles y permisos | `src/lib/auth/permissions.ts` | `can(role, { user: ["ban"] })` (cliente y servidor); `requirePermission` en páginas |
 | Secciones del panel `/admin` | `src/lib/admin/sections.ts` | Añade aquí cada sección nueva con su permiso: menú y protección salen de ahí |
+| Configuración de autenticación (Sistema) | `src/lib/system/policy.ts` (esquema y valores por defecto) | Servidor: `getAuthPolicy()`; Better Auth: `getAuth()`. Nunca valores fijos como la longitud mínima de contraseña |
 | Enlaces y navegación | `src/i18n/navigation.ts` | `Link`, `useRouter`, `redirect`… 🔒 `noRestrictedImports` |
 | URLs absolutas, canonical, hreflang | `src/lib/seo.ts` | `absoluteUrl`, `pageAlternates` |
 | Rutas indexables | `src/app/sitemap.ts` (`routes`) | Añade cada página pública nueva |

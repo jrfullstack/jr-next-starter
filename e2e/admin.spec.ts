@@ -1,14 +1,6 @@
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { test } from "./fixtures";
-import { createTestUser } from "./test-users";
-
-async function signInAs(page: Page, email: string, password: string) {
-  await page.goto("/es/sign-in");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Contraseña", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Iniciar sesión" }).click();
-  await expect(page).toHaveURL(/\/es\/dashboard$/);
-}
+import { createTestUser, signInAs } from "./test-users";
 
 test("an admin blocks, unblocks and signs out a user from the panel", async ({
   page,
@@ -70,6 +62,13 @@ test("an admin blocks, unblocks and signs out a user from the panel", async ({
   await page.getByRole("menuitem", { name: "Cerrar sesiones" }).click();
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect(page.getByRole("alertdialog")).toHaveCount(0);
+
+  // System is for superadmins only: not in the menu, 404 by URL
+  await expect(page.getByRole("link", { name: "Sistema" })).toHaveCount(0);
+  await page.goto("/es/admin/system");
+  await expect(
+    page.getByRole("heading", { name: "Página no encontrada" }),
+  ).toBeVisible();
 });
 
 test("the users list sorts by column on the server", async ({
