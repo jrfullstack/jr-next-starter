@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/jrfullstack/jr-next-starter/compare/v0.6.0...v0.6.1) (2026-09-30)
+
+
+### 🐛 Correcciones
+
+* use an inline placeholder in the auth skeleton footer to avoid a div inside p ([#16](https://github.com/jrfullstack/jr-next-starter/issues/16)) ([829dab6](https://github.com/jrfullstack/jr-next-starter/commit/829dab657831ba7f10b18db2e5df580a87324ecd))
+
 ## [0.6.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.5.0...v0.6.0) (2026-09-30)
 
 
