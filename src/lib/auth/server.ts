@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { createAuthMiddleware } from "better-auth/api";
+import { createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { admin, magicLink } from "better-auth/plugins";
 import { after } from "next/server";
@@ -12,6 +12,7 @@ import {
   disabledMethodRedirect,
 } from "@/lib/system/policy-guard";
 import { getAuthPolicy } from "@/lib/system/policy-store";
+import { assertKeepsSignInMethod } from "./account-guard";
 import { sendAuthEmail } from "./emails";
 import { ac, roles } from "./permissions";
 import {
@@ -140,6 +141,16 @@ function createAuth(policy: AuthPolicy) {
           assertAssignableRole(ctx.body?.role);
         }
         assertSafeAdminUserInput(ctx.path, ctx.body);
+        if (ctx.path === "/unlink-account") {
+          const session = await getSessionFromCtx(ctx);
+          if (session) {
+            await assertKeepsSignInMethod(
+              policy,
+              session.user.id,
+              ctx.body?.accountId,
+            );
+          }
+        }
         await assertNotSuperadminTarget(ctx.path, ctx.body?.userId);
       }),
     },

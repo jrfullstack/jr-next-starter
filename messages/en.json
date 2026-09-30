@@ -72,7 +72,8 @@
       "name": "Name",
       "email": "Email",
       "password": "Password",
-      "confirmPassword": "Confirm password"
+      "confirmPassword": "Confirm password",
+      "currentPassword": "Current password"
     },
     "placeholders": {
       "name": "Your name",
@@ -103,7 +104,8 @@
       "name": "Enter your name.",
       "email": "Enter a valid email.",
       "password": "Password must be at least {min} characters.",
-      "confirmPassword": "Passwords don't match."
+      "confirmPassword": "Passwords don't match.",
+      "currentPassword": "Enter your current password."
     },
     "errors": {
       "invalidCredentials": "Invalid email or password.",
@@ -115,7 +117,10 @@
       "generic": "The operation could not be completed. Please try again.",
       "emailNotVerified": "Your email isn't verified yet. We've sent you a new link.",
       "signUpClosed": "Registrations are closed.",
-      "signInMethodDisabled": "This sign-in method is disabled. Recover your account with another method or contact the administrator."
+      "signInMethodDisabled": "This sign-in method is disabled. Recover your account with another method or contact the administrator.",
+      "invalidCurrentPassword": "The current password isn't correct.",
+      "lastSignInMethod": "It's your only way to sign in: add another one before removing it.",
+      "sessionNotFresh": "For security, sign in again to make this change."
     },
     "verifyEmail": {
       "metaTitle": "Verify email",
@@ -160,7 +165,9 @@
       "noAccount": "There's no account with that email and registrations are closed.",
       "accountNotLinked": "There's an unverified account with that email. Sign in with your usual method and verify the email to use Google.",
       "cancelled": "You cancelled signing in with Google.",
-      "generic": "Couldn't sign in. Try again."
+      "generic": "Couldn't sign in. Try again.",
+      "alreadyLinked": "That Google account is already linked to another user.",
+      "emailMismatch": "That Google account's email doesn't match yours."
     },
     "google": {
       "continue": "Continue with Google",
@@ -174,7 +181,8 @@
     "account": "Account",
     "dashboard": "Dashboard",
     "signOut": "Sign out",
-    "admin": "Administration"
+    "admin": "Administration",
+    "security": "Security"
   },
   "Dashboard": {
     "metaTitle": "Dashboard",
@@ -260,9 +268,7 @@
         "banTitle": "Block {name}?",
         "banDescription": "They won't be able to sign in and all their sessions will be closed.",
         "revokeTitle": "Sign {name} out everywhere?",
-        "revokeDescription": "They'll have to sign in again on every device.",
-        "cancel": "Cancel",
-        "confirm": "Confirm"
+        "revokeDescription": "They'll have to sign in again on every device."
       },
       "create": {
         "open": "Create user",
@@ -399,5 +405,53 @@
     "sidebar": "Sidebar",
     "toggleSidebar": "Toggle sidebar",
     "sidebarDescription": "Displays the mobile sidebar."
+  },
+  "Confirm": {
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "Account": {
+    "security": {
+      "metaTitle": "Security",
+      "title": "Security",
+      "description": "Your password, linked accounts and the devices where you're signed in.",
+      "password": {
+        "title": "Password",
+        "changeDescription": "Changing it signs you out on your other devices.",
+        "setDescription": "Your account has no password: you sign in with a link or with Google. Create one to sign in with it too.",
+        "change": "Change password",
+        "set": "Create password",
+        "changed": "Password changed. You were signed out on your other devices.",
+        "created": "Password created."
+      },
+      "linked": {
+        "title": "Linked accounts",
+        "description": "Services you can also sign in with.",
+        "google": "Google",
+        "linkedStatus": "Linked",
+        "notLinkedStatus": "Not linked",
+        "link": "Link",
+        "unlink": "Unlink",
+        "lastMethod": "It's your only way to sign in: add another one before unlinking it.",
+        "confirmTitle": "Unlink Google?",
+        "confirmDescription": "You won't be able to sign in with Google until you link it again.",
+        "unlinked": "Google unlinked."
+      },
+      "sessions": {
+        "title": "Sessions",
+        "description": "Devices where you're signed in.",
+        "unknownDevice": "Unknown device",
+        "current": "This device",
+        "detail": "{ip} · last active: {date}",
+        "unknownIp": "Unknown IP",
+        "revoke": "Sign out",
+        "revokeOthers": "Sign out other sessions",
+        "confirmTitle": "Sign out other sessions?",
+        "confirmDescription": "You'll have to sign in again on those devices.",
+        "revoked": "Session signed out.",
+        "revokedOthers": "Other sessions signed out.",
+        "error": "Couldn't sign the session out. Try again."
+      }
+    }
   }
 }

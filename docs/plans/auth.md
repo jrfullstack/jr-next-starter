@@ -1,6 +1,6 @@
 # Plan: autenticación y panel de administración
 
-> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios), 4 (Sistema), 5 (Magic link) y 6 (Google) hechos; el resto, pendiente.
+> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios), 4 (Sistema), 5 (Magic link), 6 (Google) y 7a (Cuenta → Seguridad) hechos; el resto, pendiente.
 
 ## 1. Objetivo
 
@@ -258,7 +258,7 @@ Nueva tarjeta **Magic link** en Sistema; los campos nuevos entran con su valor p
 
 Es el paso más grande y el más sensible, así que se entrega en **dos PR encadenados**:
 
-### 7a. Cuenta → Seguridad (`/account/security`)
+### 7a. Cuenta → Seguridad (`/account/security`) · hecho
 
 Página del usuario (cualquier rol), necesaria antes del 2FA porque es donde se configura:
 

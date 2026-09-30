@@ -1,14 +1,7 @@
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
+import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Field,
   FieldContent,
@@ -44,30 +37,13 @@ export function settingId(field: SettingField) {
 }
 
 function SettingsCard({
-  title,
-  description,
-  action,
   children,
-}: {
-  title: string;
-  description: string;
-  /** Top-right corner, e.g. a "Not configured" badge */
-  action?: ReactNode;
-  children: ReactNode;
-}) {
+  ...card
+}: ComponentProps<typeof SectionCard>) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h2>{title}</h2>
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
-        {action && <CardAction>{action}</CardAction>}
-      </CardHeader>
-      <CardContent>
-        <FieldGroup>{children}</FieldGroup>
-      </CardContent>
-    </Card>
+    <SectionCard {...card}>
+      <FieldGroup>{children}</FieldGroup>
+    </SectionCard>
   );
 }
 

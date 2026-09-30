@@ -6,7 +6,6 @@ import { Suspense } from "react";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminSidebarSkeleton } from "@/components/admin/admin-sidebar-skeleton";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/sonner";
 import { parseLocale } from "@/i18n/locale";
 import { visibleSections } from "@/lib/admin/sections";
 import { requireSession } from "@/lib/auth/session";
@@ -43,7 +42,6 @@ export default async function AdminLayout({
         <AdminNavigation locale={locale} />
       </Suspense>
       <main className="min-w-0 flex-1 px-4 py-8 md:px-8">{children}</main>
-      <Toaster />
     </SidebarProvider>
   );
 }

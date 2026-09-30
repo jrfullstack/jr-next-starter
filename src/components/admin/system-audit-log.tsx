@@ -2,13 +2,7 @@ import type { Locale } from "next-intl";
 import { useFormatter, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { SectionCard } from "@/components/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { redirect } from "@/i18n/navigation";
 import { adminSection } from "@/lib/admin/sections";
@@ -30,15 +24,9 @@ function historyHref(page: number) {
 export function AuditLogCard({ children }: { children: ReactNode }) {
   const t = useTranslations("Admin.system.history");
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h2>{t("title")}</h2>
-        </CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+    <SectionCard title={t("title")} description={t("description")}>
+      {children}
+    </SectionCard>
   );
 }
 

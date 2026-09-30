@@ -72,7 +72,8 @@
       "name": "Nombre",
       "email": "Email",
       "password": "Contraseña",
-      "confirmPassword": "Confirmar contraseña"
+      "confirmPassword": "Confirmar contraseña",
+      "currentPassword": "Contraseña actual"
     },
     "placeholders": {
       "name": "Tu nombre",
@@ -103,7 +104,8 @@
       "name": "Introduce tu nombre.",
       "email": "Introduce un email válido.",
       "password": "La contraseña debe tener al menos {min} caracteres.",
-      "confirmPassword": "Las contraseñas no coinciden."
+      "confirmPassword": "Las contraseñas no coinciden.",
+      "currentPassword": "Introduce tu contraseña actual."
     },
     "errors": {
       "invalidCredentials": "Email o contraseña incorrectos.",
@@ -115,7 +117,10 @@
       "generic": "No se pudo completar la operación. Inténtalo de nuevo.",
       "emailNotVerified": "Tu email aún no está verificado. Te hemos enviado un nuevo enlace.",
       "signUpClosed": "Los registros están cerrados.",
-      "signInMethodDisabled": "Este método de acceso está desactivado. Recupera tu cuenta con otro método o contacta con el administrador."
+      "signInMethodDisabled": "Este método de acceso está desactivado. Recupera tu cuenta con otro método o contacta con el administrador.",
+      "invalidCurrentPassword": "La contraseña actual no es correcta.",
+      "lastSignInMethod": "Es tu única forma de entrar: añade otra antes de quitarla.",
+      "sessionNotFresh": "Por seguridad, vuelve a iniciar sesión para hacer este cambio."
     },
     "verifyEmail": {
       "metaTitle": "Verificar email",
@@ -160,7 +165,9 @@
       "noAccount": "No hay ninguna cuenta con ese email y los registros están cerrados.",
       "accountNotLinked": "Ya hay una cuenta con ese email sin verificar. Entra con tu método habitual y verifica el email para poder usar Google.",
       "cancelled": "Has cancelado el acceso con Google.",
-      "generic": "No se pudo iniciar sesión. Inténtalo de nuevo."
+      "generic": "No se pudo iniciar sesión. Inténtalo de nuevo.",
+      "alreadyLinked": "Esa cuenta de Google ya está vinculada a otro usuario.",
+      "emailMismatch": "El email de esa cuenta de Google no coincide con el tuyo."
     },
     "google": {
       "continue": "Continuar con Google",
@@ -174,7 +181,8 @@
     "account": "Cuenta",
     "dashboard": "Panel",
     "signOut": "Cerrar sesión",
-    "admin": "Administración"
+    "admin": "Administración",
+    "security": "Seguridad"
   },
   "Dashboard": {
     "metaTitle": "Panel",
@@ -260,9 +268,7 @@
         "banTitle": "¿Bloquear a {name}?",
         "banDescription": "No podrá iniciar sesión y se cerrarán todas sus sesiones.",
         "revokeTitle": "¿Cerrar las sesiones de {name}?",
-        "revokeDescription": "Tendrá que volver a iniciar sesión en todos sus dispositivos.",
-        "cancel": "Cancelar",
-        "confirm": "Confirmar"
+        "revokeDescription": "Tendrá que volver a iniciar sesión en todos sus dispositivos."
       },
       "create": {
         "open": "Crear usuario",
@@ -399,5 +405,53 @@
     "sidebar": "Menú lateral",
     "toggleSidebar": "Mostrar u ocultar el menú lateral",
     "sidebarDescription": "Muestra el menú lateral en el móvil."
+  },
+  "Confirm": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar"
+  },
+  "Account": {
+    "security": {
+      "metaTitle": "Seguridad",
+      "title": "Seguridad",
+      "description": "Tu contraseña, las cuentas vinculadas y los dispositivos con sesión abierta.",
+      "password": {
+        "title": "Contraseña",
+        "changeDescription": "Al cambiarla se cierra la sesión en tus otros dispositivos.",
+        "setDescription": "Tu cuenta no tiene contraseña: entras con un enlace o con Google. Crea una para poder entrar también con ella.",
+        "change": "Cambiar contraseña",
+        "set": "Crear contraseña",
+        "changed": "Contraseña cambiada. Se cerró la sesión en tus otros dispositivos.",
+        "created": "Contraseña creada."
+      },
+      "linked": {
+        "title": "Cuentas vinculadas",
+        "description": "Servicios con los que también puedes entrar.",
+        "google": "Google",
+        "linkedStatus": "Vinculada",
+        "notLinkedStatus": "Sin vincular",
+        "link": "Vincular",
+        "unlink": "Desvincular",
+        "lastMethod": "Es tu única forma de entrar: añade otra antes de desvincularla.",
+        "confirmTitle": "¿Desvincular Google?",
+        "confirmDescription": "No podrás entrar con Google hasta que la vuelvas a vincular.",
+        "unlinked": "Google desvinculada."
+      },
+      "sessions": {
+        "title": "Sesiones",
+        "description": "Dispositivos donde tienes la sesión abierta.",
+        "unknownDevice": "Dispositivo desconocido",
+        "current": "Este dispositivo",
+        "detail": "{ip} · última actividad: {date}",
+        "unknownIp": "IP desconocida",
+        "revoke": "Cerrar sesión",
+        "revokeOthers": "Cerrar las demás sesiones",
+        "confirmTitle": "¿Cerrar las demás sesiones?",
+        "confirmDescription": "Tendrás que volver a entrar en esos dispositivos.",
+        "revoked": "Sesión cerrada.",
+        "revokedOthers": "Se cerraron las demás sesiones.",
+        "error": "No se pudo cerrar la sesión. Inténtalo de nuevo."
+      }
+    }
   }
 }

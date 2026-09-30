@@ -181,7 +181,9 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
   - [x] **4. Sistema:** `/admin/system` (solo superadmin) para abrir o cerrar registros y configurar email + contraseña (registro, acceso, verificación obligatoria, longitud mínima) sin tocar código; Better Auth se construye con esa configuración, un hook bloquea los métodos desactivados, salvaguardas para no dejar a nadie sin acceso e historial de cambios
   - [x] **5. Magic link:** entrar con un enlace de un solo uso por email (verifica el email), registro automático y caducidad del enlace se configuran en Sistema; un solo formulario de login para contraseña y enlace, y la contraseña ya se puede desactivar mientras el enlace esté activo
   - [x] **6. Google:** "Continuar con Google" en login y registro, solo si hay credenciales (`GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`); acceso y registro se configuran en Sistema; vinculación automática con una cuenta existente solo si ambos emails están verificados
-  - [ ] 7. 2FA
+  - [ ] 7. 2FA, en dos partes:
+    - [x] **7a. Cuenta → Seguridad:** `/account/security` para cambiar o crear la contraseña, vincular o desvincular Google (nunca el último método de acceso) y ver y cerrar las sesiones abiertas en otros dispositivos
+    - [ ] 7b. 2FA (app de autenticación y códigos de respaldo)
   - [ ] 8. Passkeys
 
 ## 📦 Librerías
@@ -443,6 +445,14 @@ Con [Better Auth](https://www.better-auth.com). El plan completo y sus decisione
 
 El login usa un solo formulario: un campo de email con "Iniciar sesión" (contraseña) y "Enviar enlace de acceso" (magic link), y "Continuar con Google" encima.
 
+### Cuenta → Seguridad
+
+En `/account/security` (menú de la cuenta → **Seguridad**), cada usuario puede:
+
+- **Contraseña:** cambiarla (pide la actual y cierra la sesión en sus otros dispositivos) o crearla si entró con magic link o Google.
+- **Cuentas vinculadas:** vincular o desvincular Google. El servidor rechaza desvincular el último método con el que puede entrar.
+- **Sesiones:** ver los dispositivos con sesión abierta (navegador, sistema, IP y última actividad) y cerrar uno o todos los demás.
+
 ### Admin → Sistema
 
 En `/admin/system` (solo `superadmin`) se decide, **sin tocar código ni reiniciar**, qué métodos aceptan registros y accesos:
@@ -689,6 +699,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── [locale]                # Layout raíz, páginas (cada una con su loading.tsx), 404 e imagen Open Graph
 │   │   │   ├── (auth)              # Login, registro, verificar email, recuperar contraseña (noindex)
 │   │   │   ├── dev/outbox          # Bandeja de emails de desarrollo
+│   │   │   ├── account/security    # Cuenta → Seguridad (contraseña, Google, sesiones)
 │   │   │   ├── admin               # Panel de administración (secciones según permisos)
 │   │   │   ├── dashboard           # Página protegida de ejemplo
 │   │   │   └── [...rest]           # Envía las rutas desconocidas al 404 traducido
@@ -698,6 +709,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── robots.ts               # robots.txt
 │   │   └── sitemap.ts              # sitemap.xml
 │   ├── components
+│   │   ├── account                 # Cuenta → Seguridad: contraseña, cuentas vinculadas y sesiones
 │   │   ├── admin                   # Menú, usuarios, Sistema y sus skeletons
 │   │   ├── auth                    # Formularios de autenticación y sus skeletons
 │   │   ├── ui                      # Componentes de shadcn/ui
@@ -720,6 +732,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── request.ts              # Carga los mensajes del idioma actual
 │   │   └── routing.ts              # Idiomas soportados e idioma por defecto
 │   ├── lib
+│   │   ├── account                 # Crear contraseña (Server Action) y descripción de dispositivos
 │   │   ├── admin                   # Secciones del panel y lógica de la tabla de usuarios
 │   │   ├── auth                    # Better Auth: servidor, cliente, permisos, rutas, sesión, emails, superadmin
 │   │   ├── email                   # Envío (Resend) y bandeja de desarrollo

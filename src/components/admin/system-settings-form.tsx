@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,6 @@ import {
   type UserMethodGroup,
   usersLockedOut,
 } from "@/lib/system/policy";
-import { ConfirmActionDialog } from "./confirm-action-dialog";
 import {
   numberSettings,
   type SettingField,

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   type AuthPolicy,
   canSignUp,
+  canUnlink,
   defaultAuthPolicy,
   disabledAccessMethods,
   effectivePolicy,
@@ -162,5 +163,14 @@ describe("usersLockedOut with Google", () => {
         groups,
       ),
     ).toBe(3);
+  });
+});
+
+describe("canUnlink", () => {
+  it("keeps a way in: the magic link, or another linked method", () => {
+    expect(canUnlink(defaultAuthPolicy, ["google"], "google")).toBe(true);
+    const noLink = withChanges({ magicLink: { access: false } });
+    expect(canUnlink(noLink, ["google"], "google")).toBe(false);
+    expect(canUnlink(noLink, ["google", "credential"], "google")).toBe(true);
   });
 });

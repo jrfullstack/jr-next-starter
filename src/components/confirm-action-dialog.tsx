@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-/** Confirmation step before a destructive admin action */
+/** Confirmation step before a destructive action (admin panel, account security) */
 export function ConfirmActionDialog({
   open,
   title,
@@ -28,7 +28,7 @@ export function ConfirmActionDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
-  const t = useTranslations("Admin.users.confirm");
+  const t = useTranslations("Confirm");
   return (
     <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
       <AlertDialogContent>

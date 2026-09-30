@@ -4,6 +4,7 @@ import { MoreHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +16,6 @@ import { useHydrated } from "@/hooks/use-hydrated";
 import { useRouter } from "@/i18n/navigation";
 import type { rowPermissions } from "@/lib/admin/users";
 import { authClient } from "@/lib/auth/client";
-import { ConfirmActionDialog } from "./confirm-action-dialog";
 
 type Props = {
   user: {

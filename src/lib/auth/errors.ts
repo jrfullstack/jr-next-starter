@@ -10,6 +10,11 @@ const knownErrors = {
   TOO_MANY_REQUESTS: "tooManyRequests",
   EMAIL_PASSWORD_SIGN_UP_DISABLED: "signUpClosed",
   SIGN_IN_METHOD_DISABLED: "signInMethodDisabled",
+  INVALID_PASSWORD: "invalidCurrentPassword",
+  LAST_SIGN_IN_METHOD: "lastSignInMethod",
+  FAILED_TO_UNLINK_LAST_ACCOUNT: "lastSignInMethod",
+  SESSION_EXPIRED: "sessionNotFresh",
+  SESSION_NOT_FRESH: "sessionNotFresh",
 } as const;
 
 export type AuthErrorKey =
@@ -39,6 +44,8 @@ const callbackErrors = {
   account_not_linked: "callbackErrors.accountNotLinked",
   access_denied: "callbackErrors.cancelled",
   INVALID_TOKEN: "callbackErrors.invalidLink",
+  account_already_linked_to_different_user: "callbackErrors.alreadyLinked",
+  email_does_not_match: "callbackErrors.emailMismatch",
 } as const;
 
 /** Message (key of Auth in messages) for the sign-in page after a failed magic link or Google sign-in */
