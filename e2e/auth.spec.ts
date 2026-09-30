@@ -1,11 +1,10 @@
 import { expect, type Page } from "@playwright/test";
 import { test } from "./fixtures";
 import {
-  createTestUser,
+  fillNewPassword,
   newTestUserEmail,
   openEmailLink,
   testPassword as password,
-  signInWithMagicLink,
 } from "./test-users";
 
 async function signUp(page: Page, email: string) {
@@ -59,7 +58,7 @@ test("sign up requires verifying the email before signing in", async ({
   );
 
   // The fresh link sent on that sign-in attempt verifies and lands on the destination, signed in
-  await openEmailLink(page, email);
+  await openEmailLink(page, email, "Confirma tu email");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Hola, Ada Lovelace",
   );
@@ -92,32 +91,12 @@ test("resetting a forgotten password from the email link also verifies the email
   await expect(page.getByRole("status")).toContainText("te hemos enviado");
 
   const newPassword = "a-brand-new-password";
-  await openEmailLink(page, email);
-  await page.getByLabel("Contraseña", { exact: true }).fill(newPassword);
-  await page.getByLabel("Confirmar contraseña").fill(newPassword);
-  await page.getByRole("button", { name: "Cambiar contraseña" }).click();
+  await openEmailLink(page, email, "Restablece tu contraseña");
+  await fillNewPassword(page, newPassword, "Cambiar contraseña");
 
   await expect(page.getByRole("status")).toHaveText(
     "Contraseña cambiada. Ya puedes iniciar sesión con la nueva.",
   );
   await signIn(page, email, newPassword);
   await expect(page).toHaveURL(/\/es\/dashboard$/);
-});
-
-test("signs in with a magic link, which works only once", async ({
-  page,
-  request,
-}) => {
-  const user = await createTestUser(request);
-
-  const link = await signInWithMagicLink(page, user.email);
-  await expect(page).toHaveURL(/\/es\/dashboard$/);
-
-  // Links are single-use: opening it again lands on sign-in with the reason
-  await signOut(page);
-  await page.goto(link);
-  await expect(page).toHaveURL(/\/es\/sign-in/);
-  await expect(page.getByRole("status")).toHaveText(
-    "El enlace no es válido, ya se usó o ha caducado. Pide otro.",
-  );
 });

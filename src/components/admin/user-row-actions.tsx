@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { useRouter } from "@/i18n/navigation";
+import { removeTwoFactor } from "@/lib/admin/actions";
 import type { rowPermissions } from "@/lib/admin/users";
 import { authClient } from "@/lib/auth/client";
 
@@ -28,7 +29,7 @@ type Props = {
 };
 
 type ActionResult = { error: { status?: number } | null };
-type Confirmation = "ban" | "revokeSessions" | null;
+type Confirmation = "ban" | "revokeSessions" | "removeTwoFactor" | null;
 
 const FORBIDDEN_STATUS = 403;
 
@@ -91,6 +92,13 @@ export function UserRowActions({ user, permissions }: Props) {
               {t("actions.revokeSessions")}
             </DropdownMenuItem>
           )}
+          {permissions.removeTwoFactor && (
+            <DropdownMenuItem
+              onClick={() => setConfirmation("removeTwoFactor")}
+            >
+              {t("actions.removeTwoFactor")}
+            </DropdownMenuItem>
+          )}
           {permissions.setRole && (
             <DropdownMenuItem
               onClick={() =>
@@ -122,6 +130,14 @@ export function UserRowActions({ user, permissions }: Props) {
         onConfirm={() =>
           run(() => authClient.admin.revokeUserSessions({ userId }))
         }
+      />
+      <ConfirmActionDialog
+        open={confirmation === "removeTwoFactor"}
+        title={t("confirm.removeTwoFactorTitle", { name: user.name })}
+        description={t("confirm.removeTwoFactorDescription")}
+        pending={pending}
+        onCancel={() => setConfirmation(null)}
+        onConfirm={() => run(() => removeTwoFactor(userId))}
       />
     </>
   );

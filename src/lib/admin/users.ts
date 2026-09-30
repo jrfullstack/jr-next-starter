@@ -117,6 +117,7 @@ type ListedUser = {
   role?: string | null;
   banned?: boolean | null;
   emailVerified: boolean;
+  twoFactorEnabled?: boolean | null;
 };
 
 export function userStatus(user: ListedUser): UserStatus {
@@ -139,5 +140,10 @@ export function rowPermissions(
     ban: manageable && can(actor.role, { user: ["ban"] }),
     revokeSessions: manageable && can(actor.role, { session: ["revoke"] }),
     setRole: manageable && can(actor.role, { user: ["set-role"] }),
+    // Lost phone: only when the user has 2FA on
+    removeTwoFactor:
+      manageable &&
+      Boolean(target.twoFactorEnabled) &&
+      can(actor.role, { user: ["update"] }),
   };
 }
