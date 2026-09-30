@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.2.1...v0.3.0) (2026-09-30)
+
+
+### ✨ Nuevas funcionalidades
+
+* add authentication base with Better Auth (auth step 1) ([#7](https://github.com/jrfullstack/jr-next-starter/issues/7)) ([d47cde6](https://github.com/jrfullstack/jr-next-starter/commit/d47cde64641959138fea1f9a846b59cec5806b86))
+* add email verification, password reset and superadmin role (auth step 2) ([#9](https://github.com/jrfullstack/jr-next-starter/issues/9)) ([bd4b358](https://github.com/jrfullstack/jr-next-starter/commit/bd4b358f806082a604aac25cb74c85b684ffbf55))
+
 ## [0.2.1](https://github.com/jrfullstack/jr-next-starter/compare/v0.2.0...v0.2.1) (2026-09-29)
 
 
