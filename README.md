@@ -168,7 +168,6 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 
 ### 🔜 Próximos pasos
 
-- [ ] Actualizar `next` y `@next/third-parties` a 16.3.7 (en espera de las 24 h de `minimumReleaseAge`)
 - [ ] Despliegue (pospuesto; de momento se trabaja en local): `NEXT_PUBLIC_APP_URL`, ID de Google Analytics y activar Speed Insights / Analytics en Vercel
 
 ### 🧭 Fase avanzada
@@ -194,7 +193,7 @@ Versiones instaladas a fecha de la última actualización del README.
 
 | Librería | Versión | Para qué se usa |
 | --- | --- | --- |
-| `next` | 16.3.6 | Framework: rutas (App Router), renderizado en servidor, build y servidor |
+| `next` | 16.3.7 | Framework: rutas (App Router), renderizado en servidor, build y servidor |
 | `react` / `react-dom` | 19.3.0 | Librería de UI y renderizado en el DOM |
 | `@prisma/client` | 7.10.0 | Cliente tipado para consultar la base de datos (se genera en `src/generated/prisma`) |
 | `@prisma/adapter-pg` | 7.10.0 | Conecta Prisma con PostgreSQL a través del driver `pg` |
@@ -206,7 +205,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `cn` | 0.4.0 | Combina clases de Tailwind resolviendo conflictos (reemplaza clsx + tailwind-merge) |
 | `sonner` | 2.0.8 | Notificaciones tipo toast (errores y confirmaciones del panel) |
 | `lucide-react` | 1.48.0 | Iconos SVG como componentes de React |
-| `@next/third-parties` | 16.3.6 | Integraciones oficiales de Next.js con servicios externos (Google Analytics) cargadas sin bloquear el renderizado |
+| `@next/third-parties` | 16.3.7 | Integraciones oficiales de Next.js con servicios externos (Google Analytics) cargadas sin bloquear el renderizado |
 | `@vercel/speed-insights` | 2.0.0 | Mide Core Web Vitals de usuarios reales en Vercel (solo se carga en Vercel) |
 | `@vercel/analytics` | 2.0.1 | Analítica de visitas de Vercel, sin cookies (solo se carga en Vercel) |
 | `resend` | 6.30.0 | Envío de emails transaccionales (verificación, recuperar contraseña) |
@@ -214,7 +213,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `better-auth` | 1.7.6 | Autenticación: sesiones, email + contraseña, magic link, Google (OAuth), 2FA, roles y permisos (plugin admin); datos en PostgreSQL con Prisma |
 | `@better-auth/passkey` | 1.7.6 | Plugin oficial de passkeys (WebAuthn, con SimpleWebAuthn) |
 | `uqr` | 0.1.3 | Genera el QR del 2FA, sin dependencias (se dibuja como SVG) |
-| `next-intl` | 4.14.7 | Traducciones, formato de fechas/números y rutas por idioma para el App Router |
+| `next-intl` | 4.14.8 | Traducciones, formato de fechas/números y rutas por idioma para el App Router |
 | `next-themes` | 0.4.6 | Tema claro/oscuro/sistema sin parpadeo; guarda la preferencia del usuario |
 | `@t3-oss/env-nextjs` | 0.13.11 | Valida con Zod las variables de entorno al arrancar y las expone tipadas en `env` |
 | `tw-animate-css` | 1.4.0 | Animaciones de Tailwind CSS 4 que usan los componentes de shadcn |
@@ -236,7 +235,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `@commitlint/config-conventional` | 21.2.3 | Reglas de Conventional Commits para commitlint |
 | `oxlint` | 1.86.0 | Linter en Rust; aquí solo ejecuta las reglas de clases de Tailwind |
 | `eslint-plugin-better-tailwindcss` | 4.7.0 | Reglas de Tailwind: clases canónicas (v4), orden, duplicados, obsoletas, desconocidas y conflictivas |
-| `cspell` | 10.3.5 | Corrector ortográfico de código y documentación (mismo motor que la extensión Code Spell Checker) |
+| `cspell` | 10.3.6 | Corrector ortográfico de código y documentación (mismo motor que la extensión Code Spell Checker) |
 | `@cspell/dict-es-es` | 3.0.8 | Diccionario de español para cspell |
 | `markdownlint-cli2` | 0.23.3 | Lint y autofix de Markdown (misma configuración que la extensión del editor) |
 | `knip` | 6.38.0 | Detecta archivos, exports y dependencias que no se usan |
