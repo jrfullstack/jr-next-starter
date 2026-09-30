@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.4.0...v0.5.0) (2026-09-30)
+
+
+### ✨ Nuevas funcionalidades
+
+* add the system section to configure sign-in methods (auth step 4) ([#12](https://github.com/jrfullstack/jr-next-starter/issues/12)) ([88ca870](https://github.com/jrfullstack/jr-next-starter/commit/88ca870629a13d487150fb4a9202b553493c7e20))
+
 ## [0.4.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.3.0...v0.4.0) (2026-09-30)
 
 
