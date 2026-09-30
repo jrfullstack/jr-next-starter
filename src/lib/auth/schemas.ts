@@ -31,6 +31,13 @@ export const signUpSchema = z
 
 export const forgotPasswordSchema = z.object({ email: z.email() });
 
+/** Admin panel: new account (it verifies its email on first sign-in) */
+export const createUserSchema = z.object({
+  name: z.string().trim().min(1),
+  email: z.email(),
+  password: z.string().min(PASSWORD_MIN_LENGTH),
+});
+
 export const resetPasswordSchema = z
   .object(newPasswordFields)
   .refine(...passwordsMatch);

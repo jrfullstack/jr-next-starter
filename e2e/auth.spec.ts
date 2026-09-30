@@ -1,7 +1,6 @@
-import { expect, type Page, test } from "@playwright/test";
-import { newTestUserEmail } from "./test-users";
-
-const password = "correct-horse-battery";
+import { expect, type Page } from "@playwright/test";
+import { test } from "./fixtures";
+import { newTestUserEmail, testPassword as password } from "./test-users";
 
 /**
  * Follows the Better Auth link of the latest email sent to `to`, read from the
@@ -46,14 +45,6 @@ async function signOut(page: Page) {
   await page.getByRole("menuitem", { name: "Cerrar sesión" }).click();
   await expect(page).toHaveURL(/\/es$/);
 }
-
-// Better Auth rate-limits per IP (x-forwarded-for): each test acts as a different client
-test.beforeEach(async ({ page }) => {
-  const octet = () => Math.floor(Math.random() * 254) + 1;
-  await page.setExtraHTTPHeaders({
-    "x-forwarded-for": `10.${octet()}.${octet()}.${octet()}`,
-  });
-});
 
 // Scoped to the form: Next.js' route announcer also has role="alert"
 const formAlert = (page: Page) => page.locator("form").getByRole("alert");

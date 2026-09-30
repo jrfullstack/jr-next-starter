@@ -23,7 +23,8 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 
 ## 🎉 Características
 
-- 🚀 Next.js 16 (App Router, Turbopack, React Compiler)
+- 🚀 Next.js 16 (App Router, Turbopack, React Compiler, Cache Components)
+- 💀 `loading.tsx` con skeletons idénticos al diseño en cada página y Suspense granular
 - ⚛️ React 19
 - 📘 TypeScript 7
 - 🎨 Tailwind CSS 4
@@ -172,7 +173,8 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [ ] Autenticación y panel de administración (Better Auth), en 8 pasos según [`docs/plans/auth.md`](docs/plans/auth.md):
   - [x] **1. Base:** email + contraseña, login, registro, logout, roles y permisos, `/dashboard` protegido, primera migración
   - [x] **2. Emails y superadmin:** verificación de email obligatoria, recuperar contraseña, Resend + React Email con bandeja de desarrollo, rol `superadmin` calculado desde `SUPER_ADMIN_EMAILS`
-  - [ ] 3. Panel `/admin` y usuarios
+  - [x] **3. Panel `/admin` y usuarios:** menú lateral según permisos; usuarios con búsqueda, filtros por rol y estado, orden por columna y paginación (todo en el servidor), crear, bloquear/desbloquear, cerrar sesiones y (solo superadmin) cambiar rol; las cuentas superadmin no se pueden gestionar
+  - [x] **Carga moderna:** Cache Components activado (shell estático + streaming), `loading.tsx` con skeletons idénticos al diseño en cada página (verificado por un test) y Suspense granular en el panel
   - [ ] 4. Sistema (configuración de métodos)
   - [ ] 5. Magic link
   - [ ] 6. Google
@@ -197,6 +199,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `shadcn` | 4.21.0 | CLI para añadir componentes y estilos base de Tailwind (`shadcn/tailwind.css`) |
 | `class-variance-authority` | 0.7.1 | Define variantes de componentes (tamaño, color…) con clases de Tailwind |
 | `cn` | 0.4.0 | Combina clases de Tailwind resolviendo conflictos (reemplaza clsx + tailwind-merge) |
+| `sonner` | 2.0.8 | Notificaciones tipo toast (errores y confirmaciones del panel) |
 | `lucide-react` | 1.48.0 | Iconos SVG como componentes de React |
 | `@next/third-parties` | 16.3.6 | Integraciones oficiales de Next.js con servicios externos (Google Analytics) cargadas sin bloquear el renderizado |
 | `@vercel/speed-insights` | 2.0.0 | Mide Core Web Vitals de usuarios reales en Vercel (solo se carga en Vercel) |
@@ -470,6 +473,7 @@ Todas las URLs absolutas (canonical, `hreflang`, sitemap, Open Graph) se constru
 
 1. Exporta `generateMetadata` con su título y `alternates: pageAlternates("/ruta", locale)`, para que tenga su URL canónica y sus `hreflang`.
 2. Añade la ruta a `routes` en `src/app/sitemap.ts`.
+3. Crea su `loading.tsx` con un skeleton idéntico al diseño y envuelve en `<Suspense>` lo que dependa de la petición (ver "Carga" en [`AGENTS.md`](AGENTS.md)).
 
 ```tsx
 export async function generateMetadata(): Promise<Metadata> {
@@ -622,17 +626,20 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 ├── public                          # Archivos estáticos
 ├── src
 │   ├── app
-│   │   ├── [locale]                # Layout raíz, páginas, 404 e imagen Open Graph, por idioma
+│   │   ├── [locale]                # Layout raíz, páginas (cada una con su loading.tsx), 404 e imagen Open Graph
 │   │   │   ├── (auth)              # Login, registro, verificar email, recuperar contraseña (noindex)
 │   │   │   ├── dev/outbox          # Bandeja de emails de desarrollo
+│   │   │   ├── admin               # Panel de administración (secciones según permisos)
 │   │   │   ├── dashboard           # Página protegida de ejemplo
 │   │   │   └── [...rest]           # Envía las rutas desconocidas al 404 traducido
 │   │   ├── api/auth/[...all]       # Endpoints de Better Auth
 │   │   ├── globals.css             # Estilos globales y tema de Tailwind
+│   │   ├── loading-convention.test.ts # Exige un loading.tsx junto a cada page.tsx
 │   │   ├── robots.ts               # robots.txt
 │   │   └── sitemap.ts              # sitemap.xml
 │   ├── components
-│   │   ├── auth                    # Formularios de login y registro
+│   │   ├── admin                   # Menú, lista de usuarios y sus skeletons
+│   │   ├── auth                    # Formularios de autenticación y sus skeletons
 │   │   ├── ui                      # Componentes de shadcn/ui
 │   │   ├── analytics.tsx           # Google Analytics (solo si hay ID)
 │   │   ├── locale-switcher.tsx     # Selector de idioma
@@ -643,6 +650,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── vercel-insights.tsx     # Speed Insights y Web Analytics (solo en Vercel)
 │   │   └── theme-provider.tsx      # Provider de next-themes
 │   ├── emails                      # Plantillas de email (React Email)
+│   ├── hooks                       # Hooks compartidos (useHydrated, useIsMobile)
 │   ├── config
 │   │   └── site.ts                 # Datos del sitio: nombre, autor, enlaces
 │   ├── generated/prisma            # Cliente de Prisma generado (ignorado por git)
@@ -652,6 +660,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── request.ts              # Carga los mensajes del idioma actual
 │   │   └── routing.ts              # Idiomas soportados e idioma por defecto
 │   ├── lib
+│   │   ├── admin                   # Secciones del panel y lógica de la tabla de usuarios
 │   │   ├── auth                    # Better Auth: servidor, cliente, permisos, rutas, sesión, emails, superadmin
 │   │   ├── email                   # Envío (Resend) y bandeja de desarrollo
 │   │   ├── db.ts                   # Cliente de Prisma singleton

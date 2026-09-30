@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useRouter } from "@/i18n/navigation";
+import { visibleSections } from "@/lib/admin/sections";
 import { authClient } from "@/lib/auth/client";
 import { authRoutes } from "@/lib/auth/routes";
 
@@ -70,6 +71,11 @@ export function UserMenu() {
         <DropdownMenuItem render={<Link href={authRoutes.afterSignIn} />}>
           {t("dashboard")}
         </DropdownMenuItem>
+        {visibleSections(session.user.role).length > 0 && (
+          <DropdownMenuItem render={<Link href="/admin" />}>
+            {t("admin")}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={signOut}>{t("signOut")}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

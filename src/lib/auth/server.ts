@@ -8,7 +8,11 @@ import { env } from "@/env";
 import { db } from "@/lib/db";
 import { sendAuthEmail } from "./emails";
 import { ac, roles } from "./permissions";
-import { assertAssignableRole, syncSuperadminRole } from "./superadmin";
+import {
+  assertAssignableRole,
+  assertNotSuperadminTarget,
+  syncSuperadminRole,
+} from "./superadmin";
 
 /** Better Auth server instance (docs/plans/auth.md). Import only from server code. */
 export const auth = betterAuth({
@@ -61,6 +65,7 @@ export const auth = betterAuth({
       if (ctx.path === "/admin/set-role" || ctx.path === "/admin/create-user") {
         assertAssignableRole(ctx.body?.role);
       }
+      await assertNotSuperadminTarget(ctx.path, ctx.body?.userId);
     }),
   },
   plugins: [

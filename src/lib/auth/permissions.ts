@@ -29,3 +29,15 @@ export const roles = {
     system: ["read", "update"],
   }),
 };
+
+type Role = keyof typeof roles;
+export type Permission = Parameters<(typeof roles)[Role]["authorize"]>[0];
+
+function isRole(value: string | null | undefined): value is Role {
+  return !!value && value in roles;
+}
+
+/** Synchronous check against the roles above (unknown role = no access). Safe on client and server. */
+export function can(role: string | null | undefined, permission: Permission) {
+  return isRole(role) && roles[role].authorize(permission).success;
+}

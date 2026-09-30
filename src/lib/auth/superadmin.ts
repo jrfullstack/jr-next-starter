@@ -50,3 +50,30 @@ export function assertAssignableRole(role: unknown) {
     });
   }
 }
+
+/** Admin endpoints that act on another user through body.userId */
+const userTargetPaths = new Set([
+  "/admin/set-role",
+  "/admin/ban-user",
+  "/admin/unban-user",
+  "/admin/list-user-sessions",
+  "/admin/revoke-user-sessions",
+  "/admin/remove-user",
+  "/admin/set-user-password",
+  "/admin/update-user",
+  "/admin/impersonate-user",
+]);
+
+/** Nobody can manage a superadmin through the API, not even another superadmin */
+export async function assertNotSuperadminTarget(path: string, userId: unknown) {
+  if (!userTargetPaths.has(path) || typeof userId !== "string") return;
+  const target = await db.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  if (target?.role === "superadmin") {
+    throw new APIError("FORBIDDEN", {
+      message: "Superadmin accounts can't be managed",
+    });
+  }
+}

@@ -1,28 +1,14 @@
 "use client";
 
-import {
-  type FormEvent,
-  useState,
-  useSyncExternalStore,
-  useTransition,
-} from "react";
+import { type FormEvent, useState, useTransition } from "react";
 import type { z } from "zod";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { useRouter } from "@/i18n/navigation";
 import { type AuthErrorKey, authErrorKey } from "@/lib/auth/errors";
 import { type AuthField, invalidFields } from "@/lib/auth/schemas";
 
 type AuthResult = { error: { code?: string; status?: number } | null };
 
-const noop = () => () => {};
-
-/** False during SSR and until React hydrates the form */
-function useHydrated() {
-  return useSyncExternalStore(
-    noop,
-    () => true,
-    () => false,
-  );
-}
 type Href = Parameters<ReturnType<typeof useRouter>["push"]>[0];
 
 /**
@@ -33,11 +19,14 @@ export function useAuthForm<Schema extends z.ZodType>({
   schema,
   submit,
   redirectTo,
+  onSuccess: onSucceeded,
 }: {
   schema: Schema;
   submit: (data: z.output<Schema>) => Promise<AuthResult>;
   /** Where to go on success; without it the form stays and `succeeded` becomes true */
   redirectTo?: Href | ((data: z.output<Schema>) => Href);
+  /** Extra step after a success without redirect, e.g. closing a dialog */
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const [invalid, setInvalid] = useState<Partial<Record<AuthField, true>>>({});
@@ -49,6 +38,7 @@ export function useAuthForm<Schema extends z.ZodType>({
   const onSuccess = (data: z.output<Schema>) => {
     if (!redirectTo) {
       setSucceeded(true);
+      onSucceeded?.();
       return;
     }
     router.push(

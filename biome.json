@@ -172,7 +172,12 @@
           },
           "suspicious": {
             "noArrayIndexKey": "off",
-            "noDoubleEquals": "off"
+            "noDoubleEquals": "off",
+            "noDocumentCookie": "off",
+            "noShadow": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
           }
         }
       }
