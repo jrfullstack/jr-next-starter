@@ -2,7 +2,8 @@ import type { Locale } from "next-intl";
 import { adminSection } from "@/lib/admin/sections";
 import { requirePermission } from "@/lib/auth/authorization";
 import {
-  getAuthPolicy,
+  authCapabilities,
+  getStoredAuthPolicy,
   superadminAccessMethods,
   userMethodGroups,
 } from "@/lib/system/policy-store";
@@ -14,7 +15,7 @@ const section = adminSection("system");
 export async function SystemSettings({ locale }: { locale: Locale }) {
   await requirePermission(locale, section.permission, section.href);
   const [policy, superadminMethods, userGroups] = await Promise.all([
-    getAuthPolicy(),
+    getStoredAuthPolicy(),
     superadminAccessMethods(),
     userMethodGroups(),
   ]);
@@ -24,6 +25,7 @@ export async function SystemSettings({ locale }: { locale: Locale }) {
       policy={policy}
       superadminMethods={superadminMethods}
       userGroups={userGroups}
+      capabilities={authCapabilities()}
     />
   );
 }

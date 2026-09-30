@@ -150,16 +150,24 @@
     },
     "showPassword": "Mostrar contraseña",
     "magicLink": {
-      "divider": "o",
       "signInDescription": "Te enviaremos un enlace por email para entrar, sin contraseña.",
       "signUpDescription": "Te enviaremos un enlace por email para crear tu cuenta.",
       "submit": "Enviar enlace de acceso",
-      "sent": "Si {email} puede entrar, te hemos enviado un enlace. Caduca en {minutes, plural, one {# minuto} other {# minutos}}.",
-      "linkErrors": {
-        "invalid": "El enlace no es válido, ya se usó o ha caducado. Pide otro.",
-        "noAccount": "No hay ninguna cuenta con ese email y los registros están cerrados."
-      }
-    }
+      "sent": "Si {email} puede entrar, te hemos enviado un enlace. Caduca en {minutes, plural, one {# minuto} other {# minutos}}."
+    },
+    "callbackErrors": {
+      "invalidLink": "El enlace no es válido, ya se usó o ha caducado. Pide otro.",
+      "noAccount": "No hay ninguna cuenta con ese email y los registros están cerrados.",
+      "accountNotLinked": "Ya hay una cuenta con ese email sin verificar. Entra con tu método habitual y verifica el email para poder usar Google.",
+      "cancelled": "Has cancelado el acceso con Google.",
+      "generic": "No se pudo iniciar sesión. Inténtalo de nuevo."
+    },
+    "google": {
+      "continue": "Continuar con Google",
+      "signInDescription": "Entra con tu cuenta de Google.",
+      "signUpDescription": "Crea tu cuenta con Google."
+    },
+    "or": "o"
   },
   "UserMenu": {
     "signIn": "Iniciar sesión",
@@ -297,6 +305,11 @@
         "magicLink": {
           "title": "Magic link",
           "description": "Entrar con un enlace de un solo uso enviado por email, sin contraseña."
+        },
+        "google": {
+          "title": "Google",
+          "description": "Entrar con una cuenta de Google.",
+          "setup": "Define GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en las variables de entorno para activarlo (ver README)."
         }
       },
       "fields": {
@@ -337,6 +350,16 @@
             "label": "Caducidad del enlace",
             "description": "Entre {min} y {max} minutos."
           }
+        },
+        "google": {
+          "access": {
+            "label": "Acceso",
+            "description": "Iniciar sesión con Google. Si el email ya tiene una cuenta verificada, se vinculan solas."
+          },
+          "signUp": {
+            "label": "Registro",
+            "description": "Una cuenta de Google nueva crea su cuenta al entrar por primera vez."
+          }
         }
       },
       "value": {
@@ -367,7 +390,8 @@
         "empty": "Todavía no hay cambios.",
         "entry": "{actor} · {date}",
         "change": "{section} · {field}: {from} → {to}"
-      }
+      },
+      "notConfigured": "No configurado"
     }
   },
   "UI": {

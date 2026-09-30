@@ -44,4 +44,26 @@ describe("env", () => {
 
     await expect(loadEnv()).rejects.toThrow("Invalid environment variables");
   });
+
+  it.each([
+    ["GOOGLE_CLIENT_ID", "id.apps.googleusercontent.com"],
+    ["GOOGLE_CLIENT_SECRET", "secret"],
+  ])(
+    "requires both Google credentials (only %s given)",
+    async (name, value) => {
+      vi.stubEnv(name, value);
+      vi.spyOn(console, "error").mockImplementation(() => {});
+
+      await expect(loadEnv()).rejects.toThrow("Invalid environment variables");
+    },
+  );
+
+  it("accepts both Google credentials together", async () => {
+    vi.stubEnv("GOOGLE_CLIENT_ID", "id.apps.googleusercontent.com");
+    vi.stubEnv("GOOGLE_CLIENT_SECRET", "secret");
+
+    const env = await loadEnv();
+
+    expect(env.GOOGLE_CLIENT_ID).toBe("id.apps.googleusercontent.com");
+  });
 });

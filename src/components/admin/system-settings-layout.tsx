@@ -1,7 +1,9 @@
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -24,7 +26,9 @@ export type SettingField =
   | "emailPassword.minPasswordLength"
   | "magicLink.access"
   | "magicLink.signUp"
-  | "magicLink.expiresInMinutes";
+  | "magicLink.expiresInMinutes"
+  | "google.access"
+  | "google.signUp";
 
 /** Settings edited as a number, with their bounds; the rest are switches */
 export const numberSettings: Partial<
@@ -42,10 +46,13 @@ export function settingId(field: SettingField) {
 function SettingsCard({
   title,
   description,
+  action,
   children,
 }: {
   title: string;
   description: string;
+  /** Top-right corner, e.g. a "Not configured" badge */
+  action?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -55,6 +62,7 @@ function SettingsCard({
           <h2>{title}</h2>
         </CardTitle>
         <CardDescription>{description}</CardDescription>
+        {action && <CardAction>{action}</CardAction>}
       </CardHeader>
       <CardContent>
         <FieldGroup>{children}</FieldGroup>
@@ -91,8 +99,11 @@ function SettingRow({
  */
 export function SystemSettingsLayout({
   control,
+  googleConfigured = true,
 }: {
   control: (field: SettingField) => ReactNode;
+  /** Without credentials the Google card says so and how to enable it */
+  googleConfigured?: boolean;
 }) {
   const t = useTranslations("Admin.system");
   const row = (field: SettingField, label: string, description: string) => (
@@ -165,6 +176,29 @@ export function SystemSettingsLayout({
             min: MAGIC_LINK_MINUTES.min,
             max: MAGIC_LINK_MINUTES.max,
           }),
+        )}
+      </SettingsCard>
+      <SettingsCard
+        title={t("sections.google.title")}
+        description={t("sections.google.description")}
+        action={
+          !googleConfigured && (
+            <Badge variant="secondary">{t("notConfigured")}</Badge>
+          )
+        }
+      >
+        {!googleConfigured && (
+          <FieldDescription>{t("sections.google.setup")}</FieldDescription>
+        )}
+        {row(
+          "google.access",
+          t("fields.google.access.label"),
+          t("fields.google.access.description"),
+        )}
+        {row(
+          "google.signUp",
+          t("fields.google.signUp.label"),
+          t("fields.google.signUp.description"),
         )}
       </SettingsCard>
     </div>

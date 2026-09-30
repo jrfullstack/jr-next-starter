@@ -78,6 +78,18 @@ export const env = createEnv({
       .pipe(z.array(z.email()).min(1)),
 
     /**
+     * GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET · opcionales (las dos o ninguna)
+     * Credenciales OAuth de Google (Google Cloud → APIs y servicios →
+     * Credenciales). Sin ellas, el acceso con Google no aparece.
+     * URI de redirección autorizada: {NEXT_PUBLIC_APP_URL}/api/auth/callback/google
+     */
+    GOOGLE_CLIENT_ID: z
+      .string()
+      .endsWith(".apps.googleusercontent.com")
+      .optional(),
+    GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+
+    /**
      * RESEND_API_KEY · opcional
      * Clave de Resend para enviar emails. Sin ella, los emails se muestran en
      * la consola y en la bandeja de desarrollo (`/dev/outbox`).
@@ -160,6 +172,23 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
   },
+
+  /**
+   * Reglas entre variables: las credenciales de Google van juntas (solo en el
+   * servidor; en el navegador no existen).
+   */
+  createFinalSchema: (shape, isServer) =>
+    z.object(shape).superRefine((values, ctx) => {
+      if (!isServer) return;
+      const hasId = values.GOOGLE_CLIENT_ID !== undefined;
+      const hasSecret = values.GOOGLE_CLIENT_SECRET !== undefined;
+      if (hasId === hasSecret) return;
+      ctx.addIssue({
+        code: "custom",
+        path: [hasId ? "GOOGLE_CLIENT_SECRET" : "GOOGLE_CLIENT_ID"],
+        message: "GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET van juntas",
+      });
+    }),
 
   /**
    * Trata `VARIABLE=` (vacía) como si no existiera. Así una variable vacía

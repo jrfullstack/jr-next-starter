@@ -31,15 +31,21 @@ export function authErrorKey(
   return "generic";
 }
 
-/** Message for the ?error= Better Auth adds when a magic link can't sign in */
-export function magicLinkErrorMessage(error: unknown) {
+/** ?error= codes Better Auth adds when a magic link or Google can't sign in */
+const callbackErrors = {
+  SIGN_IN_METHOD_DISABLED: "errors.signInMethodDisabled",
+  new_user_signup_disabled: "callbackErrors.noAccount",
+  signup_disabled: "callbackErrors.noAccount",
+  account_not_linked: "callbackErrors.accountNotLinked",
+  access_denied: "callbackErrors.cancelled",
+  INVALID_TOKEN: "callbackErrors.invalidLink",
+} as const;
+
+/** Message (key of Auth in messages) for the sign-in page after a failed magic link or Google sign-in */
+export function callbackErrorMessage(error: unknown) {
   if (typeof error !== "string") return undefined;
-  if (error === "SIGN_IN_METHOD_DISABLED") {
-    return "errors.signInMethodDisabled" as const;
+  if (error in callbackErrors) {
+    return callbackErrors[error as keyof typeof callbackErrors];
   }
-  if (error === "new_user_signup_disabled") {
-    return "magicLink.linkErrors.noAccount" as const;
-  }
-  // Expired, already used or tampered with
-  return "magicLink.linkErrors.invalid" as const;
+  return "callbackErrors.generic" as const;
 }

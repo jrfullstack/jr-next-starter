@@ -3,24 +3,26 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldGroup } from "@/components/ui/field";
-import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
 import { authRoutes, withLocale } from "@/lib/auth/routes";
 import { signUpSchema } from "@/lib/auth/schemas";
-import { AuthCard } from "./auth-card";
 import {
   AuthFormField,
   EmailField,
   NewPasswordFields,
 } from "./auth-form-field";
+import { SignUpCard } from "./sign-up-card";
 import { useAuthForm } from "./use-auth-form";
 
 // Based on the shadcn/ui "signup-01" block
 export function SignUpForm({
   minPasswordLength,
   requireEmailVerification,
+  google,
 }: {
   minPasswordLength: number;
+  /** Google also accepts new accounts: its button goes first */
+  google: boolean;
   /** Without it Better Auth signs the new user in right away */
   requireEmailVerification: boolean;
 }) {
@@ -43,16 +45,7 @@ export function SignUpForm({
   });
 
   return (
-    <AuthCard
-      title={t("signUp.title")}
-      description={t("signUp.description")}
-      footer={
-        <>
-          {t("signUp.hasAccount")}{" "}
-          <Link href={authRoutes.signIn}>{t("signUp.signInLink")}</Link>
-        </>
-      }
-    >
+    <SignUpCard description={t("signUp.description")} google={google}>
       <form method="post" onSubmit={onSubmit} noValidate>
         <FieldGroup>
           <AuthFormField
@@ -70,6 +63,6 @@ export function SignUpForm({
           </Button>
         </FieldGroup>
       </form>
-    </AuthCard>
+    </SignUpCard>
   );
 }

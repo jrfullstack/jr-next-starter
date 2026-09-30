@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { magicLinkErrorMessage } from "./errors";
+import { callbackErrorMessage } from "./errors";
 
-describe("magicLinkErrorMessage", () => {
+describe("callbackErrorMessage", () => {
   it.each([
     [undefined, undefined],
     ["SIGN_IN_METHOD_DISABLED", "errors.signInMethodDisabled"],
-    ["new_user_signup_disabled", "magicLink.linkErrors.noAccount"],
-    ["INVALID_TOKEN", "magicLink.linkErrors.invalid"],
+    ["new_user_signup_disabled", "callbackErrors.noAccount"],
+    ["signup_disabled", "callbackErrors.noAccount"],
+    ["account_not_linked", "callbackErrors.accountNotLinked"],
+    ["access_denied", "callbackErrors.cancelled"],
+    ["INVALID_TOKEN", "callbackErrors.invalidLink"],
+    ["something_else", "callbackErrors.generic"],
   ])("%s → %s", (error, expected) => {
-    expect(magicLinkErrorMessage(error)).toBe(expected);
+    expect(callbackErrorMessage(error)).toBe(expected);
   });
 });

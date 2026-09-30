@@ -67,6 +67,8 @@ function fieldLabel(t: SystemTranslator, change: PolicyChange) {
       return t(`fields.emailPassword.${change.field}.label`);
     case "magicLink":
       return t(`fields.magicLink.${change.field}.label`);
+    case "google":
+      return t(`fields.google.${change.field}.label`);
   }
 }
 

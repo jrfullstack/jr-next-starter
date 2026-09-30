@@ -1,56 +1,31 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-import { type FormEvent, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldSeparator,
-} from "@/components/ui/field";
+import { useTranslations } from "next-intl";
+import { FieldDescription } from "@/components/ui/field";
 import { Link } from "@/i18n/navigation";
-import { authClient } from "@/lib/auth/client";
-import { authRoutes, withLocale } from "@/lib/auth/routes";
-import { emailSchema, signInSchema } from "@/lib/auth/schemas";
+import { authRoutes } from "@/lib/auth/routes";
 import { AuthCard } from "./auth-card";
-import { AuthFormField, EmailField } from "./auth-form-field";
-import { MagicLinkSent } from "./magic-link-sent";
-import { useAuthForm } from "./use-auth-form";
-import { useMagicLinkForm } from "./use-magic-link-form";
-
-const MAGIC_LINK_INTENT = "magicLink";
+import { EmailSignInForm } from "./email-sign-in-form";
+import { GoogleSignIn } from "./google-sign-in";
 
 type Props = {
   callbackPath: string;
   /** Sign-in methods on in the auth policy (at least one, by the safeguards) */
-  methods: { password: boolean; magicLink: boolean };
+  methods: { password: boolean; magicLink: boolean; google: boolean };
   magicLinkMinutes: number;
   /** From the auth policy: hides the sign-up link when registrations are closed */
   allowSignUp: boolean;
-  /** Shown above the form, e.g. after a password reset or a refused magic link */
+  /** Shown above everything, e.g. after a password reset or a failed Google sign-in */
   notice?: string;
 };
 
-function usePasswordSignIn(callbackPath: string) {
-  const locale = useLocale();
-  return useAuthForm({
-    schema: signInSchema,
-    redirectTo: callbackPath,
-    // Better Auth redirects to callbackURL on success; an unverified user gets a
-    // fresh verification link that also lands there, already signed in
-    submit: (data) =>
-      authClient.signIn.email({
-        ...data,
-        callbackURL: withLocale(locale, callbackPath),
-      }),
-  });
+function descriptionKey(methods: Props["methods"]) {
+  if (methods.password) return "signIn.description" as const;
+  if (methods.magicLink) return "magicLink.signInDescription" as const;
+  return "google.signInDescription" as const;
 }
 
-/**
- * One email field for both methods: "Sign in" uses the password, the magic
- * link button only needs the email (based on the shadcn/ui "login-01" block).
- */
+/** Sign-in card: Google first (if on), then the email form for password and magic link */
 export function SignInForm({
   callbackPath,
   methods,
@@ -59,27 +34,12 @@ export function SignInForm({
   notice,
 }: Props) {
   const t = useTranslations("Auth");
-  const password = usePasswordSignIn(callbackPath);
-  const magicLink = useMagicLinkForm({ schema: emailSchema, callbackPath });
-  // Messages follow the button pressed last
-  const [viaMagicLink, setViaMagicLink] = useState(!methods.password);
-  const current = viaMagicLink ? magicLink : password;
-
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
-    const submitter = (event.nativeEvent as SubmitEvent).submitter;
-    const magic =
-      !methods.password ||
-      (submitter as HTMLButtonElement | null)?.value === MAGIC_LINK_INTENT;
-    setViaMagicLink(magic);
-    (magic ? magicLink : password).onSubmit(event);
-  };
+  const emailMethods = methods.password || methods.magicLink;
 
   return (
     <AuthCard
       title={t("signIn.title")}
-      description={t(
-        methods.password ? "signIn.description" : "magicLink.signInDescription",
-      )}
+      description={t(descriptionKey(methods))}
       footer={
         allowSignUp && (
           <>
@@ -89,60 +49,17 @@ export function SignInForm({
         )
       }
     >
-      <form method="post" onSubmit={onSubmit} noValidate>
-        <FieldGroup>
-          {notice && (
-            <FieldDescription role="status">{notice}</FieldDescription>
-          )}
-          <EmailField invalid={current.invalid.email} />
-          {methods.password && (
-            <>
-              <AuthFormField
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                label={t("fields.password")}
-                error={
-                  password.invalid.password && t("errors.invalidCredentials")
-                }
-                aside={
-                  <Link
-                    href={authRoutes.forgotPassword}
-                    className="text-sm underline-offset-4 hover:underline"
-                  >
-                    {t("signIn.forgotPassword")}
-                  </Link>
-                }
-              />
-              <Button type="submit" disabled={password.submitDisabled}>
-                {t("signIn.submit")}
-              </Button>
-            </>
-          )}
-          {methods.password && methods.magicLink && (
-            <FieldSeparator>{t("magicLink.divider")}</FieldSeparator>
-          )}
-          {methods.magicLink && (
-            <Button
-              type="submit"
-              value={MAGIC_LINK_INTENT}
-              variant={methods.password ? "outline" : "default"}
-              disabled={magicLink.submitDisabled}
-            >
-              {t("magicLink.submit")}
-            </Button>
-          )}
-          {viaMagicLink && magicLink.sentTo && (
-            <MagicLinkSent
-              email={magicLink.sentTo}
-              minutes={magicLinkMinutes}
-            />
-          )}
-          {current.error && (
-            <FieldError>{t(`errors.${current.error}`)}</FieldError>
-          )}
-        </FieldGroup>
-      </form>
+      {notice && <FieldDescription role="status">{notice}</FieldDescription>}
+      {methods.google && (
+        <GoogleSignIn callbackPath={callbackPath} separator={emailMethods} />
+      )}
+      {emailMethods && (
+        <EmailSignInForm
+          callbackPath={callbackPath}
+          methods={methods}
+          magicLinkMinutes={magicLinkMinutes}
+        />
+      )}
     </AuthCard>
   );
 }
