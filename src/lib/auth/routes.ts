@@ -9,6 +9,8 @@ export const authRoutes = {
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   afterSignIn: "/dashboard",
+  accountSecurity: "/account/security",
+  twoFactor: "/two-factor",
   /** Require a session; the real check happens in each page on the server */
   protected: ["/dashboard", "/account", "/admin"],
 } as const;

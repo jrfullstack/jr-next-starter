@@ -72,7 +72,8 @@
       "name": "Name",
       "email": "Email",
       "password": "Password",
-      "confirmPassword": "Confirm password"
+      "confirmPassword": "Confirm password",
+      "currentPassword": "Current password"
     },
     "placeholders": {
       "name": "Your name",
@@ -103,7 +104,9 @@
       "name": "Enter your name.",
       "email": "Enter a valid email.",
       "password": "Password must be at least {min} characters.",
-      "confirmPassword": "Passwords don't match."
+      "confirmPassword": "Passwords don't match.",
+      "currentPassword": "Enter your current password.",
+      "code": "Enter the code."
     },
     "errors": {
       "invalidCredentials": "Invalid email or password.",
@@ -115,7 +118,16 @@
       "generic": "The operation could not be completed. Please try again.",
       "emailNotVerified": "Your email isn't verified yet. We've sent you a new link.",
       "signUpClosed": "Registrations are closed.",
-      "signInMethodDisabled": "This sign-in method is disabled. Recover your account with another method or contact the administrator."
+      "signInMethodDisabled": "This sign-in method is disabled. Recover your account with another method or contact the administrator.",
+      "invalidCurrentPassword": "The current password isn't correct.",
+      "lastSignInMethod": "It's your only way to sign in: add another one before removing it.",
+      "sessionNotFresh": "For security, sign in again to make this change.",
+      "twoFactorOff": "Two-step verification is turned off.",
+      "twoFactorRequired": "Your account has to use two-step verification.",
+      "twoFactorSetupRequired": "Set up two-step verification to continue.",
+      "invalidCode": "The code isn't correct.",
+      "twoFactorExpired": "The verification expired. Sign in again.",
+      "tooManyAttempts": "Too many attempts. Wait a few minutes and sign in again."
     },
     "verifyEmail": {
       "metaTitle": "Verify email",
@@ -160,21 +172,39 @@
       "noAccount": "There's no account with that email and registrations are closed.",
       "accountNotLinked": "There's an unverified account with that email. Sign in with your usual method and verify the email to use Google.",
       "cancelled": "You cancelled signing in with Google.",
-      "generic": "Couldn't sign in. Try again."
+      "generic": "Couldn't sign in. Try again.",
+      "alreadyLinked": "That Google account is already linked to another user.",
+      "emailMismatch": "That Google account's email doesn't match yours."
     },
     "google": {
       "continue": "Continue with Google",
       "signInDescription": "Sign in with your Google account.",
       "signUpDescription": "Create your account with Google."
     },
-    "or": "or"
+    "or": "or",
+    "twoFactor": {
+      "metaTitle": "Two-step verification",
+      "title": "Two-step verification",
+      "totpDescription": "Enter the 6-digit code from your authenticator app.",
+      "backupDescription": "Enter one of your backup codes.",
+      "otpDescription": "Enter the code we sent you by email.",
+      "code": "Code",
+      "submit": "Verify",
+      "trustDevice": "Remember this device for 30 days",
+      "useBackup": "Use a backup code",
+      "useApp": "Use the authenticator app",
+      "useEmail": "Email me a code",
+      "emailSent": "We've emailed you a code.",
+      "signInAgain": "Sign in again"
+    }
   },
   "UserMenu": {
     "signIn": "Sign in",
     "account": "Account",
     "dashboard": "Dashboard",
     "signOut": "Sign out",
-    "admin": "Administration"
+    "admin": "Administration",
+    "security": "Security"
   },
   "Dashboard": {
     "metaTitle": "Dashboard",
@@ -204,6 +234,12 @@
       "body": "Press the button to sign in. No password needed.",
       "cta": "Sign in",
       "footnote": "The link expires in {minutes, plural, one {# minute} other {# minutes}} and can only be used once. If you didn't ask for it, ignore this message."
+    },
+    "twoFactorCode": {
+      "subject": "Your verification code",
+      "heading": "Your verification code",
+      "body": "Enter this code to finish signing in.",
+      "footnote": "It expires in a few minutes. If you weren't signing in, change your password."
     }
   },
   "DevOutbox": {
@@ -254,15 +290,16 @@
         "unban": "Unblock",
         "revokeSessions": "Sign out everywhere",
         "makeAdmin": "Make administrator",
-        "makeUser": "Remove administrator"
+        "makeUser": "Remove administrator",
+        "removeTwoFactor": "Remove two-step verification"
       },
       "confirm": {
         "banTitle": "Block {name}?",
         "banDescription": "They won't be able to sign in and all their sessions will be closed.",
         "revokeTitle": "Sign {name} out everywhere?",
         "revokeDescription": "They'll have to sign in again on every device.",
-        "cancel": "Cancel",
-        "confirm": "Confirm"
+        "removeTwoFactorTitle": "Remove {name}'s two-step verification?",
+        "removeTwoFactorDescription": "Use it if they lost their phone. They'll sign in with just their password or link until they set it up again."
       },
       "create": {
         "open": "Create user",
@@ -282,7 +319,8 @@
         "allStatuses": "All statuses",
         "clear": "Clear filters"
       },
-      "sortBy": "Sort by {column}"
+      "sortBy": "Sort by {column}",
+      "twoFactorBadge": "2FA"
     },
     "pagination": {
       "summary": "{from}–{to} of {total}",
@@ -310,6 +348,10 @@
           "title": "Google",
           "description": "Sign in with a Google account.",
           "setup": "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the environment variables to enable it (see the README)."
+        },
+        "twoFactor": {
+          "title": "Two-step verification (2FA)",
+          "description": "A second factor on sign-in: authenticator app and backup codes."
         }
       },
       "fields": {
@@ -360,6 +402,20 @@
             "label": "Registration",
             "description": "A new Google account creates its account on the first sign-in."
           }
+        },
+        "twoFactor": {
+          "level": {
+            "label": "Level",
+            "description": "Optional: each user decides, and admins and superadmins must use it. Required: everyone."
+          },
+          "emailOtp": {
+            "label": "Code by email",
+            "description": "Lets users get the code by email instead of the app."
+          },
+          "trustDevice": {
+            "label": "Remember device for 30 days",
+            "description": "Lets users skip the second factor on a device for 30 days."
+          }
         }
       },
       "value": {
@@ -391,7 +447,12 @@
         "entry": "{actor} · {date}",
         "change": "{section} · {field}: {from} → {to}"
       },
-      "notConfigured": "Not configured"
+      "notConfigured": "Not configured",
+      "twoFactorLevels": {
+        "off": "Off",
+        "optional": "Optional",
+        "required": "Required"
+      }
     }
   },
   "UI": {
@@ -399,5 +460,80 @@
     "sidebar": "Sidebar",
     "toggleSidebar": "Toggle sidebar",
     "sidebarDescription": "Displays the mobile sidebar."
+  },
+  "Confirm": {
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "Account": {
+    "security": {
+      "metaTitle": "Security",
+      "title": "Security",
+      "description": "Your password, linked accounts and the devices where you're signed in.",
+      "password": {
+        "title": "Password",
+        "changeDescription": "Changing it signs you out on your other devices.",
+        "setDescription": "Your account has no password: you sign in with a link or with Google. Create one to sign in with it too.",
+        "change": "Change password",
+        "set": "Create password",
+        "changed": "Password changed. You were signed out on your other devices.",
+        "created": "Password created."
+      },
+      "linked": {
+        "title": "Linked accounts",
+        "description": "Services you can also sign in with.",
+        "google": "Google",
+        "linkedStatus": "Linked",
+        "notLinkedStatus": "Not linked",
+        "link": "Link",
+        "unlink": "Unlink",
+        "lastMethod": "It's your only way to sign in: add another one before unlinking it.",
+        "confirmTitle": "Unlink Google?",
+        "confirmDescription": "You won't be able to sign in with Google until you link it again.",
+        "unlinked": "Google unlinked."
+      },
+      "sessions": {
+        "title": "Sessions",
+        "description": "Devices where you're signed in.",
+        "unknownDevice": "Unknown device",
+        "current": "This device",
+        "detail": "{ip} · last active: {date}",
+        "unknownIp": "Unknown IP",
+        "revoke": "Sign out",
+        "revokeOthers": "Sign out other sessions",
+        "confirmTitle": "Sign out other sessions?",
+        "confirmDescription": "You'll have to sign in again on those devices.",
+        "revoked": "Session signed out.",
+        "revokedOthers": "Other sessions signed out.",
+        "error": "Couldn't sign the session out. Try again."
+      },
+      "twoFactor": {
+        "title": "Two-step verification",
+        "description": "Besides your password or link, ask for a code from your authenticator app on sign-in.",
+        "enabled": "On",
+        "disabledStatus": "Off",
+        "enable": "Turn on",
+        "disable": "Turn off",
+        "regenerate": "Generate new backup codes",
+        "requiredForYou": "Your role or the site settings require it: it can't be turned off.",
+        "passwordPrompt": "Confirm with your password",
+        "continue": "Continue",
+        "cancel": "Cancel",
+        "scan": "Scan the QR code with your authenticator app (Google Authenticator, 1Password, Authy…) or enter the key manually:",
+        "secret": "Key",
+        "verify": "Verify and turn on",
+        "backupTitle": "Backup codes",
+        "backupDescription": "Keep them somewhere safe: each works once if you lose your phone. They won't be shown again.",
+        "copy": "Copy",
+        "copied": "Codes copied.",
+        "done": "Done",
+        "activated": "Two-step verification turned on.",
+        "deactivated": "Two-step verification turned off.",
+        "qr": "QR for your authenticator app",
+        "setupAlertTitle": "Turn on two-step verification to continue",
+        "setupAlertRole": "Administrators must use it. Until you turn it on, the panel and the other account pages will bring you here.",
+        "setupAlertEveryone": "The site requires it for every account. Until you turn it on, the other account pages will bring you here."
+      }
+    }
   }
 }

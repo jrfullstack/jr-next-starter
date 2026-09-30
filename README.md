@@ -30,7 +30,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🎨 Tailwind CSS 4
 - 🧩 shadcn/ui (estilo `base-nova` sobre Base UI) - Componentes personalizables
 - 🔹 Iconos de Lucide
-- 🔐 Autenticación con Better Auth - Email + contraseña, magic link y Google; verificación de email, recuperar contraseña y roles (`user`, `admin`, `superadmin`)
+- 🔐 Autenticación con Better Auth - Email + contraseña, magic link y Google; verificación de email, recuperar contraseña, verificación en dos pasos (app de autenticación + códigos de respaldo) y roles (`user`, `admin`, `superadmin`)
 - 🛠️ Panel `/admin` - Gestión de usuarios y sección **Sistema** para activar o desactivar métodos de acceso y registro sin tocar código
 - ✉️ Emails con Resend + React Email, traducidos, con bandeja de desarrollo en local
 - 🗄️ Prisma 7 + PostgreSQL - ORM con driver adapter `pg`
@@ -181,7 +181,9 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
   - [x] **4. Sistema:** `/admin/system` (solo superadmin) para abrir o cerrar registros y configurar email + contraseña (registro, acceso, verificación obligatoria, longitud mínima) sin tocar código; Better Auth se construye con esa configuración, un hook bloquea los métodos desactivados, salvaguardas para no dejar a nadie sin acceso e historial de cambios
   - [x] **5. Magic link:** entrar con un enlace de un solo uso por email (verifica el email), registro automático y caducidad del enlace se configuran en Sistema; un solo formulario de login para contraseña y enlace, y la contraseña ya se puede desactivar mientras el enlace esté activo
   - [x] **6. Google:** "Continuar con Google" en login y registro, solo si hay credenciales (`GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`); acceso y registro se configuran en Sistema; vinculación automática con una cuenta existente solo si ambos emails están verificados
-  - [ ] 7. 2FA
+  - [x] **7. 2FA**, en dos partes:
+    - [x] **7a. Cuenta → Seguridad:** `/account/security` para cambiar o crear la contraseña, vincular o desvincular Google (nunca el último método de acceso) y ver y cerrar las sesiones abiertas en otros dispositivos
+    - [x] **7b. 2FA:** app de autenticación (QR) y códigos de respaldo desde Seguridad; niveles desactivado / opcional / obligatorio en Sistema (opcional por defecto: obligatorio para admins y superadmins); también se pide al entrar con magic link o Google; código por email y "recordar dispositivo" opcionales (desactivados); un admin puede quitar el 2FA a un usuario que perdió el móvil
   - [ ] 8. Passkeys
 
 ## 📦 Librerías
@@ -441,7 +443,24 @@ Con [Better Auth](https://www.better-auth.com). El plan completo y sus decisione
 | Magic link | Enlace de un solo uso por email; entrar con él verifica el email. Sirve a cualquier cuenta, también para recuperarla |
 | Google | "Continuar con Google". Solo aparece si hay credenciales |
 
-El login usa un solo formulario: un campo de email con "Iniciar sesión" (contraseña) y "Enviar enlace de acceso" (magic link), y "Continuar con Google" encima.
+El login usa un solo formulario: un campo de email con "Iniciar sesión" (contraseña) y "Enviar enlace de acceso" (magic link, si se activa en Sistema), y "Continuar con Google" encima.
+
+### Verificación en dos pasos (2FA)
+
+- **Factores:** app de autenticación (TOTP, se configura escaneando un QR) y 10 códigos de respaldo, que se muestran una sola vez. En Sistema se puede permitir además un código por email.
+- **Niveles** (Admin → Sistema): *desactivado*, *opcional* (cada usuario decide; admins y superadmins deben usarlo) u *obligatorio* (todas las cuentas). Por defecto, **opcional**.
+- **Cuando es obligatorio** para una cuenta que aún no lo tiene, todas sus páginas protegidas la llevan a Cuenta → Seguridad para activarlo, y los endpoints de administración la rechazan.
+- **Con cualquier método:** se pide al entrar con contraseña (lo hace Better Auth) y también con magic link o Google (un hook propio abre el mismo reto de Better Auth).
+- **Móvil perdido:** con un código de respaldo; o un admin se lo quita desde Usuarios (nunca a un superadmin).
+- **Recordar dispositivo 30 días:** desactivado por defecto; se activa en Sistema.
+
+### Cuenta → Seguridad
+
+En `/account/security` (menú de la cuenta → **Seguridad**), cada usuario puede:
+
+- **Contraseña:** cambiarla (pide la actual y cierra la sesión en sus otros dispositivos) o crearla si entró con magic link o Google.
+- **Cuentas vinculadas:** vincular o desvincular Google. El servidor rechaza desvincular el último método con el que puede entrar.
+- **Sesiones:** ver los dispositivos con sesión abierta (navegador, sistema, IP y última actividad) y cerrar uno o todos los demás.
 
 ### Admin → Sistema
 
@@ -451,8 +470,9 @@ En `/admin/system` (solo `superadmin`) se decide, **sin tocar código ni reinici
 | --- | --- | --- |
 | General | Permitir registros nuevos (interruptor general) | Sí |
 | Email y contraseña | Registro · acceso · verificación obligatoria · longitud mínima (8–128) | Sí · sí · sí · 8 |
-| Magic link | Acceso · registro automático · caducidad (1–60 min) | Sí · no · 5 |
+| Magic link | Acceso · registro automático · caducidad (1–60 min) | No · no · 5 |
 | Google | Acceso · registro | Sí · sí (si hay credenciales) |
+| Verificación en dos pasos | Nivel (desactivado / opcional / obligatorio) · código por email · recordar dispositivo 30 días | Opcional · no · no |
 
 - La configuración se guarda en la base de datos (`system_setting`) y se aplica al instante: Better Auth se construye con ella y un hook del servidor rechaza los métodos desactivados, aunque se llame a la API directamente.
 - **Salvaguardas:** no se puede guardar un cambio que deje sin método de acceso o de recuperación, ni a un superadmin sin forma de entrar. Al desactivar un acceso, se muestra cuántos usuarios se quedarían sin poder entrar y se pide confirmación.
@@ -689,6 +709,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── [locale]                # Layout raíz, páginas (cada una con su loading.tsx), 404 e imagen Open Graph
 │   │   │   ├── (auth)              # Login, registro, verificar email, recuperar contraseña (noindex)
 │   │   │   ├── dev/outbox          # Bandeja de emails de desarrollo
+│   │   │   ├── account/security    # Cuenta → Seguridad (contraseña, Google, sesiones)
 │   │   │   ├── admin               # Panel de administración (secciones según permisos)
 │   │   │   ├── dashboard           # Página protegida de ejemplo
 │   │   │   └── [...rest]           # Envía las rutas desconocidas al 404 traducido
@@ -698,6 +719,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── robots.ts               # robots.txt
 │   │   └── sitemap.ts              # sitemap.xml
 │   ├── components
+│   │   ├── account                 # Cuenta → Seguridad: contraseña, cuentas vinculadas y sesiones
 │   │   ├── admin                   # Menú, usuarios, Sistema y sus skeletons
 │   │   ├── auth                    # Formularios de autenticación y sus skeletons
 │   │   ├── ui                      # Componentes de shadcn/ui
@@ -720,6 +742,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── request.ts              # Carga los mensajes del idioma actual
 │   │   └── routing.ts              # Idiomas soportados e idioma por defecto
 │   ├── lib
+│   │   ├── account                 # Crear contraseña (Server Action) y descripción de dispositivos
 │   │   ├── admin                   # Secciones del panel y lógica de la tabla de usuarios
 │   │   ├── auth                    # Better Auth: servidor, cliente, permisos, rutas, sesión, emails, superadmin
 │   │   ├── email                   # Envío (Resend) y bandeja de desarrollo

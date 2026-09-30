@@ -59,7 +59,34 @@ export function resetPasswordSchema(minPasswordLength: number) {
     .refine(...passwordsMatch);
 }
 
-const authFields = ["name", "email", "password", "confirmPassword"] as const;
+/** Account security: the current password proves it's you (Better Auth checks it) */
+export function changePasswordSchema(minPasswordLength: number) {
+  return z
+    .object({
+      currentPassword: z.string().min(1),
+      ...newPasswordFields(minPasswordLength),
+    })
+    .refine(...passwordsMatch);
+}
+
+/** Second factor: a TOTP, backup or email code, and whether to trust the device */
+export const twoFactorCodeSchema = z.object({
+  code: z.string().trim().min(1),
+  // A checked checkbox submits "on"
+  trustDevice: z
+    .string()
+    .optional()
+    .transform((value) => value === "on"),
+});
+
+const authFields = [
+  "code",
+  "name",
+  "email",
+  "currentPassword",
+  "password",
+  "confirmPassword",
+] as const;
 
 /** Form fields that can show a validation message (keys of Auth.validation in messages) */
 export type AuthField = (typeof authFields)[number];

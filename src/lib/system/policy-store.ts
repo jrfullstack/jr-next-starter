@@ -3,22 +3,15 @@ import { connection } from "next/server";
 import { env } from "@/env";
 import { db } from "@/lib/db";
 import {
-  type AccessMethod,
   type AuthCapabilities,
-  accessMethods,
   effectivePolicy,
+  methodsOfProviders,
   parseAuthPolicy,
   type UserMethodGroup,
 } from "./policy";
 
 export const AUTH_POLICY_TAG = "auth-policy";
 export const POLICY_ROW_ID = "global";
-
-/** Account providerId that each method leaves in the account table (magic link leaves none) */
-const methodProviders: Partial<Record<AccessMethod, string>> = {
-  emailPassword: "credential",
-  google: "google",
-};
 
 async function readAuthPolicy() {
   "use cache";
@@ -50,12 +43,6 @@ export async function getAuthPolicy() {
   return effectivePolicy(await getStoredAuthPolicy(), authCapabilities());
 }
 
-function methodsOf(providerIds: readonly string[]) {
-  return accessMethods.filter((method) =>
-    providerIds.some((providerId) => providerId === methodProviders[method]),
-  );
-}
-
 /** For the safeguards: the methods linked to each superadmin account */
 export async function superadminAccessMethods() {
   const superadmins = await db.user.findMany({
@@ -63,7 +50,7 @@ export async function superadminAccessMethods() {
     select: { accounts: { select: { providerId: true } } },
   });
   return superadmins.map(({ accounts }) =>
-    methodsOf(accounts.map(({ providerId }) => providerId)),
+    methodsOfProviders(accounts.map(({ providerId }) => providerId)),
   );
 }
 
@@ -88,7 +75,7 @@ export async function userMethodGroups(): Promise<UserMethodGroup[]> {
     GROUP BY providers
   `;
   return rows.map(({ providers, count }) => ({
-    methods: methodsOf(providers),
+    methods: methodsOfProviders(providers),
     count,
   }));
 }

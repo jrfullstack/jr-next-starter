@@ -22,11 +22,23 @@ function usePasswordSignIn(callbackPath: string) {
     redirectTo: callbackPath,
     // Better Auth redirects to callbackURL on success; an unverified user gets a
     // fresh verification link that also lands there, already signed in
-    submit: (data) =>
-      authClient.signIn.email({
+    submit: async (data) => {
+      const result = await authClient.signIn.email({
         ...data,
         callbackURL: withLocale(locale, callbackPath),
-      }),
+      });
+      // Password was right, a second factor is still missing
+      const twoFactor = result.data && "twoFactorRedirect" in result.data;
+      return twoFactor
+        ? {
+            error: null,
+            next: {
+              pathname: authRoutes.twoFactor,
+              query: { callbackUrl: callbackPath },
+            },
+          }
+        : result;
+    },
   });
 }
 

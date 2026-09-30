@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test";
 import { test } from "./fixtures";
-import { createTestUser, signInAs } from "./test-users";
+import { createTestUser, signInAs, signInAsAdmin } from "./test-users";
 
 test("an admin blocks, unblocks and signs out a user from the panel", async ({
   page,
@@ -9,7 +9,7 @@ test("an admin blocks, unblocks and signs out a user from the panel", async ({
 }) => {
   const target = await createTestUser(request, { name: "Grace Hopper" });
   const admin = await createTestUser(request, { role: "admin" });
-  await signInAs(page, admin.email, admin.password);
+  await signInAsAdmin(page, admin);
 
   // The user menu links to the panel; /admin opens the first section the role can see
   await page.getByRole("button", { name: "Cuenta" }).click();
@@ -79,7 +79,7 @@ test("the users list sorts by column on the server", async ({
   await createTestUser(request, { name: `Sort B ${token}` });
   await createTestUser(request, { name: `Sort A ${token}` });
   const admin = await createTestUser(request, { role: "admin" });
-  await signInAs(page, admin.email, admin.password);
+  await signInAsAdmin(page, admin);
 
   await page.goto(`/es/admin/users?q=${token}`);
   const firstRow = page.getByRole("row").nth(1);

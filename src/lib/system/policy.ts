@@ -3,6 +3,8 @@ import { z } from "zod";
 /** Better Auth's own bounds for passwords */
 export const PASSWORD_LENGTH = { min: 8, max: 128 } as const;
 
+export const twoFactorLevels = ["off", "optional", "required"] as const;
+
 /** How long a magic link stays valid, in minutes */
 export const MAGIC_LINK_MINUTES = { min: 1, max: 60, default: 5 } as const;
 
@@ -32,7 +34,7 @@ export const authPolicySchema = z.object({
     .prefault({}),
   magicLink: z
     .object({
-      access: z.boolean().default(true),
+      access: z.boolean().default(false),
       /** An unknown email creates the account when it opens the link */
       signUp: z.boolean().default(false),
       expiresInMinutes: z
@@ -40,6 +42,16 @@ export const authPolicySchema = z.object({
         .min(MAGIC_LINK_MINUTES.min)
         .max(MAGIC_LINK_MINUTES.max)
         .default(MAGIC_LINK_MINUTES.default),
+    })
+    .prefault({}),
+  twoFactor: z
+    .object({
+      /** off: nobody can turn it on · optional: users choose, admins must · required: everyone */
+      level: z.enum(twoFactorLevels).default("optional"),
+      /** A code sent by email as a second factor (besides the authenticator app) */
+      emailOtp: z.boolean().default(false),
+      /** "Remember this device" skips the second factor for 30 days */
+      trustDevice: z.boolean().default(false),
     })
     .prefault({}),
   /** Only takes effect with credentials (see effectivePolicy) */
@@ -65,7 +77,7 @@ export function parseAuthPolicy(stored: unknown): AuthPolicy {
 }
 
 /** Sign-in methods. Passkeys join in a later step. */
-export const accessMethods = ["emailPassword", "magicLink", "google"] as const;
+const accessMethods = ["emailPassword", "magicLink", "google"] as const;
 export type AccessMethod = (typeof accessMethods)[number];
 
 /** What the deployment can offer regardless of the policy (Google needs credentials) */
@@ -108,6 +120,42 @@ function canStillSignIn(policy: AuthPolicy, linked: readonly AccessMethod[]) {
   return [...linked, ...universalMethods].some((method) =>
     canSignIn(policy, method),
   );
+}
+
+/** Account providerId that each method leaves in the account table (magic link leaves none) */
+const methodProviders: Partial<Record<AccessMethod, string>> = {
+  emailPassword: "credential",
+  google: "google",
+};
+
+/** Sign-in methods behind an account's linked providers ("credential" → emailPassword) */
+export function methodsOfProviders(providerIds: readonly string[]) {
+  return accessMethods.filter((method) =>
+    providerIds.some((providerId) => providerId === methodProviders[method]),
+  );
+}
+
+/** Unlinking `providerId` must leave the user some method that works with this policy */
+export function canUnlink(
+  policy: AuthPolicy,
+  linkedProviderIds: readonly string[],
+  providerId: string,
+) {
+  const remaining = linkedProviderIds.filter((linked) => linked !== providerId);
+  return canStillSignIn(policy, methodsOfProviders(remaining));
+}
+
+/** Roles that must use 2FA whenever it isn't off (docs/plans/auth.md §6) */
+const privilegedRoles = new Set(["admin", "superadmin"]);
+
+/** Whether this role has to set up a second factor to use the app */
+export function twoFactorRequired(
+  policy: AuthPolicy,
+  role: string | null | undefined,
+) {
+  const { level } = policy.twoFactor;
+  if (level === "required") return true;
+  return level === "optional" && privilegedRoles.has(role ?? "");
 }
 
 export type PolicyViolation =
@@ -159,7 +207,7 @@ export function disabledAccessMethods(before: AuthPolicy, after: AuthPolicy) {
 }
 
 type PolicySection = keyof AuthPolicy;
-type PolicyValue = boolean | number;
+export type PolicyValue = boolean | number | (typeof twoFactorLevels)[number];
 
 /** One changed field; `section` narrows `field`, so labels can be looked up with types */
 export type PolicyChange = {

@@ -1,14 +1,7 @@
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
+import { SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Field,
   FieldContent,
@@ -28,7 +21,15 @@ export type SettingField =
   | "magicLink.signUp"
   | "magicLink.expiresInMinutes"
   | "google.access"
-  | "google.signUp";
+  | "google.signUp"
+  | "twoFactor.level"
+  | "twoFactor.emailOtp"
+  | "twoFactor.trustDevice";
+
+/** Settings edited with a select (their options are the enum values) */
+export const selectSettings: Partial<Record<SettingField, true>> = {
+  "twoFactor.level": true,
+};
 
 /** Settings edited as a number, with their bounds; the rest are switches */
 export const numberSettings: Partial<
@@ -44,30 +45,13 @@ export function settingId(field: SettingField) {
 }
 
 function SettingsCard({
-  title,
-  description,
-  action,
   children,
-}: {
-  title: string;
-  description: string;
-  /** Top-right corner, e.g. a "Not configured" badge */
-  action?: ReactNode;
-  children: ReactNode;
-}) {
+  ...card
+}: ComponentProps<typeof SectionCard>) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h2>{title}</h2>
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
-        {action && <CardAction>{action}</CardAction>}
-      </CardHeader>
-      <CardContent>
-        <FieldGroup>{children}</FieldGroup>
-      </CardContent>
-    </Card>
+    <SectionCard {...card}>
+      <FieldGroup>{children}</FieldGroup>
+    </SectionCard>
   );
 }
 
@@ -93,6 +77,141 @@ function SettingRow({
   );
 }
 
+type Row = (
+  field: SettingField,
+  label: string,
+  description: string,
+) => ReactNode;
+
+function GeneralCard({ row }: { row: Row }) {
+  const t = useTranslations("Admin.system");
+  return (
+    <SettingsCard
+      title={t("sections.general.title")}
+      description={t("sections.general.description")}
+    >
+      {row(
+        "general.signUp",
+        t("fields.general.signUp.label"),
+        t("fields.general.signUp.description"),
+      )}
+    </SettingsCard>
+  );
+}
+
+function EmailPasswordCard({ row }: { row: Row }) {
+  const t = useTranslations("Admin.system");
+  return (
+    <SettingsCard
+      title={t("sections.emailPassword.title")}
+      description={t("sections.emailPassword.description")}
+    >
+      {row(
+        "emailPassword.signUp",
+        t("fields.emailPassword.signUp.label"),
+        t("fields.emailPassword.signUp.description"),
+      )}
+      {row(
+        "emailPassword.access",
+        t("fields.emailPassword.access.label"),
+        t("fields.emailPassword.access.description"),
+      )}
+      {row(
+        "emailPassword.requireEmailVerification",
+        t("fields.emailPassword.requireEmailVerification.label"),
+        t("fields.emailPassword.requireEmailVerification.description"),
+      )}
+      {row(
+        "emailPassword.minPasswordLength",
+        t("fields.emailPassword.minPasswordLength.label"),
+        t(
+          "fields.emailPassword.minPasswordLength.description",
+          PASSWORD_LENGTH,
+        ),
+      )}
+    </SettingsCard>
+  );
+}
+
+function MagicLinkCard({ row }: { row: Row }) {
+  const t = useTranslations("Admin.system");
+  return (
+    <SettingsCard
+      title={t("sections.magicLink.title")}
+      description={t("sections.magicLink.description")}
+    >
+      {row(
+        "magicLink.access",
+        t("fields.magicLink.access.label"),
+        t("fields.magicLink.access.description"),
+      )}
+      {row(
+        "magicLink.signUp",
+        t("fields.magicLink.signUp.label"),
+        t("fields.magicLink.signUp.description"),
+      )}
+      {row(
+        "magicLink.expiresInMinutes",
+        t("fields.magicLink.expiresInMinutes.label"),
+        t("fields.magicLink.expiresInMinutes.description", MAGIC_LINK_MINUTES),
+      )}
+    </SettingsCard>
+  );
+}
+
+function GoogleCard({ row, configured }: { row: Row; configured: boolean }) {
+  const t = useTranslations("Admin.system");
+  return (
+    <SettingsCard
+      title={t("sections.google.title")}
+      description={t("sections.google.description")}
+      action={
+        !configured && <Badge variant="secondary">{t("notConfigured")}</Badge>
+      }
+    >
+      {!configured && (
+        <FieldDescription>{t("sections.google.setup")}</FieldDescription>
+      )}
+      {row(
+        "google.access",
+        t("fields.google.access.label"),
+        t("fields.google.access.description"),
+      )}
+      {row(
+        "google.signUp",
+        t("fields.google.signUp.label"),
+        t("fields.google.signUp.description"),
+      )}
+    </SettingsCard>
+  );
+}
+
+function TwoFactorCard({ row }: { row: Row }) {
+  const t = useTranslations("Admin.system");
+  return (
+    <SettingsCard
+      title={t("sections.twoFactor.title")}
+      description={t("sections.twoFactor.description")}
+    >
+      {row(
+        "twoFactor.level",
+        t("fields.twoFactor.level.label"),
+        t("fields.twoFactor.level.description"),
+      )}
+      {row(
+        "twoFactor.emailOtp",
+        t("fields.twoFactor.emailOtp.label"),
+        t("fields.twoFactor.emailOtp.description"),
+      )}
+      {row(
+        "twoFactor.trustDevice",
+        t("fields.twoFactor.trustDevice.label"),
+        t("fields.twoFactor.trustDevice.description"),
+      )}
+    </SettingsCard>
+  );
+}
+
 /**
  * Cards and rows of the System settings. The form passes real controls and
  * the loading skeleton passes placeholders, so both share one layout.
@@ -105,8 +224,7 @@ export function SystemSettingsLayout({
   /** Without credentials the Google card says so and how to enable it */
   googleConfigured?: boolean;
 }) {
-  const t = useTranslations("Admin.system");
-  const row = (field: SettingField, label: string, description: string) => (
+  const row: Row = (field, label, description) => (
     <SettingRow
       field={field}
       label={label}
@@ -117,90 +235,11 @@ export function SystemSettingsLayout({
 
   return (
     <div className="flex flex-col gap-6">
-      <SettingsCard
-        title={t("sections.general.title")}
-        description={t("sections.general.description")}
-      >
-        {row(
-          "general.signUp",
-          t("fields.general.signUp.label"),
-          t("fields.general.signUp.description"),
-        )}
-      </SettingsCard>
-      <SettingsCard
-        title={t("sections.emailPassword.title")}
-        description={t("sections.emailPassword.description")}
-      >
-        {row(
-          "emailPassword.signUp",
-          t("fields.emailPassword.signUp.label"),
-          t("fields.emailPassword.signUp.description"),
-        )}
-        {row(
-          "emailPassword.access",
-          t("fields.emailPassword.access.label"),
-          t("fields.emailPassword.access.description"),
-        )}
-        {row(
-          "emailPassword.requireEmailVerification",
-          t("fields.emailPassword.requireEmailVerification.label"),
-          t("fields.emailPassword.requireEmailVerification.description"),
-        )}
-        {row(
-          "emailPassword.minPasswordLength",
-          t("fields.emailPassword.minPasswordLength.label"),
-          t("fields.emailPassword.minPasswordLength.description", {
-            min: PASSWORD_LENGTH.min,
-            max: PASSWORD_LENGTH.max,
-          }),
-        )}
-      </SettingsCard>
-      <SettingsCard
-        title={t("sections.magicLink.title")}
-        description={t("sections.magicLink.description")}
-      >
-        {row(
-          "magicLink.access",
-          t("fields.magicLink.access.label"),
-          t("fields.magicLink.access.description"),
-        )}
-        {row(
-          "magicLink.signUp",
-          t("fields.magicLink.signUp.label"),
-          t("fields.magicLink.signUp.description"),
-        )}
-        {row(
-          "magicLink.expiresInMinutes",
-          t("fields.magicLink.expiresInMinutes.label"),
-          t("fields.magicLink.expiresInMinutes.description", {
-            min: MAGIC_LINK_MINUTES.min,
-            max: MAGIC_LINK_MINUTES.max,
-          }),
-        )}
-      </SettingsCard>
-      <SettingsCard
-        title={t("sections.google.title")}
-        description={t("sections.google.description")}
-        action={
-          !googleConfigured && (
-            <Badge variant="secondary">{t("notConfigured")}</Badge>
-          )
-        }
-      >
-        {!googleConfigured && (
-          <FieldDescription>{t("sections.google.setup")}</FieldDescription>
-        )}
-        {row(
-          "google.access",
-          t("fields.google.access.label"),
-          t("fields.google.access.description"),
-        )}
-        {row(
-          "google.signUp",
-          t("fields.google.signUp.label"),
-          t("fields.google.signUp.description"),
-        )}
-      </SettingsCard>
+      <GeneralCard row={row} />
+      <EmailPasswordCard row={row} />
+      <MagicLinkCard row={row} />
+      <GoogleCard row={row} configured={googleConfigured} />
+      <TwoFactorCard row={row} />
     </div>
   );
 }

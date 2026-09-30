@@ -6,6 +6,7 @@ import { Analytics } from "@/components/analytics";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { VercelInsights } from "@/components/vercel-insights";
 import { siteConfig } from "@/config/site";
 import { env } from "@/env";
@@ -76,6 +77,8 @@ export default async function RootLayout({
             <SiteHeader />
             {children}
             <SiteFooter />
+            {/* Action feedback (admin panel, account security) */}
+            <Toaster />
             <VercelInsights />
           </ThemeProvider>
         </NextIntlClientProvider>

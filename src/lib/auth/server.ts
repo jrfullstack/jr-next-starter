@@ -1,25 +1,17 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { admin, magicLink } from "better-auth/plugins";
 import { after } from "next/server";
 import { env } from "@/env";
 import { db } from "@/lib/db";
 import { type AuthPolicy, canSignUp } from "@/lib/system/policy";
-import {
-  assertPolicyAllows,
-  disabledMethodRedirect,
-} from "@/lib/system/policy-guard";
 import { getAuthPolicy } from "@/lib/system/policy-store";
 import { sendAuthEmail } from "./emails";
+import { afterHook, beforeHook } from "./hooks";
 import { ac, roles } from "./permissions";
-import {
-  assertAssignableRole,
-  assertNotSuperadminTarget,
-  assertSafeAdminUserInput,
-  syncSuperadminRole,
-} from "./superadmin";
+import { syncSuperadminRole } from "./superadmin";
+import { twoFactorPlugin } from "./two-factor";
 
 /** Email + password, shaped by the policy (docs/plans/auth.md §5) */
 function emailAndPassword(policy: AuthPolicy) {
@@ -52,8 +44,8 @@ function emailAndPassword(policy: AuthPolicy) {
     }) => {
       after(() =>
         sendAuthEmail(
-          { kind: "resetPassword", name: user.name },
-          { to: user.email, url },
+          { kind: "resetPassword", name: user.name, url },
+          user.email,
         ),
       );
     },
@@ -73,10 +65,7 @@ const emailVerification = {
     url: string;
   }) => {
     after(() =>
-      sendAuthEmail(
-        { kind: "verifyEmail", name: user.name },
-        { to: user.email, url },
-      ),
+      sendAuthEmail({ kind: "verifyEmail", name: user.name, url }, user.email),
     );
   },
 };
@@ -89,10 +78,7 @@ function magicLinkPlugin(policy: AuthPolicy) {
     expiresIn: expiresInMinutes * 60,
     sendMagicLink: async ({ email, url }) => {
       after(() =>
-        sendAuthEmail(
-          { kind: "magicLink", expiresInMinutes },
-          { to: email, url },
-        ),
+        sendAuthEmail({ kind: "magicLink", expiresInMinutes, url }, email),
       );
     },
   });
@@ -126,23 +112,7 @@ function createAuth(policy: AuthPolicy) {
         create: { after: (session) => syncSuperadminRole(session.userId) },
       },
     },
-    hooks: {
-      before: createAuthMiddleware(async (ctx) => {
-        // A link or Google's redirect gets the sign-in page with a message, not JSON
-        const redirect = disabledMethodRedirect(policy, ctx.path, ctx.query);
-        if (redirect) throw ctx.redirect(redirect);
-        // Disabled methods are refused here, even when the API is called directly
-        assertPolicyAllows(policy, ctx.path, ctx.body);
-        if (
-          ctx.path === "/admin/set-role" ||
-          ctx.path === "/admin/create-user"
-        ) {
-          assertAssignableRole(ctx.body?.role);
-        }
-        assertSafeAdminUserInput(ctx.path, ctx.body);
-        await assertNotSuperadminTarget(ctx.path, ctx.body?.userId);
-      }),
-    },
+    hooks: { before: beforeHook(policy), after: afterHook() },
     plugins: [
       admin({
         ac,
@@ -151,6 +121,7 @@ function createAuth(policy: AuthPolicy) {
         adminRoles: ["admin", "superadmin"],
       }),
       magicLinkPlugin(policy),
+      twoFactorPlugin(policy),
       // Must be the last plugin: sets cookies from Server Actions
       nextCookies(),
     ],

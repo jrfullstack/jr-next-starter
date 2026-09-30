@@ -125,7 +125,16 @@ describe("rowPermissions", () => {
       ban: true,
       revokeSessions: true,
       setRole: false,
+      removeTwoFactor: false,
     });
+  });
+
+  it("offers removing 2FA only to users who have it", () => {
+    const withTwoFactor = { ...user, twoFactorEnabled: true };
+    expect(
+      rowPermissions({ id: "a1", role: "admin" }, withTwoFactor)
+        .removeTwoFactor,
+    ).toBe(true);
   });
 
   it("lets only the superadmin change roles", () => {

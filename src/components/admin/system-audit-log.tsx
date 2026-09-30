@@ -2,20 +2,14 @@ import type { Locale } from "next-intl";
 import { useFormatter, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { SectionCard } from "@/components/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { redirect } from "@/i18n/navigation";
 import { adminSection } from "@/lib/admin/sections";
 import { requirePermission } from "@/lib/auth/authorization";
 import { hasCanonicalParams, parsePage } from "@/lib/search-params";
 import { AUDIT_LOG_PAGE_SIZE, findAuditLogPage } from "@/lib/system/audit-log";
-import type { PolicyChange } from "@/lib/system/policy";
+import type { PolicyChange, PolicyValue } from "@/lib/system/policy";
 import { ListPagination } from "./list-pagination";
 
 const section = adminSection("system");
@@ -30,15 +24,9 @@ function historyHref(page: number) {
 export function AuditLogCard({ children }: { children: ReactNode }) {
   const t = useTranslations("Admin.system.history");
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h2>{t("title")}</h2>
-        </CardTitle>
-        <CardDescription>{t("description")}</CardDescription>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+    <SectionCard title={t("title")} description={t("description")}>
+      {children}
+    </SectionCard>
   );
 }
 
@@ -69,23 +57,27 @@ function fieldLabel(t: SystemTranslator, change: PolicyChange) {
       return t(`fields.magicLink.${change.field}.label`);
     case "google":
       return t(`fields.google.${change.field}.label`);
+    case "twoFactor":
+      return t(`fields.twoFactor.${change.field}.label`);
   }
+}
+
+function formatValue(t: SystemTranslator, value: PolicyValue) {
+  if (typeof value === "number") return String(value);
+  if (typeof value === "string") return t(`twoFactorLevels.${value}`);
+  return t(value ? "value.on" : "value.off");
 }
 
 function ChangeLine({ change }: { change: PolicyChange }) {
   const t = useTranslations("Admin.system");
   const field = fieldLabel(t, change);
-  const format = (value: boolean | number) => {
-    if (typeof value === "number") return String(value);
-    return t(value ? "value.on" : "value.off");
-  };
   return (
     <li>
       {t("history.change", {
         section: t(`sections.${change.section}.title`),
         field,
-        from: format(change.from),
-        to: format(change.to),
+        from: formatValue(t, change.from),
+        to: formatValue(t, change.to),
       })}
     </li>
   );

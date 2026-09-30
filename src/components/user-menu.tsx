@@ -71,6 +71,9 @@ export function UserMenu() {
         <DropdownMenuItem render={<Link href={authRoutes.afterSignIn} />}>
           {t("dashboard")}
         </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href={authRoutes.accountSecurity} />}>
+          {t("security")}
+        </DropdownMenuItem>
         {visibleSections(session.user.role).length > 0 && (
           <DropdownMenuItem render={<Link href="/admin" />}>
             {t("admin")}
