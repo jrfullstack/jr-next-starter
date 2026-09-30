@@ -7,9 +7,13 @@ import { useRouter } from "@/i18n/navigation";
 import { type AuthErrorKey, authErrorKey } from "@/lib/auth/errors";
 import { type AuthField, invalidFields } from "@/lib/auth/schemas";
 
-type AuthResult = { error: { code?: string; status?: number } | null };
-
 type Href = Parameters<ReturnType<typeof useRouter>["push"]>[0];
+
+type AuthResult = {
+  error: { code?: string; status?: number } | null;
+  /** Go here instead of the usual success step (e.g. the 2FA page) */
+  next?: Href;
+};
 
 /**
  * Shared submit flow of the auth forms: validate with Zod, call Better Auth,
@@ -61,6 +65,10 @@ export function useAuthForm<Schema extends z.ZodType>({
       const result = await submit(parsed.data);
       if (result.error) {
         setError(authErrorKey(result.error.code, result.error.status));
+        return;
+      }
+      if (result.next) {
+        router.push(result.next);
         return;
       }
       onSuccess(parsed.data);

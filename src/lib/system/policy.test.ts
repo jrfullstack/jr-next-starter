@@ -9,6 +9,7 @@ import {
   parseAuthPolicy,
   policyChanges,
   policyViolations,
+  twoFactorRequired,
   usersLockedOut,
 } from "./policy";
 
@@ -24,11 +25,17 @@ function withChanges(changes: PolicyChanges): AuthPolicy {
       ...changes.emailPassword,
     },
     magicLink: { ...defaultAuthPolicy.magicLink, ...changes.magicLink },
+    twoFactor: { ...defaultAuthPolicy.twoFactor, ...changes.twoFactor },
     google: { ...defaultAuthPolicy.google, ...changes.google },
   };
 }
 
-const passwordOff = withChanges({ emailPassword: { access: false } });
+// Magic link is off by default: these start from a policy with it on
+const linkOn = withChanges({ magicLink: { access: true } });
+const passwordOff = withChanges({
+  emailPassword: { access: false },
+  magicLink: { access: true },
+});
 const magicLinkOff = withChanges({ magicLink: { access: false } });
 const everythingOff = withChanges({
   emailPassword: { access: false },
@@ -46,7 +53,8 @@ describe("parseAuthPolicy", () => {
         requireEmailVerification: true,
         minPasswordLength: 8,
       },
-      magicLink: { access: true, signUp: false, expiresInMinutes: 5 },
+      magicLink: { access: false, signUp: false, expiresInMinutes: 5 },
+      twoFactor: { level: "optional", emailOtp: false, trustDevice: false },
       google: { access: true, signUp: true },
     });
   });
@@ -54,7 +62,7 @@ describe("parseAuthPolicy", () => {
   it("fills in fields that a stored policy doesn't have yet", () => {
     const policy = parseAuthPolicy({ general: { signUp: false } });
     expect(policy.general.signUp).toBe(false);
-    expect(policy.magicLink.access).toBe(true);
+    expect(policy.emailPassword.access).toBe(true);
   });
 
   it.each([
@@ -118,10 +126,10 @@ describe("usersLockedOut", () => {
 
 describe("disabledAccessMethods", () => {
   it("lists only methods whose sign-in is being turned off", () => {
-    expect(disabledAccessMethods(defaultAuthPolicy, passwordOff)).toEqual([
+    expect(disabledAccessMethods(linkOn, passwordOff)).toEqual([
       "emailPassword",
     ]);
-    expect(disabledAccessMethods(passwordOff, defaultAuthPolicy)).toEqual([]);
+    expect(disabledAccessMethods(passwordOff, linkOn)).toEqual([]);
   });
 });
 
@@ -168,9 +176,22 @@ describe("usersLockedOut with Google", () => {
 
 describe("canUnlink", () => {
   it("keeps a way in: the magic link, or another linked method", () => {
-    expect(canUnlink(defaultAuthPolicy, ["google"], "google")).toBe(true);
+    expect(canUnlink(linkOn, ["google"], "google")).toBe(true);
     const noLink = withChanges({ magicLink: { access: false } });
     expect(canUnlink(noLink, ["google"], "google")).toBe(false);
     expect(canUnlink(noLink, ["google", "credential"], "google")).toBe(true);
+  });
+});
+
+describe("twoFactorRequired", () => {
+  it.each([
+    ["optional", "user", false],
+    ["optional", "admin", true],
+    ["optional", "superadmin", true],
+    ["required", "user", true],
+    ["off", "superadmin", false],
+  ] as const)("%s level, %s → %s", (level, role, expected) => {
+    const policy = withChanges({ twoFactor: { level } });
+    expect(twoFactorRequired(policy, role)).toBe(expected);
   });
 });

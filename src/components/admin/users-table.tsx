@@ -24,6 +24,7 @@ type ListedUser = {
   role?: string | null;
   banned?: boolean | null;
   emailVerified: boolean;
+  twoFactorEnabled?: boolean | null;
   createdAt: Date;
 };
 
@@ -96,6 +97,11 @@ export function UsersTable({
                 {user.id === actor.id && (
                   <Badge variant="outline" className="ml-2">
                     {t("you")}
+                  </Badge>
+                )}
+                {user.twoFactorEnabled && (
+                  <Badge variant="outline" className="ml-2">
+                    {t("twoFactorBadge")}
                   </Badge>
                 )}
               </TableCell>

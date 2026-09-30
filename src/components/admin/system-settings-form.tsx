@@ -6,8 +6,6 @@ import { toast } from "sonner";
 import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { saveAuthPolicy } from "@/lib/system/actions";
 import {
@@ -17,15 +15,15 @@ import {
   authPolicySchema,
   disabledAccessMethods,
   effectivePolicy,
+  type PolicyValue,
   policyViolations,
   type UserMethodGroup,
   usersLockedOut,
 } from "@/lib/system/policy";
+import { SettingControl } from "./system-setting-control";
 import {
-  numberSettings,
   type SettingField,
   SystemSettingsLayout,
-  settingId,
 } from "./system-settings-layout";
 
 type Props = {
@@ -41,13 +39,13 @@ type Props = {
 
 function settingValue(policy: AuthPolicy, field: SettingField) {
   const [section, key] = field.split(".") as [keyof AuthPolicy, string];
-  return (policy[section] as Record<string, boolean | number>)[key];
+  return (policy[section] as Record<string, PolicyValue>)[key];
 }
 
 function withValue(
   policy: AuthPolicy,
   field: SettingField,
-  value: boolean | number,
+  value: PolicyValue,
 ): AuthPolicy {
   const [section, key] = field.split(".") as [keyof AuthPolicy, string];
   return { ...policy, [section]: { ...policy[section], [key]: value } };
@@ -86,39 +84,14 @@ export function SystemSettingsForm({
 
   const control = (field: SettingField) => {
     const value = settingValue(policy, field);
-    const unavailable = field.startsWith("google.") && !capabilities.google;
-    if (typeof value === "boolean") {
-      return (
-        <Switch
-          id={settingId(field)}
-          checked={value}
-          disabled={locked || unavailable}
-          onCheckedChange={(checked) =>
-            setPolicy(withValue(policy, field, checked))
-          }
-        />
-      );
-    }
     if (value === undefined) return null;
-    const bounds = numberSettings[field];
-    const inRange =
-      Number.isInteger(value) &&
-      bounds !== undefined &&
-      value >= bounds.min &&
-      value <= bounds.max;
+    const unavailable = field.startsWith("google.") && !capabilities.google;
     return (
-      <Input
-        id={settingId(field)}
-        type="number"
-        min={bounds?.min}
-        max={bounds?.max}
-        value={Number.isNaN(value) ? "" : value}
-        aria-invalid={!inRange}
-        disabled={locked}
-        onChange={(event) =>
-          setPolicy(withValue(policy, field, event.target.valueAsNumber))
-        }
-        className="w-20"
+      <SettingControl
+        field={field}
+        value={value}
+        disabled={locked || unavailable}
+        onChange={(next) => setPolicy(withValue(policy, field, next))}
       />
     );
   };

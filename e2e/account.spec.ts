@@ -1,55 +1,49 @@
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { test } from "./fixtures";
 import {
   createTestUser,
+  fillNewPassword,
+  setUpTwoFactor,
   signInAs,
-  signInWithMagicLink,
-  withDatabase,
+  submitSignIn,
 } from "./test-users";
-
-async function fillNewPassword(page: Page, password: string) {
-  await page.getByLabel("Contraseña", { exact: true }).fill(password);
-  await page.getByLabel("Confirmar contraseña").fill(password);
-}
 
 const randomIp = () =>
   `10.${Math.floor(Math.random() * 254) + 1}.0.${Math.floor(Math.random() * 254) + 1}`;
 
-test("a user without a password creates one, then changes it", async ({
+test("a user changes the password, turns on 2FA and signs in with a code or a backup code", async ({
   page,
   request,
 }) => {
-  // An account that only ever signed in with the magic link: no credential account
   const user = await createTestUser(request);
-  await withDatabase((db) =>
-    db.query(
-      `DELETE FROM account WHERE "providerId" = 'credential'
-         AND "userId" = (SELECT id FROM "user" WHERE email = $1)`,
-      [user.email],
-    ),
-  );
-  await signInWithMagicLink(page, user.email);
-  await expect(page).toHaveURL(/\/es\/dashboard$/);
+  await signInAs(page, user.email, user.password);
 
   await page.getByRole("button", { name: "Cuenta" }).click();
   await page.getByRole("menuitem", { name: "Seguridad" }).click();
   await expect(page).toHaveURL(/\/es\/account\/security$/);
-
-  const first = "a-first-password";
-  await fillNewPassword(page, first);
-  await page.getByRole("button", { name: "Crear contraseña" }).click();
-  await expect(page.getByText("Contraseña creada.")).toBeVisible();
-
-  const second = "a-second-password";
-  await page.getByLabel("Contraseña actual").fill(first);
-  await fillNewPassword(page, second);
-  await page.getByRole("button", { name: "Cambiar contraseña" }).click();
+  const newPassword = "a-brand-new-password";
+  await page.getByLabel("Contraseña actual").fill(user.password);
+  await fillNewPassword(page, newPassword, "Cambiar contraseña");
   await expect(
     page.getByText("Contraseña cambiada.", { exact: false }),
   ).toBeVisible();
 
+  const { secret, backupCodes } = await setUpTwoFactor(page, newPassword);
+
+  // Next sign-in: the password is not enough, the app's code is needed
   await page.context().clearCookies();
-  await signInAs(page, user.email, second);
+  await signInAs(page, user.email, newPassword, { twoFactorSecret: secret });
+
+  // Lost phone: a backup code works instead (once)
+  await page.context().clearCookies();
+  await submitSignIn(page, user.email, newPassword);
+  await expect(page).toHaveURL(/\/es\/two-factor/);
+  await page
+    .getByRole("button", { name: "Usar un código de respaldo" })
+    .click();
+  await page.getByLabel("Código").fill(backupCodes[0] ?? "");
+  await page.getByRole("button", { name: "Verificar" }).click();
+  await expect(page).toHaveURL(/\/es\/dashboard$/);
 });
 
 test("signs out the other devices from the sessions list", async ({

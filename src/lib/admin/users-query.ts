@@ -25,6 +25,7 @@ export async function findUsersPage(query: UsersQuery) {
         role: true,
         banned: true,
         emailVerified: true,
+        twoFactorEnabled: true,
         createdAt: true,
       },
     }),

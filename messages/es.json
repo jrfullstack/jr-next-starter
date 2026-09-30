@@ -105,7 +105,8 @@
       "email": "Introduce un email válido.",
       "password": "La contraseña debe tener al menos {min} caracteres.",
       "confirmPassword": "Las contraseñas no coinciden.",
-      "currentPassword": "Introduce tu contraseña actual."
+      "currentPassword": "Introduce tu contraseña actual.",
+      "code": "Introduce el código."
     },
     "errors": {
       "invalidCredentials": "Email o contraseña incorrectos.",
@@ -120,7 +121,13 @@
       "signInMethodDisabled": "Este método de acceso está desactivado. Recupera tu cuenta con otro método o contacta con el administrador.",
       "invalidCurrentPassword": "La contraseña actual no es correcta.",
       "lastSignInMethod": "Es tu única forma de entrar: añade otra antes de quitarla.",
-      "sessionNotFresh": "Por seguridad, vuelve a iniciar sesión para hacer este cambio."
+      "sessionNotFresh": "Por seguridad, vuelve a iniciar sesión para hacer este cambio.",
+      "twoFactorOff": "La verificación en dos pasos está desactivada.",
+      "twoFactorRequired": "Tu cuenta tiene que usar la verificación en dos pasos.",
+      "twoFactorSetupRequired": "Configura la verificación en dos pasos para continuar.",
+      "invalidCode": "El código no es correcto.",
+      "twoFactorExpired": "La verificación ha caducado. Vuelve a iniciar sesión.",
+      "tooManyAttempts": "Demasiados intentos. Espera unos minutos y vuelve a iniciar sesión."
     },
     "verifyEmail": {
       "metaTitle": "Verificar email",
@@ -174,7 +181,22 @@
       "signInDescription": "Entra con tu cuenta de Google.",
       "signUpDescription": "Crea tu cuenta con Google."
     },
-    "or": "o"
+    "or": "o",
+    "twoFactor": {
+      "metaTitle": "Verificación en dos pasos",
+      "title": "Verificación en dos pasos",
+      "totpDescription": "Introduce el código de 6 dígitos de tu app de autenticación.",
+      "backupDescription": "Introduce uno de tus códigos de respaldo.",
+      "otpDescription": "Introduce el código que te hemos enviado por email.",
+      "code": "Código",
+      "submit": "Verificar",
+      "trustDevice": "Recordar este dispositivo 30 días",
+      "useBackup": "Usar un código de respaldo",
+      "useApp": "Usar la app de autenticación",
+      "useEmail": "Enviarme un código por email",
+      "emailSent": "Te hemos enviado un código por email.",
+      "signInAgain": "Volver a iniciar sesión"
+    }
   },
   "UserMenu": {
     "signIn": "Iniciar sesión",
@@ -212,6 +234,12 @@
       "body": "Pulsa el botón para iniciar sesión. No necesitas contraseña.",
       "cta": "Iniciar sesión",
       "footnote": "El enlace caduca en {minutes, plural, one {# minuto} other {# minutos}} y solo se puede usar una vez. Si no lo has pedido tú, ignora este mensaje."
+    },
+    "twoFactorCode": {
+      "subject": "Tu código de verificación",
+      "heading": "Tu código de verificación",
+      "body": "Introduce este código para terminar de iniciar sesión.",
+      "footnote": "Caduca en unos minutos. Si no estabas iniciando sesión, cambia tu contraseña."
     }
   },
   "DevOutbox": {
@@ -262,13 +290,16 @@
         "unban": "Desbloquear",
         "revokeSessions": "Cerrar sesiones",
         "makeAdmin": "Hacer administrador",
-        "makeUser": "Quitar administrador"
+        "makeUser": "Quitar administrador",
+        "removeTwoFactor": "Quitar verificación en dos pasos"
       },
       "confirm": {
         "banTitle": "¿Bloquear a {name}?",
         "banDescription": "No podrá iniciar sesión y se cerrarán todas sus sesiones.",
         "revokeTitle": "¿Cerrar las sesiones de {name}?",
-        "revokeDescription": "Tendrá que volver a iniciar sesión en todos sus dispositivos."
+        "revokeDescription": "Tendrá que volver a iniciar sesión en todos sus dispositivos.",
+        "removeTwoFactorTitle": "¿Quitar la verificación en dos pasos de {name}?",
+        "removeTwoFactorDescription": "Úsalo si perdió su móvil. Podrá entrar solo con su contraseña o enlace hasta que la vuelva a configurar."
       },
       "create": {
         "open": "Crear usuario",
@@ -288,7 +319,8 @@
         "allStatuses": "Todos los estados",
         "clear": "Limpiar filtros"
       },
-      "sortBy": "Ordenar por {column}"
+      "sortBy": "Ordenar por {column}",
+      "twoFactorBadge": "2FA"
     },
     "pagination": {
       "summary": "{from}–{to} de {total}",
@@ -316,6 +348,10 @@
           "title": "Google",
           "description": "Entrar con una cuenta de Google.",
           "setup": "Define GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en las variables de entorno para activarlo (ver README)."
+        },
+        "twoFactor": {
+          "title": "Verificación en dos pasos (2FA)",
+          "description": "Un segundo factor al entrar: app de autenticación y códigos de respaldo."
         }
       },
       "fields": {
@@ -366,6 +402,20 @@
             "label": "Registro",
             "description": "Una cuenta de Google nueva crea su cuenta al entrar por primera vez."
           }
+        },
+        "twoFactor": {
+          "level": {
+            "label": "Nivel",
+            "description": "Opcional: cada usuario decide, y administradores y superadmins deben usarlo. Obligatorio: todos."
+          },
+          "emailOtp": {
+            "label": "Código por email",
+            "description": "Permite recibir el código por email en lugar de usar la app."
+          },
+          "trustDevice": {
+            "label": "Recordar dispositivo 30 días",
+            "description": "Permite no pedir el segundo factor en un dispositivo durante 30 días."
+          }
         }
       },
       "value": {
@@ -397,7 +447,12 @@
         "entry": "{actor} · {date}",
         "change": "{section} · {field}: {from} → {to}"
       },
-      "notConfigured": "No configurado"
+      "notConfigured": "No configurado",
+      "twoFactorLevels": {
+        "off": "Desactivado",
+        "optional": "Opcional",
+        "required": "Obligatorio"
+      }
     }
   },
   "UI": {
@@ -451,6 +506,33 @@
         "revoked": "Sesión cerrada.",
         "revokedOthers": "Se cerraron las demás sesiones.",
         "error": "No se pudo cerrar la sesión. Inténtalo de nuevo."
+      },
+      "twoFactor": {
+        "title": "Verificación en dos pasos",
+        "description": "Además de tu contraseña o enlace, pide un código de tu app de autenticación al entrar.",
+        "enabled": "Activada",
+        "disabledStatus": "Desactivada",
+        "enable": "Activar",
+        "disable": "Desactivar",
+        "regenerate": "Generar códigos de respaldo nuevos",
+        "requiredForYou": "Tu rol o la configuración de la web la exigen: no se puede desactivar.",
+        "passwordPrompt": "Confirma con tu contraseña",
+        "continue": "Continuar",
+        "cancel": "Cancelar",
+        "scan": "Escanea el código QR con tu app de autenticación (Google Authenticator, 1Password, Authy…) o introduce la clave a mano:",
+        "secret": "Clave",
+        "verify": "Verificar y activar",
+        "backupTitle": "Códigos de respaldo",
+        "backupDescription": "Guárdalos en un lugar seguro: cada uno sirve una vez si pierdes el móvil. No se volverán a mostrar.",
+        "copy": "Copiar",
+        "copied": "Códigos copiados.",
+        "done": "Hecho",
+        "activated": "Verificación en dos pasos activada.",
+        "deactivated": "Verificación en dos pasos desactivada.",
+        "qr": "QR para tu app de autenticación",
+        "setupAlertTitle": "Activa la verificación en dos pasos para continuar",
+        "setupAlertRole": "Los administradores deben usarla. Hasta que la actives, el panel y el resto de páginas de la cuenta te traerán aquí.",
+        "setupAlertEveryone": "La web la exige a todas las cuentas. Hasta que la actives, el resto de páginas de la cuenta te traerán aquí."
       }
     }
   }

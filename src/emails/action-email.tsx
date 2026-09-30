@@ -15,15 +15,17 @@ export type ActionEmailProps = {
   preview: string;
   heading: string;
   body: string;
-  cta: string;
-  url: string;
   footnote: string;
   footer: string;
-};
+} & (
+  | { cta: string; url: string; code?: never }
+  /** A one-time code to type instead of a link (second factor by email) */
+  | { code: string; cta?: never; url?: never }
+);
 
 const colors = { text: "#171717", muted: "#737373", border: "#e5e5e5" };
 
-/** Email with a single call to action (verify email, reset password…). Texts arrive translated. */
+/** Email with a single call to action (a link, or a code to type). Texts arrive translated. */
 export function ActionEmail({
   lang,
   preview,
@@ -31,6 +33,7 @@ export function ActionEmail({
   body,
   cta,
   url,
+  code,
   footnote,
   footer,
 }: ActionEmailProps) {
@@ -44,18 +47,24 @@ export function ActionEmail({
             {heading}
           </Heading>
           <Text style={{ fontSize: 15, lineHeight: "24px" }}>{body}</Text>
-          <Button
-            href={url}
-            style={{
-              background: colors.text,
-              color: "#ffffff",
-              borderRadius: 8,
-              padding: "12px 20px",
-              fontSize: 14,
-            }}
-          >
-            {cta}
-          </Button>
+          {code ? (
+            <Text style={{ fontSize: 28, fontWeight: 700, letterSpacing: 6 }}>
+              {code}
+            </Text>
+          ) : (
+            <Button
+              href={url}
+              style={{
+                background: colors.text,
+                color: "#ffffff",
+                borderRadius: 8,
+                padding: "12px 20px",
+                fontSize: 14,
+              }}
+            >
+              {cta}
+            </Button>
+          )}
           <Text style={{ fontSize: 13, color: colors.muted }}>{footnote}</Text>
           <Hr style={{ borderColor: colors.border }} />
           <Text style={{ fontSize: 12, color: colors.muted }}>{footer}</Text>

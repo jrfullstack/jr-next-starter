@@ -69,7 +69,18 @@ export function changePasswordSchema(minPasswordLength: number) {
     .refine(...passwordsMatch);
 }
 
+/** Second factor: a TOTP, backup or email code, and whether to trust the device */
+export const twoFactorCodeSchema = z.object({
+  code: z.string().trim().min(1),
+  // A checked checkbox submits "on"
+  trustDevice: z
+    .string()
+    .optional()
+    .transform((value) => value === "on"),
+});
+
 const authFields = [
+  "code",
   "name",
   "email",
   "currentPassword",

@@ -1,6 +1,6 @@
 # Plan: autenticación y panel de administración
 
-> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios), 4 (Sistema), 5 (Magic link), 6 (Google) y 7a (Cuenta → Seguridad) hechos; el resto, pendiente.
+> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios), 4 (Sistema), 5 (Magic link), 6 (Google) y 7 (Cuenta → Seguridad y 2FA) hechos; el resto, pendiente.
 
 ## 1. Objetivo
 
@@ -271,7 +271,9 @@ Página del usuario (cualquier rol), necesaria antes del 2FA porque es donde se 
 - Enlace desde el menú de la cuenta; skeleton y Suspense como el resto.
 - E2E: cambiar contraseña, crear contraseña tras entrar con magic link, cerrar otra sesión.
 
-### 7b. 2FA
+### 7b. 2FA · hecho
+
+> Valores por defecto revisados al empezar el 7b: nivel **opcional** (obligatorio para admins y superadmins), código por email y recordar dispositivo **desactivados**, y el magic link pasa a **desactivado** por defecto.
 
 Política (tarjeta **2FA** en Sistema, sin migración de la política):
 

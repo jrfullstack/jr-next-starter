@@ -15,6 +15,15 @@ const knownErrors = {
   FAILED_TO_UNLINK_LAST_ACCOUNT: "lastSignInMethod",
   SESSION_EXPIRED: "sessionNotFresh",
   SESSION_NOT_FRESH: "sessionNotFresh",
+  TWO_FACTOR_OFF: "twoFactorOff",
+  TWO_FACTOR_REQUIRED: "twoFactorRequired",
+  TWO_FACTOR_SETUP_REQUIRED: "twoFactorSetupRequired",
+  INVALID_CODE: "invalidCode",
+  INVALID_BACKUP_CODE: "invalidCode",
+  OTP_HAS_EXPIRED: "invalidCode",
+  INVALID_TWO_FACTOR_COOKIE: "twoFactorExpired",
+  TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE: "tooManyAttempts",
+  ACCOUNT_TEMPORARILY_LOCKED: "tooManyAttempts",
 } as const;
 
 export type AuthErrorKey =
