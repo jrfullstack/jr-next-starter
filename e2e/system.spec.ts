@@ -13,6 +13,9 @@ import {
 // Both tests change the same app-wide settings with the same superadmin
 test.describe.configure({ mode: "serial" });
 
+// CI has no Google credentials; locally the .env may have them
+const googleConfigured = env.GOOGLE_CLIENT_ID !== undefined;
+
 /** A switch inside one of the System cards (several cards have "Acceso") */
 function settingSwitch(page: Page, card: string, name: string) {
   return page
@@ -35,6 +38,12 @@ test("the superadmin closes and reopens registrations from System", async ({
   const superadmin = await createSuperadmin(request);
   await signInAs(page, superadmin.email, superadmin.password);
   await page.goto("/es/admin/system");
+  await expect(
+    page
+      .locator("[data-slot=card]")
+      .filter({ has: page.getByRole("heading", { name: "Google" }) })
+      .getByText("No configurado"),
+  ).toHaveCount(googleConfigured ? 0 : 1);
 
   await toggleRegistrations(page);
   await expect(
@@ -59,6 +68,10 @@ test("the superadmin closes and reopens registrations from System", async ({
   await expect(visitor.getByRole("link", { name: "Regístrate" })).toHaveCount(
     0,
   );
+  // Signing in with Google stays: only its registration closes
+  await expect(
+    visitor.getByRole("button", { name: "Continuar con Google" }),
+  ).toHaveCount(googleConfigured ? 1 : 0);
   await visitor.close();
 
   await toggleRegistrations(page);

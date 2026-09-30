@@ -6,10 +6,10 @@ import { admin, magicLink } from "better-auth/plugins";
 import { after } from "next/server";
 import { env } from "@/env";
 import { db } from "@/lib/db";
-import { type AuthPolicy, canSignIn, canSignUp } from "@/lib/system/policy";
+import { type AuthPolicy, canSignUp } from "@/lib/system/policy";
 import {
   assertPolicyAllows,
-  disabledMagicLinkRedirect,
+  disabledMethodRedirect,
 } from "@/lib/system/policy-guard";
 import { getAuthPolicy } from "@/lib/system/policy-store";
 import { sendAuthEmail } from "./emails";
@@ -98,6 +98,20 @@ function magicLinkPlugin(policy: AuthPolicy) {
   });
 }
 
+/** Google, registered only with credentials (src/env.ts validates they come together) */
+function socialProviders(policy: AuthPolicy) {
+  const { GOOGLE_CLIENT_ID: clientId, GOOGLE_CLIENT_SECRET: clientSecret } =
+    env;
+  if (!(clientId && clientSecret)) return {};
+  return {
+    google: {
+      clientId,
+      clientSecret,
+      disableSignUp: !canSignUp(policy, "google"),
+    },
+  };
+}
+
 function createAuth(policy: AuthPolicy) {
   return betterAuth({
     baseURL: env.NEXT_PUBLIC_APP_URL,
@@ -105,6 +119,7 @@ function createAuth(policy: AuthPolicy) {
     database: prismaAdapter(db, { provider: "postgresql" }),
     emailAndPassword: emailAndPassword(policy),
     emailVerification,
+    socialProviders: socialProviders(policy),
     databaseHooks: {
       session: {
         // Every sign-in recomputes superadmin (docs/plans/auth.md §3)
@@ -113,13 +128,9 @@ function createAuth(policy: AuthPolicy) {
     },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
-        // A link opened in the browser gets the sign-in page with a message, not JSON
-        if (
-          ctx.path === "/magic-link/verify" &&
-          !canSignIn(policy, "magicLink")
-        ) {
-          throw ctx.redirect(disabledMagicLinkRedirect(ctx.query));
-        }
+        // A link or Google's redirect gets the sign-in page with a message, not JSON
+        const redirect = disabledMethodRedirect(policy, ctx.path, ctx.query);
+        if (redirect) throw ctx.redirect(redirect);
         // Disabled methods are refused here, even when the API is called directly
         assertPolicyAllows(policy, ctx.path, ctx.body);
         if (

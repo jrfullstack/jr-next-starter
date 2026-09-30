@@ -1,6 +1,6 @@
 # Plan: autenticación y panel de administración
 
-> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios), 4 (Sistema) y 5 (Magic link) hechos; el resto, pendiente.
+> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios), 4 (Sistema), 5 (Magic link) y 6 (Google) hechos; el resto, pendiente.
 
 ## 1. Objetivo
 
@@ -212,7 +212,47 @@ Nueva tarjeta **Magic link** en Sistema; los campos nuevos entran con su valor p
 - **Unitarios**: salvaguardas con dos métodos (la contraseña se puede desactivar si el enlace está activo, nunca los dos), conteo de afectados, rutas del hook.
 - **E2E**: entrar con el enlace leído de la bandeja de desarrollo; el superadmin desactiva el acceso con contraseña → el login con contraseña lo rechaza con su mensaje y el enlace sigue funcionando → lo reactiva.
 
-## 15. Fuera de alcance
+## 15. Paso 6 en detalle: Google
+
+> Estado: **hecho**.
+
+### Credenciales y capacidad
+
+- `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en `src/env.ts` y `.env.example`: opcionales, pero **las dos o ninguna** (T3-env lo valida al arrancar).
+- Sin credenciales, Google **no se registra** en Better Auth y cuenta como **no disponible** en todo: login, registro y salvaguardas. La tarjeta de Sistema lo muestra como "No configurado", con los interruptores desactivados y qué variables faltan.
+- URL de redirección que hay que dar de alta en Google Cloud: `${NEXT_PUBLIC_APP_URL}/api/auth/callback/google`. El README explica cómo crear las credenciales.
+
+### Política de Google (sin migración)
+
+| Opción | Por defecto |
+| --- | --- |
+| Acceso con Google | Activado (solo si hay credenciales) |
+| Registro con Google (primera vez con una cuenta nueva) | Activado |
+
+- Better Auth lo aplica de forma nativa (`disableSignUp` del proveedor sale de la política).
+- El hook rechaza `/sign-in/social` con Google y su callback (`/callback/google`) con el acceso desactivado; el callback vuelve al login con un aviso, como el magic link.
+
+### Cuentas existentes
+
+- Si alguien entra con Google con el email de una cuenta que ya existe, **se vinculan solas** solo si Google confirma el email **y** la cuenta local está verificada (lo que Better Auth hace por defecto). Si la cuenta local no está verificada, no se vincula: aviso para entrar con su método habitual y verificar el email.
+- Vincular o desvincular Google desde la propia cuenta llega con *Cuenta → Seguridad* (paso 7).
+
+### Salvaguardas con Google
+
+- Google cuenta como método **vinculado** (cuenta `google` en la base de datos), no universal: desactivarlo solo afecta a quienes no tengan otro método activo. Como el magic link sirve a todos, con el enlace activo nadie se queda fuera.
+
+### Interfaz de Google
+
+- **Login y registro**: botón "Continuar con Google" (logo oficial de Google) encima del formulario, con "o" de separador, cuando está disponible y activo.
+- **Errores** de Google (registro cerrado, cuenta sin vincular, cancelado por el usuario) → aviso traducido en el login.
+- Skeletons actualizados.
+
+### Tests del paso 6
+
+- **Unitarios**: disponibilidad según credenciales (política efectiva), salvaguardas con un método vinculado, rutas del hook para Google, mensajes de error de OAuth, validación "las dos o ninguna" de las variables.
+- **E2E**: sin credenciales en CI, el login no muestra Google y Sistema lo marca como no configurado. El flujo real con Google no se prueba contra Google (plan §11).
+
+## 16. Fuera de alcance
 
 - Suplantar usuarios (fase posterior, solo `superadmin`, con aviso visible, salida y registro).
 - Otros proveedores OAuth (GitHub, Microsoft, Apple…): la arquitectura los admite, se añadirán cuando hagan falta.

@@ -150,16 +150,24 @@
     },
     "showPassword": "Show password",
     "magicLink": {
-      "divider": "or",
       "signInDescription": "We'll email you a link to sign in, no password needed.",
       "signUpDescription": "We'll email you a link to create your account.",
       "submit": "Email me a sign-in link",
-      "sent": "If {email} can sign in, we've sent a link. It expires in {minutes, plural, one {# minute} other {# minutes}}.",
-      "linkErrors": {
-        "invalid": "The link isn't valid, was already used or has expired. Ask for a new one.",
-        "noAccount": "There's no account with that email and registrations are closed."
-      }
-    }
+      "sent": "If {email} can sign in, we've sent a link. It expires in {minutes, plural, one {# minute} other {# minutes}}."
+    },
+    "callbackErrors": {
+      "invalidLink": "The link isn't valid, was already used or has expired. Ask for a new one.",
+      "noAccount": "There's no account with that email and registrations are closed.",
+      "accountNotLinked": "There's an unverified account with that email. Sign in with your usual method and verify the email to use Google.",
+      "cancelled": "You cancelled signing in with Google.",
+      "generic": "Couldn't sign in. Try again."
+    },
+    "google": {
+      "continue": "Continue with Google",
+      "signInDescription": "Sign in with your Google account.",
+      "signUpDescription": "Create your account with Google."
+    },
+    "or": "or"
   },
   "UserMenu": {
     "signIn": "Sign in",
@@ -297,6 +305,11 @@
         "magicLink": {
           "title": "Magic link",
           "description": "Sign in with a one-time link sent by email, no password."
+        },
+        "google": {
+          "title": "Google",
+          "description": "Sign in with a Google account.",
+          "setup": "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the environment variables to enable it (see the README)."
         }
       },
       "fields": {
@@ -337,6 +350,16 @@
             "label": "Link expiry",
             "description": "Between {min} and {max} minutes."
           }
+        },
+        "google": {
+          "access": {
+            "label": "Sign-in",
+            "description": "Sign in with Google. If the email already has a verified account, they're linked automatically."
+          },
+          "signUp": {
+            "label": "Registration",
+            "description": "A new Google account creates its account on the first sign-in."
+          }
         }
       },
       "value": {
@@ -367,7 +390,8 @@
         "empty": "No changes yet.",
         "entry": "{actor} · {date}",
         "change": "{section} · {field}: {from} → {to}"
-      }
+      },
+      "notConfigured": "Not configured"
     }
   },
   "UI": {

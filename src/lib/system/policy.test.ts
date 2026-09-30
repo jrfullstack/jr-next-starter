@@ -4,6 +4,7 @@ import {
   canSignUp,
   defaultAuthPolicy,
   disabledAccessMethods,
+  effectivePolicy,
   parseAuthPolicy,
   policyChanges,
   policyViolations,
@@ -22,6 +23,7 @@ function withChanges(changes: PolicyChanges): AuthPolicy {
       ...changes.emailPassword,
     },
     magicLink: { ...defaultAuthPolicy.magicLink, ...changes.magicLink },
+    google: { ...defaultAuthPolicy.google, ...changes.google },
   };
 }
 
@@ -30,6 +32,7 @@ const magicLinkOff = withChanges({ magicLink: { access: false } });
 const everythingOff = withChanges({
   emailPassword: { access: false },
   magicLink: { access: false },
+  google: { access: false },
 });
 
 describe("parseAuthPolicy", () => {
@@ -43,6 +46,7 @@ describe("parseAuthPolicy", () => {
         minPasswordLength: 8,
       },
       magicLink: { access: true, signUp: false, expiresInMinutes: 5 },
+      google: { access: true, signUp: true },
     });
   });
 
@@ -130,5 +134,33 @@ describe("policyChanges", () => {
       { section: "general", field: "signUp", from: true, to: false },
       { section: "magicLink", field: "expiresInMinutes", from: 5, to: 15 },
     ]);
+  });
+});
+
+describe("effectivePolicy", () => {
+  it("turns Google off without credentials, whatever was saved", () => {
+    expect(
+      effectivePolicy(defaultAuthPolicy, { google: false }).google,
+    ).toEqual({ access: false, signUp: false });
+    expect(effectivePolicy(defaultAuthPolicy, { google: true })).toBe(
+      defaultAuthPolicy,
+    );
+  });
+});
+
+describe("usersLockedOut with Google", () => {
+  it("counts Google-only users when Google and the magic link are off", () => {
+    const groups = [{ methods: ["google" as const], count: 3 }];
+    const noLink = withChanges({ magicLink: { access: false } });
+    expect(usersLockedOut(noLink, groups)).toBe(0);
+    expect(
+      usersLockedOut(
+        withChanges({
+          magicLink: { access: false },
+          google: { access: false },
+        }),
+        groups,
+      ),
+    ).toBe(3);
   });
 });

@@ -6,12 +6,14 @@ import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import {
   authPolicySchema,
+  effectivePolicy,
   parseAuthPolicy,
   policyChanges,
   policyViolations,
 } from "./policy";
 import {
   AUTH_POLICY_TAG,
+  authCapabilities,
   POLICY_ROW_ID,
   superadminAccessMethods,
 } from "./policy-store";
@@ -34,7 +36,8 @@ export async function saveAuthPolicy(
   const parsed = authPolicySchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   const after = parsed.data;
-  if (policyViolations(after, await superadminAccessMethods()).length > 0) {
+  const applied = effectivePolicy(after, authCapabilities());
+  if (policyViolations(applied, await superadminAccessMethods()).length > 0) {
     return { ok: false, error: "unsafe" };
   }
 

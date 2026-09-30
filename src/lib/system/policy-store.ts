@@ -1,9 +1,12 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { connection } from "next/server";
+import { env } from "@/env";
 import { db } from "@/lib/db";
 import {
   type AccessMethod,
+  type AuthCapabilities,
   accessMethods,
+  effectivePolicy,
   parseAuthPolicy,
   type UserMethodGroup,
 } from "./policy";
@@ -14,6 +17,7 @@ export const POLICY_ROW_ID = "global";
 /** Account providerId that each method leaves in the account table (magic link leaves none) */
 const methodProviders: Partial<Record<AccessMethod, string>> = {
   emailPassword: "credential",
+  google: "google",
 };
 
 async function readAuthPolicy() {
@@ -27,10 +31,23 @@ async function readAuthPolicy() {
   return parseAuthPolicy(row?.policy);
 }
 
-/** Current auth policy. Request-time only: it's never baked into a prerendered page. */
-export async function getAuthPolicy() {
+/** What this deployment can offer: Google only with both credentials (validated in src/env.ts) */
+export function authCapabilities(): AuthCapabilities {
+  return { google: env.GOOGLE_CLIENT_ID !== undefined };
+}
+
+/** Policy as saved by the superadmin (what Admin → System edits) */
+export async function getStoredAuthPolicy() {
   await connection();
   return readAuthPolicy();
+}
+
+/**
+ * Policy as it applies, with what the deployment can't offer turned off.
+ * Request-time only: it's never baked into a prerendered page.
+ */
+export async function getAuthPolicy() {
+  return effectivePolicy(await getStoredAuthPolicy(), authCapabilities());
 }
 
 function methodsOf(providerIds: readonly string[]) {

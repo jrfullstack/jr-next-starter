@@ -117,7 +117,7 @@ test("signs in with a magic link, which works only once", async ({
   await signOut(page);
   await page.goto(link);
   await expect(page).toHaveURL(/\/es\/sign-in/);
-  await expect(page.locator("form").getByRole("status")).toHaveText(
+  await expect(page.getByRole("status")).toHaveText(
     "El enlace no es válido, ya se usó o ha caducado. Pide otro.",
   );
 });

@@ -11,9 +11,11 @@ import { useHydrated } from "@/hooks/use-hydrated";
 import { saveAuthPolicy } from "@/lib/system/actions";
 import {
   type AccessMethod,
+  type AuthCapabilities,
   type AuthPolicy,
   authPolicySchema,
   disabledAccessMethods,
+  effectivePolicy,
   policyViolations,
   type UserMethodGroup,
   usersLockedOut,
@@ -33,6 +35,8 @@ type Props = {
   superadminMethods: AccessMethod[][];
   /** Users grouped by linked methods, to count who'd be left without a way in */
   userGroups: UserMethodGroup[];
+  /** Methods the deployment can offer (Google needs credentials) */
+  capabilities: AuthCapabilities;
 };
 
 function settingValue(policy: AuthPolicy, field: SettingField) {
@@ -53,6 +57,7 @@ export function SystemSettingsForm({
   policy: saved,
   superadminMethods,
   userGroups,
+  capabilities,
 }: Props) {
   const t = useTranslations("Admin.system");
   const [policy, setPolicy] = useState(saved);
@@ -61,8 +66,13 @@ export function SystemSettingsForm({
   const hydrated = useHydrated();
 
   const valid = authPolicySchema.safeParse(policy).success;
-  const violations = valid ? policyViolations(policy, superadminMethods) : [];
-  const disabling = disabledAccessMethods(saved, policy);
+  // Safeguards judge the policy as it would apply (no Google without credentials)
+  const applied = effectivePolicy(policy, capabilities);
+  const violations = valid ? policyViolations(applied, superadminMethods) : [];
+  const disabling = disabledAccessMethods(
+    effectivePolicy(saved, capabilities),
+    applied,
+  );
   const dirty = JSON.stringify(policy) !== JSON.stringify(saved);
   const locked = !hydrated || pending;
 
@@ -76,12 +86,13 @@ export function SystemSettingsForm({
 
   const control = (field: SettingField) => {
     const value = settingValue(policy, field);
+    const unavailable = field.startsWith("google.") && !capabilities.google;
     if (typeof value === "boolean") {
       return (
         <Switch
           id={settingId(field)}
           checked={value}
-          disabled={locked}
+          disabled={locked || unavailable}
           onCheckedChange={(checked) =>
             setPolicy(withValue(policy, field, checked))
           }
@@ -121,7 +132,10 @@ export function SystemSettingsForm({
         else save();
       }}
     >
-      <SystemSettingsLayout control={control} />
+      <SystemSettingsLayout
+        control={control}
+        googleConfigured={capabilities.google}
+      />
       <div className="mt-4 flex flex-col items-end gap-2">
         {!valid && <FieldError>{t("invalid")}</FieldError>}
         {violations.map((violation) => (
@@ -140,7 +154,7 @@ export function SystemSettingsForm({
         open={confirming}
         title={t("confirm.title")}
         description={t("confirm.description", {
-          count: usersLockedOut(policy, userGroups),
+          count: usersLockedOut(applied, userGroups),
         })}
         pending={pending}
         onConfirm={save}

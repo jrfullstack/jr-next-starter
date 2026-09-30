@@ -30,6 +30,9 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🎨 Tailwind CSS 4
 - 🧩 shadcn/ui (estilo `base-nova` sobre Base UI) - Componentes personalizables
 - 🔹 Iconos de Lucide
+- 🔐 Autenticación con Better Auth - Email + contraseña, magic link y Google; verificación de email, recuperar contraseña y roles (`user`, `admin`, `superadmin`)
+- 🛠️ Panel `/admin` - Gestión de usuarios y sección **Sistema** para activar o desactivar métodos de acceso y registro sin tocar código
+- ✉️ Emails con Resend + React Email, traducidos, con bandeja de desarrollo en local
 - 🗄️ Prisma 7 + PostgreSQL - ORM con driver adapter `pg`
 - 🔍 Zod 4 - Validación de esquemas
 - ⚙️ T3-env - Variables de entorno tipadas y validadas al arrancar
@@ -177,7 +180,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
   - [x] **Carga moderna:** Cache Components activado (shell estático + streaming), `loading.tsx` con skeletons idénticos al diseño en cada página (verificado por un test) y Suspense granular en el panel
   - [x] **4. Sistema:** `/admin/system` (solo superadmin) para abrir o cerrar registros y configurar email + contraseña (registro, acceso, verificación obligatoria, longitud mínima) sin tocar código; Better Auth se construye con esa configuración, un hook bloquea los métodos desactivados, salvaguardas para no dejar a nadie sin acceso e historial de cambios
   - [x] **5. Magic link:** entrar con un enlace de un solo uso por email (verifica el email), registro automático y caducidad del enlace se configuran en Sistema; un solo formulario de login para contraseña y enlace, y la contraseña ya se puede desactivar mientras el enlace esté activo
-  - [ ] 6. Google
+  - [x] **6. Google:** "Continuar con Google" en login y registro, solo si hay credenciales (`GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`); acceso y registro se configuran en Sistema; vinculación automática con una cuenta existente solo si ambos emails están verificados
   - [ ] 7. 2FA
   - [ ] 8. Passkeys
 
@@ -206,7 +209,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `@vercel/analytics` | 2.0.1 | Analítica de visitas de Vercel, sin cookies (solo se carga en Vercel) |
 | `resend` | 6.30.0 | Envío de emails transaccionales (verificación, recuperar contraseña) |
 | `react-email` | 6.11.0 | Plantillas de email como componentes de React |
-| `better-auth` | 1.7.6 | Autenticación: sesiones, email + contraseña, roles y permisos (plugin admin); datos en PostgreSQL con Prisma |
+| `better-auth` | 1.7.6 | Autenticación: sesiones, email + contraseña, magic link, Google (OAuth), roles y permisos (plugin admin); datos en PostgreSQL con Prisma |
 | `next-intl` | 4.14.7 | Traducciones, formato de fechas/números y rutas por idioma para el App Router |
 | `next-themes` | 0.4.6 | Tema claro/oscuro/sistema sin parpadeo; guarda la preferencia del usuario |
 | `@t3-oss/env-nextjs` | 0.13.11 | Valida con Zod las variables de entorno al arrancar y las expone tipadas en `env` |
@@ -290,6 +293,8 @@ Al instalar se ejecutan automáticamente:
 ### 4. Configura las variables de entorno
 
 Crea un archivo `.env` a partir de `.env.example` y rellena los valores. Consulta la sección [Variables de entorno](#-variables-de-entorno).
+
+Pon tu email en `SUPER_ADMIN_EMAILS`: al registrarte con él y verificarlo, tendrás el rol `superadmin` y acceso a **Admin → Sistema**. Google es opcional ([cómo activarlo](#iniciar-sesión-con-google)).
 
 ### 5. Crea las tablas de la base de datos
 
@@ -377,6 +382,8 @@ Lo que se puede corregir solo se corrige en tres momentos:
 | `DATABASE_URL` | Servidor (secreta) | Sí | Conexión a PostgreSQL para Prisma |
 | `BETTER_AUTH_SECRET` | Servidor (secreta) | Sí | Firma de sesiones y tokens de Better Auth (mínimo 32 caracteres) |
 | `SUPER_ADMIN_EMAILS` | Servidor | Sí | Emails de los desarrolladores (`superadmin` si además están verificados). Para los e2e en local, añade `e2e-superadmin@example.com` |
+| `GOOGLE_CLIENT_ID` | Servidor | No (con su secreto) | ID de cliente OAuth de Google. Con `GOOGLE_CLIENT_SECRET`, activa "Continuar con Google" ([guía](#iniciar-sesión-con-google)) |
+| `GOOGLE_CLIENT_SECRET` | Servidor (secreta) | No (con su ID) | Secreto del cliente OAuth de Google. Van las dos juntas o ninguna |
 | `RESEND_API_KEY` | Servidor (secreta) | No | Envío real de emails con Resend. Sin ella, van a la bandeja de desarrollo |
 | `EMAIL_FROM` | Servidor | Con Resend | Remitente, con dominio verificado en Resend |
 | `EMAIL_DEV_OUTBOX` | Servidor | No (solo CI) | Activa la bandeja de desarrollo en un build de producción |
@@ -410,6 +417,58 @@ En CI, las dos variables de telemetría están definidas en el workflow.
 ### Google Analytics
 
 Define `NEXT_PUBLIC_GA_MEASUREMENT_ID` con tu ID (`G-XXXXXXXXXX`) y el componente [`<Analytics />`](src/components/analytics.tsx) del layout cargará Google Analytics 4 en todas las páginas. Si la variable está vacía, no se carga nada. Recomendación: defínela solo en producción, para no mezclar tus visitas de desarrollo con las reales.
+
+## 🔐 Autenticación
+
+Con [Better Auth](https://www.better-auth.com). El plan completo y sus decisiones están en [`docs/plans/auth.md`](docs/plans/auth.md).
+
+### Roles
+
+| Rol | Quién | Puede |
+| --- | --- | --- |
+| `superadmin` | El desarrollador | Todo lo de `admin` + **Sistema** + nombrar o quitar admins |
+| `admin` | Administrador de la web | **Usuarios**: buscar, crear, bloquear, cerrar sesiones |
+| `user` | Usuarios registrados | Su cuenta |
+
+- `superadmin` **no se asigna**: lo es quien tiene su email en `SUPER_ADMIN_EMAILS` **y** verificado. Se recalcula en cada inicio de sesión; nadie puede gestionar, bloquear ni asignar un superadmin desde la web.
+- Permisos en `src/lib/auth/permissions.ts`; secciones del panel en `src/lib/admin/sections.ts`.
+
+### Métodos de acceso
+
+| Método | Qué hace |
+| --- | --- |
+| Email + contraseña | Registro con verificación de email, recuperar contraseña |
+| Magic link | Enlace de un solo uso por email; entrar con él verifica el email. Sirve a cualquier cuenta, también para recuperarla |
+| Google | "Continuar con Google". Solo aparece si hay credenciales |
+
+El login usa un solo formulario: un campo de email con "Iniciar sesión" (contraseña) y "Enviar enlace de acceso" (magic link), y "Continuar con Google" encima.
+
+### Admin → Sistema
+
+En `/admin/system` (solo `superadmin`) se decide, **sin tocar código ni reiniciar**, qué métodos aceptan registros y accesos:
+
+| Tarjeta | Opciones | Por defecto |
+| --- | --- | --- |
+| General | Permitir registros nuevos (interruptor general) | Sí |
+| Email y contraseña | Registro · acceso · verificación obligatoria · longitud mínima (8–128) | Sí · sí · sí · 8 |
+| Magic link | Acceso · registro automático · caducidad (1–60 min) | Sí · no · 5 |
+| Google | Acceso · registro | Sí · sí (si hay credenciales) |
+
+- La configuración se guarda en la base de datos (`system_setting`) y se aplica al instante: Better Auth se construye con ella y un hook del servidor rechaza los métodos desactivados, aunque se llame a la API directamente.
+- **Salvaguardas:** no se puede guardar un cambio que deje sin método de acceso o de recuperación, ni a un superadmin sin forma de entrar. Al desactivar un acceso, se muestra cuántos usuarios se quedarían sin poder entrar y se pide confirmación.
+- **Historial:** cada cambio queda registrado (quién, qué y cuándo) debajo de la configuración.
+
+### Iniciar sesión con Google
+
+1. En [Google Cloud Console](https://console.cloud.google.com/), crea un proyecto (o elige uno).
+2. **APIs y servicios → Pantalla de consentimiento de OAuth**: tipo *Externo*, nombre de la app, email de soporte y, en *Dominios autorizados*, tu dominio de producción.
+3. **APIs y servicios → Credenciales → Crear credenciales → ID de cliente de OAuth → Aplicación web**, con:
+   - *Orígenes de JavaScript autorizados*: `http://localhost:3000` y `https://tu-dominio.com`
+   - *URI de redireccionamiento autorizados*: `http://localhost:3000/api/auth/callback/google` y `https://tu-dominio.com/api/auth/callback/google`
+4. Copia el ID y el secreto a `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en `.env` (y en las variables del despliegue).
+5. Reinicia `pnpm dev`. El botón aparece en login y registro, y en **Admin → Sistema** la tarjeta Google deja de decir "No configurado".
+
+Si alguien entra con Google con el email de una cuenta que ya existe, se vinculan solas **solo si** Google confirma el email y la cuenta local ya estaba verificada. Si no, se le pide entrar con su método habitual y verificar el email.
 
 ## ✉️ Emails
 

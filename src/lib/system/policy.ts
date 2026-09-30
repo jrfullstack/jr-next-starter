@@ -42,6 +42,14 @@ export const authPolicySchema = z.object({
         .default(MAGIC_LINK_MINUTES.default),
     })
     .prefault({}),
+  /** Only takes effect with credentials (see effectivePolicy) */
+  google: z
+    .object({
+      access: z.boolean().default(true),
+      /** First sign-in with a Google account that has no account here */
+      signUp: z.boolean().default(true),
+    })
+    .prefault({}),
 });
 
 export type AuthPolicy = z.infer<typeof authPolicySchema>;
@@ -56,9 +64,25 @@ export function parseAuthPolicy(stored: unknown): AuthPolicy {
   return authPolicySchema.parse(stored ?? {});
 }
 
-/** Sign-in methods. Google and passkeys join in later steps. */
-export const accessMethods = ["emailPassword", "magicLink"] as const;
+/** Sign-in methods. Passkeys join in a later step. */
+export const accessMethods = ["emailPassword", "magicLink", "google"] as const;
 export type AccessMethod = (typeof accessMethods)[number];
+
+/** What the deployment can offer regardless of the policy (Google needs credentials) */
+export type AuthCapabilities = { google: boolean };
+
+/**
+ * The policy as it applies: a method the deployment can't offer is off,
+ * whatever the superadmin saved. Everything that enforces or shows sign-in
+ * methods reads this one.
+ */
+export function effectivePolicy(
+  policy: AuthPolicy,
+  capabilities: AuthCapabilities,
+): AuthPolicy {
+  if (capabilities.google) return policy;
+  return { ...policy, google: { access: false, signUp: false } };
+}
 
 /** Methods any account can use, linked or not: a magic link only needs the email */
 const universalMethods: readonly AccessMethod[] = ["magicLink"];

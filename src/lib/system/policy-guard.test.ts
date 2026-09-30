@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { type AuthPolicy, defaultAuthPolicy } from "./policy";
-import { assertPolicyAllows, disabledMagicLinkRedirect } from "./policy-guard";
+import { assertPolicyAllows, disabledMethodRedirect } from "./policy-guard";
 
 const passwordOff: AuthPolicy = {
   ...defaultAuthPolicy,
@@ -9,6 +9,10 @@ const passwordOff: AuthPolicy = {
 const magicLinkOff: AuthPolicy = {
   ...defaultAuthPolicy,
   magicLink: { ...defaultAuthPolicy.magicLink, access: false },
+};
+const googleOff: AuthPolicy = {
+  ...defaultAuthPolicy,
+  google: { ...defaultAuthPolicy.google, access: false },
 };
 const minTwelve: AuthPolicy = {
   ...defaultAuthPolicy,
@@ -30,6 +34,15 @@ describe("assertPolicyAllows", () => {
       );
     },
   );
+
+  it("refuses Google sign-in and callback with Google turned off", () => {
+    expect(() =>
+      assertPolicyAllows(googleOff, "/sign-in/social", { provider: "google" }),
+    ).toThrow("This sign-in method is disabled");
+    expect(() =>
+      assertPolicyAllows(googleOff, "/callback/google", undefined),
+    ).toThrow("This sign-in method is disabled");
+  });
 
   it("lets everything else through", () => {
     expect(() =>
@@ -56,16 +69,29 @@ describe("assertPolicyAllows", () => {
   });
 });
 
-describe("disabledMagicLinkRedirect", () => {
-  it("sends the link back to the sign-in page with the reason", () => {
+describe("disabledMethodRedirect", () => {
+  it("sends a disabled magic link back to its sign-in page with the reason", () => {
     expect(
-      disabledMagicLinkRedirect({ errorCallbackURL: "/en/sign-in?x=1" }),
+      disabledMethodRedirect(magicLinkOff, "/magic-link/verify", {
+        errorCallbackURL: "/en/sign-in?x=1",
+      }),
     ).toBe("/en/sign-in?x=1&error=SIGN_IN_METHOD_DISABLED");
   });
 
-  it("never redirects to another site", () => {
+  it("sends Google's callback to sign-in, never to another site", () => {
     expect(
-      disabledMagicLinkRedirect({ errorCallbackURL: "https://evil.com" }),
-    ).toBe("/dashboard?error=SIGN_IN_METHOD_DISABLED");
+      disabledMethodRedirect(googleOff, "/callback/google", {
+        errorCallbackURL: "https://evil.com",
+      }),
+    ).toBe("/sign-in?error=SIGN_IN_METHOD_DISABLED");
+  });
+
+  it("leaves enabled methods and API calls alone", () => {
+    expect(
+      disabledMethodRedirect(defaultAuthPolicy, "/callback/google", {}),
+    ).toBeUndefined();
+    expect(
+      disabledMethodRedirect(magicLinkOff, "/sign-in/magic-link", {}),
+    ).toBeUndefined();
   });
 });
