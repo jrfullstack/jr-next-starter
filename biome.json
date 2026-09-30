@@ -117,7 +117,8 @@
         "*.config.ts",
         "*.config.mts",
         "*.config.mjs",
-        "e2e/global-teardown.ts"
+        "e2e/global-teardown.ts",
+        "src/emails/**"
       ],
       "linter": {
         "rules": {

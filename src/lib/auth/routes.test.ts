@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { authErrorKey } from "./errors";
-import { isProtectedPath, safeCallbackPath, splitLocale } from "./routes";
+import {
+  isProtectedPath,
+  localeFromAuthUrl,
+  safeCallbackPath,
+  splitLocale,
+} from "./routes";
 
 describe("auth routes", () => {
   it("splits the locale prefix from the path", () => {
@@ -31,6 +36,22 @@ describe("auth routes", () => {
   });
 });
 
+describe("localeFromAuthUrl", () => {
+  it.each([
+    [
+      "https://app.test/api/auth/verify-email?token=t&callbackURL=%2Fen%2Fverify-email",
+      "en",
+    ],
+    [
+      "https://app.test/api/auth/reset-password/t?callbackURL=https%3A%2F%2Fapp.test%2Fes%2Freset-password",
+      "es",
+    ],
+    ["https://app.test/api/auth/verify-email?token=t", "es"],
+  ])("reads the email locale from the callback (%s)", (url, locale) => {
+    expect(localeFromAuthUrl(url)).toBe(locale);
+  });
+});
+
 describe("authErrorKey", () => {
   it("translates known Better Auth codes and falls back to generic", () => {
     expect(authErrorKey("INVALID_EMAIL_OR_PASSWORD")).toBe(
@@ -40,6 +61,7 @@ describe("authErrorKey", () => {
       "userExists",
     );
     expect(authErrorKey("SOMETHING_NEW")).toBe("generic");
+    expect(authErrorKey(undefined, 429)).toBe("tooManyRequests");
     expect(authErrorKey(undefined)).toBe("generic");
   });
 });

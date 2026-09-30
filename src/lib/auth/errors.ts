@@ -6,6 +6,7 @@ const knownErrors = {
   PASSWORD_TOO_SHORT: "passwordTooShort",
   PASSWORD_TOO_LONG: "passwordTooLong",
   BANNED_USER: "banned",
+  EMAIL_NOT_VERIFIED: "emailNotVerified",
   TOO_MANY_REQUESTS: "tooManyRequests",
 } as const;
 
@@ -13,8 +14,15 @@ export type AuthErrorKey =
   | (typeof knownErrors)[keyof typeof knownErrors]
   | "generic";
 
-/** Maps a Better Auth error code to a translatable message key */
-export function authErrorKey(code: string | undefined): AuthErrorKey {
+const TOO_MANY_REQUESTS_STATUS = 429;
+
+/** Maps a Better Auth error (code, or HTTP status when there's no code) to a translatable message key */
+export function authErrorKey(
+  code: string | undefined,
+  status?: number,
+): AuthErrorKey {
+  // The rate limiter answers 429 without an error code
+  if (status === TOO_MANY_REQUESTS_STATUS) return "tooManyRequests";
   if (code && code in knownErrors) {
     return knownErrors[code as keyof typeof knownErrors];
   }

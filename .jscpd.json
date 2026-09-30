@@ -4,5 +4,6 @@
   "format": ["typescript", "tsx"],
   "minTokens": 50,
   "threshold": 0,
-  "reporters": ["console"]
+  "reporters": ["console"],
+  "ignorePattern": ["import\\s[\\s\\S]*?from\\s+\"[^\"]+\";?"]
 }

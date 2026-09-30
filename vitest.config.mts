@@ -17,6 +17,7 @@ export default defineConfig({
     env: {
       DATABASE_URL: "postgresql://user:pass@localhost:5432/test",
       BETTER_AUTH_SECRET: "test-secret-with-at-least-32-characters!!",
+      SUPER_ADMIN_EMAILS: "dev@example.com",
       NEXT_PUBLIC_APP_URL: "https://example.com",
     },
   },

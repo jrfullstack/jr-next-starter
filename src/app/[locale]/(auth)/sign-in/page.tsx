@@ -16,7 +16,7 @@ export default async function SignInPage({
   searchParams,
 }: PageProps<"/[locale]/sign-in">) {
   const locale = parseLocale((await params).locale);
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, reset } = await searchParams;
   const callbackPath = safeCallbackPath(
     typeof callbackUrl === "string" ? callbackUrl : undefined,
   );
@@ -26,5 +26,11 @@ export default async function SignInPage({
     redirect({ href: callbackPath, locale });
   }
 
-  return <SignInForm callbackPath={callbackPath} />;
+  const t = await getTranslations("Auth.signIn");
+  return (
+    <SignInForm
+      callbackPath={callbackPath}
+      notice={reset === "success" ? t("resetDone") : undefined}
+    />
+  );
 }

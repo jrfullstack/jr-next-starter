@@ -10,6 +10,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
   <a href="#-scripts"><strong>Scripts</strong></a> ·
   <a href="#-convenciones-de-código"><strong>Convenciones</strong></a> ·
   <a href="#-variables-de-entorno"><strong>Variables</strong></a> ·
+  <a href="#️-emails"><strong>Emails</strong></a> ·
   <a href="#-internacionalización"><strong>i18n</strong></a> ·
   <a href="#️-seo"><strong>SEO</strong></a> ·
   <a href="#-testing"><strong>Testing</strong></a> ·
@@ -170,7 +171,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 
 - [ ] Autenticación y panel de administración (Better Auth), en 8 pasos según [`docs/plans/auth.md`](docs/plans/auth.md):
   - [x] **1. Base:** email + contraseña, login, registro, logout, roles y permisos, `/dashboard` protegido, primera migración
-  - [ ] 2. Emails y superadmin
+  - [x] **2. Emails y superadmin:** verificación de email obligatoria, recuperar contraseña, Resend + React Email con bandeja de desarrollo, rol `superadmin` calculado desde `SUPER_ADMIN_EMAILS`
   - [ ] 3. Panel `/admin` y usuarios
   - [ ] 4. Sistema (configuración de métodos)
   - [ ] 5. Magic link
@@ -200,6 +201,8 @@ Versiones instaladas a fecha de la última actualización del README.
 | `@next/third-parties` | 16.3.6 | Integraciones oficiales de Next.js con servicios externos (Google Analytics) cargadas sin bloquear el renderizado |
 | `@vercel/speed-insights` | 2.0.0 | Mide Core Web Vitals de usuarios reales en Vercel (solo se carga en Vercel) |
 | `@vercel/analytics` | 2.0.1 | Analítica de visitas de Vercel, sin cookies (solo se carga en Vercel) |
+| `resend` | 6.30.0 | Envío de emails transaccionales (verificación, recuperar contraseña) |
+| `react-email` | 6.11.0 | Plantillas de email como componentes de React |
 | `better-auth` | 1.7.6 | Autenticación: sesiones, email + contraseña, roles y permisos (plugin admin); datos en PostgreSQL con Prisma |
 | `next-intl` | 4.14.7 | Traducciones, formato de fechas/números y rutas por idioma para el App Router |
 | `next-themes` | 0.4.6 | Tema claro/oscuro/sistema sin parpadeo; guarda la preferencia del usuario |
@@ -227,6 +230,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `@cspell/dict-es-es` | 3.0.8 | Diccionario de español para cspell |
 | `markdownlint-cli2` | 0.23.3 | Lint y autofix de Markdown (misma configuración que la extensión del editor) |
 | `knip` | 6.38.0 | Detecta archivos, exports y dependencias que no se usan |
+| `@react-email/ui` | 6.11.0 | Vista previa de las plantillas de email en el navegador (`pnpm email:dev`) |
 | `jscpd` | 5.3.3 | Detecta bloques de código duplicado (copy-paste) |
 | `vitest` | 5.0.2 | Ejecutor de tests unitarios y de componentes (API compatible con Jest) |
 | `@vitejs/plugin-react` | 6.1.1 | Permite a Vitest transformar JSX/TSX de React |
@@ -305,6 +309,7 @@ y abre <http://localhost:3000>.
 | `dev` | Servidor de desarrollo |
 | `build` | Build de producción |
 | `start` | Servidor de producción |
+| `email:dev` | Vista previa de las plantillas de email en <http://localhost:3030> |
 | `lint` | Revisa todo: Biome (código y formato), clases de Tailwind, Markdown y ortografía |
 | `lint:fix` | Corrige automáticamente todo lo que se pueda corregir |
 | `lint:tw` | Revisa solo las clases de Tailwind (Oxlint) |
@@ -368,6 +373,10 @@ Lo que se puede corregir solo se corrige en tres momentos:
 | --- | --- | --- | --- |
 | `DATABASE_URL` | Servidor (secreta) | Sí | Conexión a PostgreSQL para Prisma |
 | `BETTER_AUTH_SECRET` | Servidor (secreta) | Sí | Firma de sesiones y tokens de Better Auth (mínimo 32 caracteres) |
+| `SUPER_ADMIN_EMAILS` | Servidor | Sí | Emails de los desarrolladores (`superadmin` si además están verificados) |
+| `RESEND_API_KEY` | Servidor (secreta) | No | Envío real de emails con Resend. Sin ella, van a la bandeja de desarrollo |
+| `EMAIL_FROM` | Servidor | Con Resend | Remitente, con dominio verificado en Resend |
+| `EMAIL_DEV_OUTBOX` | Servidor | No (solo CI) | Activa la bandeja de desarrollo en un build de producción |
 | `NEXT_PUBLIC_APP_URL` | Pública | Sí | URL del sitio, base de las URLs absolutas del SEO |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Pública | No | ID de Google Analytics 4 (`G-XXXXXXXXXX`). Si está vacía, Analytics no se carga |
 | `NEXT_TELEMETRY_DISABLED` | Herramienta | No (recomendado `1`) | Desactiva la telemetría anónima de Next.js |
@@ -398,6 +407,21 @@ En CI, las dos variables de telemetría están definidas en el workflow.
 ### Google Analytics
 
 Define `NEXT_PUBLIC_GA_MEASUREMENT_ID` con tu ID (`G-XXXXXXXXXX`) y el componente [`<Analytics />`](src/components/analytics.tsx) del layout cargará Google Analytics 4 en todas las páginas. Si la variable está vacía, no se carga nada. Recomendación: defínela solo en producción, para no mezclar tus visitas de desarrollo con las reales.
+
+## ✉️ Emails
+
+Los emails (verificación, recuperar contraseña) se escriben como componentes de React en `src/emails/` y se envían desde `src/lib/email/send.ts`:
+
+| Situación | Qué pasa |
+| --- | --- |
+| Desarrollo (`pnpm dev`) | Cada email se guarda en la **bandeja de desarrollo**: <http://localhost:3000/es/dev/outbox> (con sus enlaces) |
+| Hay `RESEND_API_KEY` | Además se envía de verdad con Resend |
+| Destinatario de prueba (`@example.com`, `.test`…) | Nunca se envía por Resend: solo va a la bandeja |
+| Producción sin `RESEND_API_KEY` | Error explícito: un email de verificación nunca se pierde en silencio |
+
+**Probar Resend sin dominio propio:** usa `EMAIL_FROM="JR Next Starter <onboarding@resend.dev>"`. En ese modo, Resend solo entrega al email de tu cuenta de Resend. Para enviar a cualquiera, verifica tu dominio en Resend → Domains.
+
+**Diseñar plantillas:** `pnpm email:dev` abre la vista previa en <http://localhost:3030>.
 
 ## 🌐 Internacionalización
 
@@ -599,7 +623,8 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 ├── src
 │   ├── app
 │   │   ├── [locale]                # Layout raíz, páginas, 404 e imagen Open Graph, por idioma
-│   │   │   ├── (auth)              # Login y registro (noindex)
+│   │   │   ├── (auth)              # Login, registro, verificar email, recuperar contraseña (noindex)
+│   │   │   ├── dev/outbox          # Bandeja de emails de desarrollo
 │   │   │   ├── dashboard           # Página protegida de ejemplo
 │   │   │   └── [...rest]           # Envía las rutas desconocidas al 404 traducido
 │   │   ├── api/auth/[...all]       # Endpoints de Better Auth
@@ -617,6 +642,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── user-menu.tsx           # Iniciar sesión / menú de la cuenta
 │   │   ├── vercel-insights.tsx     # Speed Insights y Web Analytics (solo en Vercel)
 │   │   └── theme-provider.tsx      # Provider de next-themes
+│   ├── emails                      # Plantillas de email (React Email)
 │   ├── config
 │   │   └── site.ts                 # Datos del sitio: nombre, autor, enlaces
 │   ├── generated/prisma            # Cliente de Prisma generado (ignorado por git)
@@ -626,7 +652,8 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── request.ts              # Carga los mensajes del idioma actual
 │   │   └── routing.ts              # Idiomas soportados e idioma por defecto
 │   ├── lib
-│   │   ├── auth                    # Better Auth: servidor, cliente, permisos, rutas, sesión
+│   │   ├── auth                    # Better Auth: servidor, cliente, permisos, rutas, sesión, emails, superadmin
+│   │   ├── email                   # Envío (Resend) y bandeja de desarrollo
 │   │   ├── db.ts                   # Cliente de Prisma singleton
 │   │   ├── seo.ts                  # URLs absolutas, canonical y hreflang
 │   │   └── utils.ts                # Utilidades (cn)
