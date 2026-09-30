@@ -51,11 +51,19 @@ export function UserMenu() {
         <CircleUser />
         <span className="sr-only">{t("account")}</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuGroup>
           <DropdownMenuLabel>
-            <p className="font-medium text-foreground">{session.user.name}</p>
-            <p className="text-xs">{session.user.email}</p>
+            {/* Long names/emails are truncated; the full value shows on hover */}
+            <p
+              className="truncate font-medium text-foreground"
+              title={session.user.name}
+            >
+              {session.user.name}
+            </p>
+            <p className="truncate text-xs" title={session.user.email}>
+              {session.user.email}
+            </p>
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
