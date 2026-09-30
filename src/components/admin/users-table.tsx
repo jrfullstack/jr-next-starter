@@ -31,7 +31,7 @@ const statusVariant: Record<
   UserStatus,
   "default" | "secondary" | "destructive"
 > = {
-  active: "default",
+  verified: "default",
   unverified: "secondary",
   banned: "destructive",
 };

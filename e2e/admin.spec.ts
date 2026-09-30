@@ -27,7 +27,7 @@ test("an admin blocks, unblocks and signs out a user from the panel", async ({
   await page.getByLabel("Buscar por nombre o email").fill(target.email);
   await page.getByRole("button", { name: "Filtrar" }).click();
   const row = page.getByRole("row").filter({ hasText: target.email });
-  await expect(row).toContainText("Activo");
+  await expect(row).toContainText("Verificado");
 
   await row.getByRole("button", { name: "Acciones de Grace Hopper" }).click();
   await page.getByRole("menuitem", { name: "Bloquear" }).click();
@@ -36,7 +36,7 @@ test("an admin blocks, unblocks and signs out a user from the panel", async ({
 
   // Status filter runs on the server: blocked shows them, active doesn't
   const statusFilter = page.getByLabel("Estado");
-  await statusFilter.selectOption({ label: "Activo" });
+  await statusFilter.selectOption({ label: "Verificado" });
   await page.getByRole("button", { name: "Filtrar" }).click();
   await expect(page.getByText("No hay usuarios que coincidan.")).toBeVisible();
   await statusFilter.selectOption({ label: "Bloqueado" });
@@ -60,7 +60,7 @@ test("an admin blocks, unblocks and signs out a user from the panel", async ({
 
   await row.getByRole("button", { name: "Acciones de Grace Hopper" }).click();
   await page.getByRole("menuitem", { name: "Desbloquear" }).click();
-  await expect(row).toContainText("Activo");
+  await expect(row).toContainText("Verificado");
 
   // An admin can't change roles: that's reserved to the superadmin
   await row.getByRole("button", { name: "Acciones de Grace Hopper" }).click();

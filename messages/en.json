@@ -210,7 +210,7 @@
         "superadmin": "Superadmin"
       },
       "status": {
-        "active": "Active",
+        "verified": "Verified",
         "banned": "Blocked",
         "unverified": "Unverified"
       },

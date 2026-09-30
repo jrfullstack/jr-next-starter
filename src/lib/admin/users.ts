@@ -6,7 +6,7 @@ export const USERS_PAGE_SIZE = 20;
 /** Whitelists: nothing from the URL reaches the query unless it's listed here */
 const userSortFields = ["createdAt", "name", "email"] as const;
 export const userRoles = ["user", "admin", "superadmin"] as const;
-export const userStatuses = ["active", "unverified", "banned"] as const;
+export const userStatuses = ["verified", "unverified", "banned"] as const;
 
 export type UserSortField = (typeof userSortFields)[number];
 type UserRole = (typeof userRoles)[number];
@@ -52,7 +52,7 @@ const notBanned: Prisma.UserWhereInput = {
 const statusWhere: Record<UserStatus, Prisma.UserWhereInput> = {
   banned: { banned: true },
   unverified: { AND: [notBanned, { emailVerified: false }] },
-  active: { AND: [notBanned, { emailVerified: true }] },
+  verified: { AND: [notBanned, { emailVerified: true }] },
 };
 
 /** Database filter for the query: search in name or email, role and status */
@@ -122,7 +122,7 @@ type ListedUser = {
 export function userStatus(user: ListedUser): UserStatus {
   if (user.banned) return "banned";
   if (!user.emailVerified) return "unverified";
-  return "active";
+  return "verified";
 }
 
 /**

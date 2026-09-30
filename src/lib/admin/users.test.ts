@@ -52,7 +52,11 @@ describe("parseUsersQuery", () => {
 
 describe("usersWhere", () => {
   it("combines search (name or email), role and status", () => {
-    const query = parseUsersQuery({ q: "ada", role: "user", status: "active" });
+    const query = parseUsersQuery({
+      q: "ada",
+      role: "user",
+      status: "verified",
+    });
 
     expect(usersWhere(query)).toEqual({
       AND: [
@@ -107,7 +111,7 @@ describe("userStatus", () => {
       "banned",
     );
     expect(userStatus({ id: "1", emailVerified: false })).toBe("unverified");
-    expect(userStatus({ id: "1", emailVerified: true })).toBe("active");
+    expect(userStatus({ id: "1", emailVerified: true })).toBe("verified");
   });
 });
 
