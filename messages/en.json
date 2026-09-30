@@ -66,5 +66,61 @@
     "title": "Page not found",
     "description": "The page you are looking for doesn't exist or has been moved.",
     "back": "Back to home"
+  },
+  "Auth": {
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password"
+    },
+    "placeholders": {
+      "name": "Your name",
+      "email": "you@email.com"
+    },
+    "signIn": {
+      "metaTitle": "Sign in",
+      "title": "Sign in to your account",
+      "description": "Enter your email and password to continue.",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up"
+    },
+    "signUp": {
+      "metaTitle": "Create account",
+      "title": "Create your account",
+      "description": "Enter your details to sign up.",
+      "passwordHint": "At least {min} characters.",
+      "submit": "Create account",
+      "hasAccount": "Already have an account?",
+      "signInLink": "Sign in"
+    },
+    "validation": {
+      "name": "Enter your name.",
+      "email": "Enter a valid email.",
+      "password": "Password must be at least {min} characters.",
+      "confirmPassword": "Passwords don't match."
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password.",
+      "userExists": "An account with that email already exists.",
+      "passwordTooShort": "The password is too short.",
+      "passwordTooLong": "The password is too long.",
+      "banned": "Your account is blocked. Contact the administrator.",
+      "tooManyRequests": "Too many attempts. Wait a moment and try again.",
+      "generic": "The operation could not be completed. Please try again."
+    }
+  },
+  "UserMenu": {
+    "signIn": "Sign in",
+    "account": "Account",
+    "dashboard": "Dashboard",
+    "signOut": "Sign out"
+  },
+  "Dashboard": {
+    "metaTitle": "Dashboard",
+    "title": "Hi, {name}",
+    "description": "You are signed in as {email}.",
+    "role": "Role: {role}"
   }
 }

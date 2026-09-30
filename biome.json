@@ -116,7 +116,8 @@
         "src/i18n/request.ts",
         "*.config.ts",
         "*.config.mts",
-        "*.config.mjs"
+        "*.config.mjs",
+        "e2e/global-teardown.ts"
       ],
       "linter": {
         "rules": {
@@ -155,6 +156,21 @@
         "rules": {
           "performance": {
             "noBarrelFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/components/ui/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "noLabelWithoutControl": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noDoubleEquals": "off"
           }
         }
       }

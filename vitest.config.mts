@@ -16,6 +16,7 @@ export default defineConfig({
     // Fixed values so tests don't depend on the local .env
     env: {
       DATABASE_URL: "postgresql://user:pass@localhost:5432/test",
+      BETTER_AUTH_SECRET: "test-secret-with-at-least-32-characters!!",
       NEXT_PUBLIC_APP_URL: "https://example.com",
     },
   },

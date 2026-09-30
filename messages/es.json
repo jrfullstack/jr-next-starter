@@ -66,5 +66,61 @@
     "title": "Página no encontrada",
     "description": "La página que buscas no existe o se ha movido.",
     "back": "Volver al inicio"
+  },
+  "Auth": {
+    "fields": {
+      "name": "Nombre",
+      "email": "Email",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña"
+    },
+    "placeholders": {
+      "name": "Tu nombre",
+      "email": "tu@email.com"
+    },
+    "signIn": {
+      "metaTitle": "Iniciar sesión",
+      "title": "Inicia sesión en tu cuenta",
+      "description": "Introduce tu email y tu contraseña para continuar.",
+      "submit": "Iniciar sesión",
+      "noAccount": "¿No tienes cuenta?",
+      "signUpLink": "Regístrate"
+    },
+    "signUp": {
+      "metaTitle": "Crear cuenta",
+      "title": "Crea tu cuenta",
+      "description": "Introduce tus datos para registrarte.",
+      "passwordHint": "Mínimo {min} caracteres.",
+      "submit": "Crear cuenta",
+      "hasAccount": "¿Ya tienes cuenta?",
+      "signInLink": "Inicia sesión"
+    },
+    "validation": {
+      "name": "Introduce tu nombre.",
+      "email": "Introduce un email válido.",
+      "password": "La contraseña debe tener al menos {min} caracteres.",
+      "confirmPassword": "Las contraseñas no coinciden."
+    },
+    "errors": {
+      "invalidCredentials": "Email o contraseña incorrectos.",
+      "userExists": "Ya existe una cuenta con ese email.",
+      "passwordTooShort": "La contraseña es demasiado corta.",
+      "passwordTooLong": "La contraseña es demasiado larga.",
+      "banned": "Tu cuenta está bloqueada. Contacta con el administrador.",
+      "tooManyRequests": "Demasiados intentos. Espera un momento y vuelve a probar.",
+      "generic": "No se pudo completar la operación. Inténtalo de nuevo."
+    }
+  },
+  "UserMenu": {
+    "signIn": "Iniciar sesión",
+    "account": "Cuenta",
+    "dashboard": "Panel",
+    "signOut": "Cerrar sesión"
+  },
+  "Dashboard": {
+    "metaTitle": "Panel",
+    "title": "Hola, {name}",
+    "description": "Has iniciado sesión como {email}.",
+    "role": "Rol: {role}"
   }
 }

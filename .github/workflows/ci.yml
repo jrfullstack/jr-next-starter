@@ -13,10 +13,11 @@ concurrency:
 permissions:
   contents: read
 
-# Placeholder values so T3-env validation passes; no job connects to a database
+# Placeholder values so T3-env validation passes (the e2e job uses its own PostgreSQL)
 env:
   DATABASE_URL: postgresql://user:password@localhost:5432/ci
   NEXT_PUBLIC_APP_URL: http://localhost:3000
+  BETTER_AUTH_SECRET: ci-only-secret-with-at-least-32-characters
   # Opt out of Next.js and Prisma CLI telemetry
   NEXT_TELEMETRY_DISABLED: 1
   CHECKPOINT_DISABLE: 1
@@ -49,9 +50,30 @@ jobs:
     name: E2E tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Throwaway PostgreSQL for the auth flows; created and destroyed with the job
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: e2e
+          # No password: the database only exists inside this job
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres@localhost:5432/e2e
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: ./.github/actions/setup
+
+      - name: Apply database migrations
+        run: pnpm exec prisma migrate deploy
 
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium

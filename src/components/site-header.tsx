@@ -2,6 +2,7 @@ import { Rocket } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
+import { UserMenu } from "@/components/user-menu";
 import { siteConfig } from "@/config/site";
 import { Link } from "@/i18n/navigation";
 
@@ -22,6 +23,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <LocaleSwitcher />
           <ModeToggle />
+          <UserMenu />
         </div>
       </div>
     </header>

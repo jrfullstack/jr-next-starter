@@ -168,7 +168,15 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 
 ### 🧭 Fase avanzada
 
-- [ ] Autenticación y panel de administración (Better Auth). Plan en revisión: [`docs/plans/auth.md`](docs/plans/auth.md)
+- [ ] Autenticación y panel de administración (Better Auth), en 8 pasos según [`docs/plans/auth.md`](docs/plans/auth.md):
+  - [x] **1. Base:** email + contraseña, login, registro, logout, roles y permisos, `/dashboard` protegido, primera migración
+  - [ ] 2. Emails y superadmin
+  - [ ] 3. Panel `/admin` y usuarios
+  - [ ] 4. Sistema (configuración de métodos)
+  - [ ] 5. Magic link
+  - [ ] 6. Google
+  - [ ] 7. 2FA
+  - [ ] 8. Passkeys
 
 ## 📦 Librerías
 
@@ -192,6 +200,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `@next/third-parties` | 16.3.6 | Integraciones oficiales de Next.js con servicios externos (Google Analytics) cargadas sin bloquear el renderizado |
 | `@vercel/speed-insights` | 2.0.0 | Mide Core Web Vitals de usuarios reales en Vercel (solo se carga en Vercel) |
 | `@vercel/analytics` | 2.0.1 | Analítica de visitas de Vercel, sin cookies (solo se carga en Vercel) |
+| `better-auth` | 1.7.6 | Autenticación: sesiones, email + contraseña, roles y permisos (plugin admin); datos en PostgreSQL con Prisma |
 | `next-intl` | 4.14.7 | Traducciones, formato de fechas/números y rutas por idioma para el App Router |
 | `next-themes` | 0.4.6 | Tema claro/oscuro/sistema sin parpadeo; guarda la preferencia del usuario |
 | `@t3-oss/env-nextjs` | 0.13.11 | Valida con Zod las variables de entorno al arrancar y las expone tipadas en `env` |
@@ -312,6 +321,7 @@ y abre <http://localhost:3000>.
 | `e2e:ui` | Abre la interfaz de Playwright para ver y depurar los tests e2e |
 | `db:generate` | Genera el cliente de Prisma |
 | `db:migrate` | Crea y aplica migraciones en desarrollo |
+| `db:deploy` | Aplica las migraciones pendientes sin crear nuevas (producción y CI) |
 | `db:push` | Sincroniza el esquema con la base de datos sin migraciones |
 | `db:studio` | Abre Prisma Studio para ver y editar datos |
 | `postinstall` | Genera el cliente de Prisma tras cada `pnpm install` |
@@ -357,6 +367,7 @@ Lo que se puede corregir solo se corrige en tres momentos:
 | Variable | Tipo | Obligatoria | Para qué |
 | --- | --- | --- | --- |
 | `DATABASE_URL` | Servidor (secreta) | Sí | Conexión a PostgreSQL para Prisma |
+| `BETTER_AUTH_SECRET` | Servidor (secreta) | Sí | Firma de sesiones y tokens de Better Auth (mínimo 32 caracteres) |
 | `NEXT_PUBLIC_APP_URL` | Pública | Sí | URL del sitio, base de las URLs absolutas del SEO |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Pública | No | ID de Google Analytics 4 (`G-XXXXXXXXXX`). Si está vacía, Analytics no se carga |
 | `NEXT_TELEMETRY_DISABLED` | Herramienta | No (recomendado `1`) | Desactiva la telemetría anónima de Next.js |
@@ -465,7 +476,13 @@ pnpm e2e:ui        # e2e con interfaz visual
 - La primera vez, descarga el navegador de Playwright con `pnpm exec playwright install chromium`.
 - Si ya tienes `pnpm dev` corriendo, Playwright lo reutiliza (Next 16 no permite dos `next dev` en la misma carpeta).
 - Para renderizar componentes que usan traducciones, usa `renderWithIntl` de `@/test/render`: carga los mensajes reales.
-- Con `CI=1`, Playwright prueba el build de producción con `pnpm start`, así que antes hay que ejecutar `pnpm build`: `pnpm build && CI=1 PORT=3100 pnpm e2e`.
+- Con `CI=1`, Playwright prueba el build de producción con `pnpm start`, así que antes hay que compilar. Si usas otro puerto, compila con esa URL, porque Better Auth rechaza peticiones de otro origen (protección CSRF):
+
+  ```bash
+  NEXT_PUBLIC_APP_URL=http://localhost:3100 pnpm build && CI=1 PORT=3100 NEXT_PUBLIC_APP_URL=http://localhost:3100 pnpm e2e
+  ```
+
+- **Base de datos en e2e:** los tests de autenticación usan la base de `DATABASE_URL`. Crean usuarios `e2e-…@example.com` y `e2e/global-teardown.ts` los borra al terminar. En CI, el job de E2E levanta su propio PostgreSQL temporal y aplica las migraciones.
 - **Limitación:** Vitest no puede renderizar Server Components `async`. Esos se prueban con Playwright.
 - En cada commit, lint-staged ejecuta `vitest related --run`: solo los tests afectados por los archivos que cambiaste.
 - **Qué testear y qué no:** criterio en [`AGENTS.md`](AGENTS.md#qué-testear-y-qué-no). En resumen: solo lógica o configuración propia, flujos de usuario en e2e agrupados, y nada que ya garanticen TypeScript o las librerías.
@@ -576,22 +593,28 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 ├── e2e                             # Tests end-to-end de Playwright (*.spec.ts)
 ├── messages                        # Traducciones por idioma (es.json, en.json)
 ├── prisma
+│   ├── migrations                  # Migraciones de la base de datos (prisma migrate)
 │   └── schema.prisma               # Modelos de la base de datos
 ├── public                          # Archivos estáticos
 ├── src
 │   ├── app
 │   │   ├── [locale]                # Layout raíz, páginas, 404 e imagen Open Graph, por idioma
+│   │   │   ├── (auth)              # Login y registro (noindex)
+│   │   │   ├── dashboard           # Página protegida de ejemplo
 │   │   │   └── [...rest]           # Envía las rutas desconocidas al 404 traducido
+│   │   ├── api/auth/[...all]       # Endpoints de Better Auth
 │   │   ├── globals.css             # Estilos globales y tema de Tailwind
 │   │   ├── robots.ts               # robots.txt
 │   │   └── sitemap.ts              # sitemap.xml
 │   ├── components
+│   │   ├── auth                    # Formularios de login y registro
 │   │   ├── ui                      # Componentes de shadcn/ui
 │   │   ├── analytics.tsx           # Google Analytics (solo si hay ID)
 │   │   ├── locale-switcher.tsx     # Selector de idioma
 │   │   ├── mode-toggle.tsx         # Selector de tema claro/oscuro/sistema
 │   │   ├── site-footer.tsx         # Pie de página
-│   │   ├── site-header.tsx         # Cabecera con marca, idioma y tema
+│   │   ├── site-header.tsx         # Cabecera con marca, idioma, tema y menú de usuario
+│   │   ├── user-menu.tsx           # Iniciar sesión / menú de la cuenta
 │   │   ├── vercel-insights.tsx     # Speed Insights y Web Analytics (solo en Vercel)
 │   │   └── theme-provider.tsx      # Provider de next-themes
 │   ├── config
@@ -603,6 +626,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── request.ts              # Carga los mensajes del idioma actual
 │   │   └── routing.ts              # Idiomas soportados e idioma por defecto
 │   ├── lib
+│   │   ├── auth                    # Better Auth: servidor, cliente, permisos, rutas, sesión
 │   │   ├── db.ts                   # Cliente de Prisma singleton
 │   │   ├── seo.ts                  # URLs absolutas, canonical y hreflang
 │   │   └── utils.ts                # Utilidades (cn)
