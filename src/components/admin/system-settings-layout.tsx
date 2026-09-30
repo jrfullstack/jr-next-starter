@@ -24,7 +24,9 @@ export type SettingField =
   | "google.signUp"
   | "twoFactor.level"
   | "twoFactor.emailOtp"
-  | "twoFactor.trustDevice";
+  | "twoFactor.trustDevice"
+  | "passkey.access"
+  | "passkey.register";
 
 /** Settings edited with a select (their options are the enum values) */
 export const selectSettings: Partial<Record<SettingField, true>> = {
@@ -212,6 +214,27 @@ function TwoFactorCard({ row }: { row: Row }) {
   );
 }
 
+function PasskeyCard({ row }: { row: Row }) {
+  const t = useTranslations("Admin.system");
+  return (
+    <SettingsCard
+      title={t("sections.passkey.title")}
+      description={t("sections.passkey.description")}
+    >
+      {row(
+        "passkey.access",
+        t("fields.passkey.access.label"),
+        t("fields.passkey.access.description"),
+      )}
+      {row(
+        "passkey.register",
+        t("fields.passkey.register.label"),
+        t("fields.passkey.register.description"),
+      )}
+    </SettingsCard>
+  );
+}
+
 /**
  * Cards and rows of the System settings. The form passes real controls and
  * the loading skeleton passes placeholders, so both share one layout.
@@ -239,6 +262,7 @@ export function SystemSettingsLayout({
       <EmailPasswordCard row={row} />
       <MagicLinkCard row={row} />
       <GoogleCard row={row} configured={googleConfigured} />
+      <PasskeyCard row={row} />
       <TwoFactorCard row={row} />
     </div>
   );

@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import type { Locale } from "next-intl";
 import { cache } from "react";
 import { redirect } from "@/i18n/navigation";
-import { twoFactorRequired } from "@/lib/system/policy";
+import { meetsTwoFactor } from "@/lib/system/policy";
 import { getAuthPolicy } from "@/lib/system/policy-store";
 import { authRoutes } from "./routes";
 import { getAuth } from "./server";
@@ -32,8 +32,7 @@ export async function requireSession(locale: Locale, callbackPath: string) {
   const policy = await getAuthPolicy();
   if (
     callbackPath !== authRoutes.accountSecurity &&
-    twoFactorRequired(policy, session.user.role) &&
-    !session.user.twoFactorEnabled
+    !meetsTwoFactor(policy, session.user, session.session)
   ) {
     return redirect({
       href: { pathname: authRoutes.accountSecurity, query: { setup: "2fa" } },

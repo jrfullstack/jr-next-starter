@@ -7,8 +7,10 @@ import { env } from "@/env";
 import { db } from "@/lib/db";
 import { type AuthPolicy, canSignUp } from "@/lib/system/policy";
 import { getAuthPolicy } from "@/lib/system/policy-store";
+import { authMethodOf } from "./auth-method";
 import { sendAuthEmail } from "./emails";
 import { afterHook, beforeHook } from "./hooks";
+import { passkeyPlugin } from "./passkey";
 import { ac, roles } from "./permissions";
 import { syncSuperadminRole } from "./superadmin";
 import { twoFactorPlugin } from "./two-factor";
@@ -106,10 +108,21 @@ function createAuth(policy: AuthPolicy) {
     emailAndPassword: emailAndPassword(policy),
     emailVerification,
     socialProviders: socialProviders(policy),
+    session: {
+      additionalFields: {
+        // How it signed in: a passkey meets a required 2FA (docs/plans/auth.md §17)
+        authMethod: { type: "string", required: false, input: false },
+      },
+    },
     databaseHooks: {
       session: {
-        // Every sign-in recomputes superadmin (docs/plans/auth.md §3)
-        create: { after: (session) => syncSuperadminRole(session.userId) },
+        create: {
+          before: async (session, ctx) => ({
+            data: { ...session, authMethod: authMethodOf(ctx?.path) },
+          }),
+          // Every sign-in recomputes superadmin (docs/plans/auth.md §3)
+          after: (session) => syncSuperadminRole(session.userId),
+        },
       },
     },
     hooks: { before: beforeHook(policy), after: afterHook() },
@@ -122,6 +135,7 @@ function createAuth(policy: AuthPolicy) {
       }),
       magicLinkPlugin(policy),
       twoFactorPlugin(policy),
+      passkeyPlugin(),
       // Must be the last plugin: sets cookies from Server Actions
       nextCookies(),
     ],

@@ -14,7 +14,8 @@ export function TwoFactorSetupAlert({ role }: { role?: string | null }) {
       <ShieldAlert />
       <AlertTitle>{t("setupAlertTitle")}</AlertTitle>
       <AlertDescription>
-        {t(privileged ? "setupAlertRole" : "setupAlertEveryone")}
+        {t(privileged ? "setupAlertRole" : "setupAlertEveryone")}{" "}
+        {t("setupAlertPasskey")}
       </AlertDescription>
     </Alert>
   );

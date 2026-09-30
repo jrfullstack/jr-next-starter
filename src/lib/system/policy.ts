@@ -54,6 +54,13 @@ export const authPolicySchema = z.object({
       trustDevice: z.boolean().default(false),
     })
     .prefault({}),
+  passkey: z
+    .object({
+      access: z.boolean().default(true),
+      /** Users can add passkeys in Account → Security (existing ones can always be deleted) */
+      register: z.boolean().default(true),
+    })
+    .prefault({}),
   /** Only takes effect with credentials (see effectivePolicy) */
   google: z
     .object({
@@ -77,7 +84,12 @@ export function parseAuthPolicy(stored: unknown): AuthPolicy {
 }
 
 /** Sign-in methods. Passkeys join in a later step. */
-const accessMethods = ["emailPassword", "magicLink", "google"] as const;
+const accessMethods = [
+  "emailPassword",
+  "magicLink",
+  "google",
+  "passkey",
+] as const;
 export type AccessMethod = (typeof accessMethods)[number];
 
 /** What the deployment can offer regardless of the policy (Google needs credentials) */
@@ -103,7 +115,9 @@ const universalMethods: readonly AccessMethod[] = ["magicLink"];
 const recoveryMethods: readonly AccessMethod[] = ["emailPassword", "magicLink"];
 
 export function canSignUp(policy: AuthPolicy, method: AccessMethod) {
-  return policy.general.signUp && policy[method].signUp;
+  const section = policy[method];
+  // Passkeys never create accounts: they're added to an existing one
+  return policy.general.signUp && "signUp" in section && section.signUp;
 }
 
 /** Whether any method accepts new accounts (shows the "Sign up" links) */
@@ -126,6 +140,8 @@ function canStillSignIn(policy: AuthPolicy, linked: readonly AccessMethod[]) {
 const methodProviders: Partial<Record<AccessMethod, string>> = {
   emailPassword: "credential",
   google: "google",
+  // Not an account row: stands for "has at least one passkey"
+  passkey: "passkey",
 };
 
 /** Sign-in methods behind an account's linked providers ("credential" → emailPassword) */
@@ -156,6 +172,20 @@ export function twoFactorRequired(
   const { level } = policy.twoFactor;
   if (level === "required") return true;
   return level === "optional" && privilegedRoles.has(role ?? "");
+}
+
+/**
+ * Whether this session meets the 2FA requirement: the authenticator app is
+ * on, or it signed in with a passkey (device + fingerprint/PIN is already
+ * two factors, docs/plans/auth.md §17).
+ */
+export function meetsTwoFactor(
+  policy: AuthPolicy,
+  user: { role?: string | null; twoFactorEnabled?: boolean | null },
+  session: { authMethod?: string | null },
+) {
+  if (!twoFactorRequired(policy, user.role)) return true;
+  return Boolean(user.twoFactorEnabled) || session.authMethod === "passkey";
 }
 
 export type PolicyViolation =

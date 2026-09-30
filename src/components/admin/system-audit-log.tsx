@@ -59,6 +59,8 @@ function fieldLabel(t: SystemTranslator, change: PolicyChange) {
       return t(`fields.google.${change.field}.label`);
     case "twoFactor":
       return t(`fields.twoFactor.${change.field}.label`);
+    case "passkey":
+      return t(`fields.passkey.${change.field}.label`);
   }
 }
 

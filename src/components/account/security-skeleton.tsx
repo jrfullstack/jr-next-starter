@@ -26,6 +26,22 @@ export function SecuritySkeleton() {
         </div>
       </SectionCard>
       <SectionCard
+        title={t("twoFactor.title")}
+        description={t("twoFactor.description")}
+      >
+        <Skeleton className="h-8 w-24 rounded-lg" />
+      </SectionCard>
+      <SectionCard
+        title={t("passkeys.title")}
+        description={t("passkeys.description")}
+      >
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-8 w-full rounded-lg" />
+          <Skeleton className="h-8 w-32 rounded-lg" />
+        </div>
+      </SectionCard>
+      <SectionCard
         title={t("linked.title")}
         description={t("linked.description")}
       >

@@ -18,6 +18,7 @@
   ],
   // Project vocabulary (tools, libraries, identifiers). Keep sorted.
   "words": [
+    "aaguid",
     "actionlint",
     "actívalos",
     "autenticador",
@@ -29,6 +30,7 @@
     "configúrala",
     "configurarlo",
     "confírmalos",
+    "ctap",
     "datasource",
     "davidanson",
     "Declárala",
@@ -101,6 +103,7 @@
     "Vercel",
     "vercel",
     "viewports",
-    "Vitest"
+    "Vitest",
+    "webauthn"
   ]
 }

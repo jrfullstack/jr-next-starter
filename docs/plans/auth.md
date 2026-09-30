@@ -1,6 +1,6 @@
 # Plan: autenticación y panel de administración
 
-> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios), 4 (Sistema), 5 (Magic link), 6 (Google) y 7 (Cuenta → Seguridad y 2FA) hechos; el resto, pendiente.
+> Estado: **aprobado**. Pasos 1 (Base), 2 (Emails y superadmin), 3 (Panel y usuarios), 4 (Sistema), 5 (Magic link), 6 (Google), 7 (Cuenta → Seguridad y 2FA) y 8 (Passkeys) hechos: plan completado.
 
 ## 1. Objetivo
 
@@ -299,7 +299,44 @@ Política (tarjeta **2FA** en Sistema, sin migración de la política):
 
 **Tests**: unitarios de la política y del hook; e2e generando el código TOTP en el propio test (con contraseña y con magic link, código de respaldo, dispositivo de confianza, nivel obligatorio).
 
-## 17. Fuera de alcance
+## 17. Paso 8 en detalle: Passkeys
+
+> Estado: **hecho**. El plugin solo "prefiere" la verificación del usuario al entrar, así que un hook previo exige el bit *user verified* de los datos firmados del autenticador.
+
+### Librería y datos
+
+- Plugin oficial `@better-auth/passkey` (usa SimpleWebAuthn). Añade la tabla `passkey` (una migración).
+- Relying party: dominio y origen salen de `NEXT_PUBLIC_APP_URL` (`localhost` en local, tu dominio en producción). Una passkey creada en un dominio no sirve en otro.
+- Verificación del usuario **obligatoria** (huella, cara o PIN del dispositivo), para que cuente como acceso fuerte.
+
+### Política (sin migración de la política)
+
+| Opción (tarjeta **Passkeys** en Sistema) | Por defecto |
+| --- | --- |
+| Acceso con passkey | Activado |
+| Permitir añadir passkeys desde Cuenta → Seguridad | Activado |
+
+- El hook rechaza entrar con passkey si el acceso está desactivado, y registrar nuevas si no se permite.
+- Las passkeys ya creadas se pueden seguir **borrando** siempre (es la opción segura).
+
+### Passkey = acceso fuerte (plan §2)
+
+- Entrar con passkey **no pide 2FA**: ya son dos factores (el dispositivo + la huella/PIN).
+- Para quien tiene el 2FA **obligatorio** (admins y superadmins en el nivel opcional), cumple la exigencia **o** tener la app de autenticación, **o** haber entrado en esa sesión con una passkey. Se guarda en la sesión con qué método se entró (`authMethod`). Un admin que solo tiene passkey y entra con contraseña tendrá que usar su passkey o activar la app.
+- Así se cumple lo que pediste para administradores: passkey con verificación del usuario, o contraseña + TOTP; Google solo no basta.
+
+### Interfaz de passkeys
+
+- **Login**: botón "Entrar con passkey". El autocompletado del navegador (*conditional UI*) se descartó al implementarlo: su petición arranca tarde y cancela la del botón si se pulsa enseguida.
+- **Cuenta → Seguridad**: tarjeta **Passkeys** con la lista (nombre, fecha), añadir con un nombre ("Portátil", "Móvil") y eliminar con confirmación.
+- **Sistema**: tarjeta Passkeys. Las salvaguardas cuentan las passkeys como método vinculado (no se puede dejar a alguien sin forma de entrar al desactivar el acceso, y el servidor no deja borrar la última passkey si es el único método).
+
+### Tests del paso 8
+
+- **Unitarios**: política, salvaguardas con passkeys, requisito de 2FA cumplido por sesión con passkey.
+- **E2E** con el **autenticador virtual de Chromium** (sin hardware): un usuario añade una passkey, cierra sesión y entra con ella sin 2FA; un admin con passkey entra al panel sin app de autenticación; borrar la passkey.
+
+## 18. Fuera de alcance
 
 - Suplantar usuarios (fase posterior, solo `superadmin`, con aviso visible, salida y registro).
 - Otros proveedores OAuth (GitHub, Microsoft, Apple…): la arquitectura los admite, se añadirán cuando hagan falta.

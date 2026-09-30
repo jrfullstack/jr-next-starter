@@ -11,7 +11,11 @@ export default async function Loading() {
       description={t("signIn.description")}
       fields={2}
       secondaryAction={t("or")}
-      google={authCapabilities().google ? { separator: t("or") } : undefined}
+      // Passkey button always (on by default), Google's too with credentials
+      leading={{
+        buttons: authCapabilities().google ? 2 : 1,
+        separator: t("or"),
+      }}
     />
   );
 }

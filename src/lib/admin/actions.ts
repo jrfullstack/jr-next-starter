@@ -3,7 +3,7 @@
 import { can } from "@/lib/auth/permissions";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { twoFactorRequired } from "@/lib/system/policy";
+import { meetsTwoFactor } from "@/lib/system/policy";
 import { getAuthPolicy } from "@/lib/system/policy-store";
 
 /**
@@ -19,10 +19,7 @@ export async function removeTwoFactor(userId: string) {
     return forbidden;
   }
   const policy = await getAuthPolicy();
-  if (
-    twoFactorRequired(policy, session.user.role) &&
-    !session.user.twoFactorEnabled
-  ) {
+  if (!meetsTwoFactor(policy, session.user, session.session)) {
     return forbidden;
   }
   const target = await db.user.findUnique({
