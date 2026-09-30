@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.8.0...v0.9.0) (2026-09-30)
+
+
+### ✨ Nuevas funcionalidades
+
+* add passkeys (auth step 8) ([#23](https://github.com/jrfullstack/jr-next-starter/issues/23)) ([29f0a24](https://github.com/jrfullstack/jr-next-starter/commit/29f0a24578b692d30835d1e994c4b9dc8e493d82))
+
 ## [0.8.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.7.0...v0.8.0) (2026-09-30)
 
 
