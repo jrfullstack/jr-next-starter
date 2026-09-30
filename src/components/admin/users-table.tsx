@@ -8,7 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { rowPermissions, type UserStatus, userStatus } from "@/lib/admin/users";
+import {
+  rowPermissions,
+  type UserStatus,
+  type UsersQuery,
+  userStatus,
+} from "@/lib/admin/users";
+import { SortableHeader } from "./sortable-header";
 import { UserRowActions } from "./user-row-actions";
 
 type ListedUser = {
@@ -35,9 +41,11 @@ const knownRoles = new Set(["user", "admin", "superadmin"]);
 export function UsersTable({
   users,
   actor,
+  query,
 }: {
   users: ListedUser[];
   actor: { id: string; role?: string | null };
+  query: UsersQuery;
 }) {
   const t = useTranslations("Admin.users");
   const format = useFormatter();
@@ -50,11 +58,23 @@ export function UsersTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>{t("columns.name")}</TableHead>
-          <TableHead>{t("columns.email")}</TableHead>
+          <SortableHeader
+            field="name"
+            label={t("columns.name")}
+            query={query}
+          />
+          <SortableHeader
+            field="email"
+            label={t("columns.email")}
+            query={query}
+          />
           <TableHead>{t("columns.role")}</TableHead>
           <TableHead>{t("columns.status")}</TableHead>
-          <TableHead>{t("columns.createdAt")}</TableHead>
+          <SortableHeader
+            field="createdAt"
+            label={t("columns.createdAt")}
+            query={query}
+          />
           <TableHead className="sr-only">{t("columns.actions")}</TableHead>
         </TableRow>
       </TableHeader>

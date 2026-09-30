@@ -57,7 +57,9 @@ Cada dato vive en **un solo lugar**. Antes de escribir un valor, búscalo aquí;
 - **Búsqueda, filtros y orden en la consulta:** `WHERE` y `ORDER BY` en la base de datos, no `Array.filter`/`sort` en el cliente (tampoco con librerías de tablas en modo cliente).
 - **El estado vive en la URL** (`?q=…&page=…&sort=…&order=…&status=…`): se puede compartir, el botón "atrás" funciona y la página se renderiza en el servidor.
 - **Los parámetros de la URL se validan** con una función `parse…Query` con valores por defecto: página mínima 1, tamaño de página fijo o con un máximo, y **los campos de orden y filtro en una lista blanca** (nunca se pasa un nombre de columna de la URL directamente a la consulta).
-- Ejemplo de referencia: `src/lib/admin/users.ts` (`parseUsersQuery`) y `src/app/[locale]/admin/users/page.tsx`.
+- **URL canónica:** si llegan parámetros vacíos (un formulario GET los envía), por defecto o no permitidos, la página redirige a la URL limpia equivalente (`hasCanonicalParams` en `src/lib/search-params.ts`).
+- **Orden estable:** además de la columna elegida, se ordena por `id`, para que ningún registro cambie de página entre peticiones.
+- Ejemplo de referencia: `src/lib/admin/users.ts` (`parseUsersQuery`, `usersWhere`, `usersHref`), `src/lib/admin/users-query.ts` y `src/app/[locale]/admin/users/page.tsx`.
 
 ### Qué testear (y qué no)
 

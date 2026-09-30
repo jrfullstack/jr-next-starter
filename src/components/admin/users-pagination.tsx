@@ -1,38 +1,38 @@
 import { useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { USERS_PAGE_SIZE } from "@/lib/admin/users";
+import { USERS_PAGE_SIZE, type UsersQuery, usersHref } from "@/lib/admin/users";
 
-/** Previous/next links that keep the current search */
+/** Previous/next links that keep the current search, filters and sort */
 export function UsersPagination({
-  page,
+  query,
   total,
-  search,
 }: {
-  page: number;
+  query: UsersQuery;
   total: number;
-  search: string;
 }) {
   const t = useTranslations("Admin.users.pagination");
-  const from = total === 0 ? 0 : (page - 1) * USERS_PAGE_SIZE + 1;
-  const to = Math.min(page * USERS_PAGE_SIZE, total);
-  const href = (target: number) => ({
-    pathname: "/admin/users" as const,
-    query: { ...(search && { q: search }), page: String(target) },
-  });
+  const from = total === 0 ? 0 : (query.page - 1) * USERS_PAGE_SIZE + 1;
+  const to = Math.min(query.page * USERS_PAGE_SIZE, total);
   const linkClass = buttonVariants({ variant: "outline", size: "sm" });
 
   return (
     <nav className="mt-4 flex items-center justify-between gap-4 text-sm text-muted-foreground">
       <p>{t("summary", { from, to, total })}</p>
       <div className="flex gap-2">
-        {page > 1 && (
-          <Link href={href(page - 1)} className={linkClass}>
+        {query.page > 1 && (
+          <Link
+            href={usersHref(query, { page: query.page - 1 })}
+            className={linkClass}
+          >
             {t("previous")}
           </Link>
         )}
         {to < total && (
-          <Link href={href(page + 1)} className={linkClass}>
+          <Link
+            href={usersHref(query, { page: query.page + 1 })}
+            className={linkClass}
+          >
             {t("next")}
           </Link>
         )}

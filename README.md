@@ -172,7 +172,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [ ] Autenticación y panel de administración (Better Auth), en 8 pasos según [`docs/plans/auth.md`](docs/plans/auth.md):
   - [x] **1. Base:** email + contraseña, login, registro, logout, roles y permisos, `/dashboard` protegido, primera migración
   - [x] **2. Emails y superadmin:** verificación de email obligatoria, recuperar contraseña, Resend + React Email con bandeja de desarrollo, rol `superadmin` calculado desde `SUPER_ADMIN_EMAILS`
-  - [x] **3. Panel `/admin` y usuarios:** menú lateral según permisos; usuarios con búsqueda, paginación, crear, bloquear/desbloquear, cerrar sesiones y (solo superadmin) cambiar rol; las cuentas superadmin no se pueden gestionar
+  - [x] **3. Panel `/admin` y usuarios:** menú lateral según permisos; usuarios con búsqueda, filtros por rol y estado, orden por columna y paginación (todo en el servidor), crear, bloquear/desbloquear, cerrar sesiones y (solo superadmin) cambiar rol; las cuentas superadmin no se pueden gestionar
   - [ ] 4. Sistema (configuración de métodos)
   - [ ] 5. Magic link
   - [ ] 6. Google

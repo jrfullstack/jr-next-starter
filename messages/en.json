@@ -194,8 +194,8 @@
       "metaTitle": "Users",
       "title": "Users",
       "description": "Manage the site's accounts.",
-      "searchLabel": "Search by email",
-      "search": "Search",
+      "searchLabel": "Search by name or email",
+      "search": "Filter",
       "columns": {
         "name": "Name",
         "email": "Email",
@@ -248,7 +248,15 @@
       "errors": {
         "generic": "The action could not be completed. Please try again.",
         "forbidden": "You don't have permission for this action."
-      }
+      },
+      "filters": {
+        "role": "Role",
+        "status": "Status",
+        "allRoles": "All roles",
+        "allStatuses": "All statuses",
+        "clear": "Clear filters"
+      },
+      "sortBy": "Sort by {column}"
     }
   },
   "UI": {

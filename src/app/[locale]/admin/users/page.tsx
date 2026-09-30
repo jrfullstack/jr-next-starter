@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { CreateUserDialog } from "@/components/admin/create-user-dialog";
+import { UsersFilters } from "@/components/admin/users-filters";
 import { UsersPagination } from "@/components/admin/users-pagination";
 import { UsersTable } from "@/components/admin/users-table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { parseLocale } from "@/i18n/locale";
+import { redirect } from "@/i18n/navigation";
 import { adminSections } from "@/lib/admin/sections";
-import { parseUsersQuery, USERS_PAGE_SIZE } from "@/lib/admin/users";
+import { parseUsersQuery, usersHref } from "@/lib/admin/users";
+import { findUsersPage } from "@/lib/admin/users-query";
 import { requirePermission } from "@/lib/auth/authorization";
-import { auth } from "@/lib/auth/server";
+import { hasCanonicalParams } from "@/lib/search-params";
 
 const section = adminSections[0];
 
@@ -29,24 +29,17 @@ export default async function AdminUsersPage({
     section.permission,
     section.href,
   );
-  const { search, page, offset } = parseUsersQuery(await searchParams);
+  const rawParams = await searchParams;
+  const query = parseUsersQuery(rawParams);
+  // Empty GET-form fields, defaults or unknown values: redirect to the clean URL
+  const canonical = usersHref(query, { page: query.page });
+  if (!hasCanonicalParams(rawParams, canonical.query)) {
+    return redirect({ href: canonical, locale });
+  }
   const t = await getTranslations("Admin.users");
 
-  // Better Auth checks the permission again and filters on the database
-  const { users, total } = await auth.api.listUsers({
-    headers: await headers(),
-    query: {
-      ...(search && {
-        searchValue: search,
-        searchField: "email",
-        searchOperator: "contains",
-      }),
-      limit: USERS_PAGE_SIZE,
-      offset,
-      sortBy: "createdAt",
-      sortDirection: "desc",
-    },
-  });
+  // Filtered, sorted and paginated in the database (AGENTS.md: server-side lists)
+  const { users, total } = await findUsersPage(query);
 
   return (
     <>
@@ -57,22 +50,12 @@ export default async function AdminUsersPage({
         </div>
         <CreateUserDialog />
       </div>
-      {/* Plain GET form: the search lives in the URL (shareable, back button works) */}
-      <form className="mt-6 flex max-w-md gap-2">
-        <Input
-          name="q"
-          type="search"
-          defaultValue={search}
-          aria-label={t("searchLabel")}
-          placeholder={t("searchLabel")}
-        />
-        <Button type="submit" variant="outline">
-          {t("search")}
-        </Button>
-      </form>
       <div className="mt-6">
-        <UsersTable users={users} actor={user} />
-        <UsersPagination page={page} total={total} search={search} />
+        <UsersFilters query={query} />
+      </div>
+      <div className="mt-6">
+        <UsersTable users={users} actor={user} query={query} />
+        <UsersPagination query={query} total={total} />
       </div>
     </>
   );

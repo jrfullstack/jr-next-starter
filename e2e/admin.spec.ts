@@ -24,8 +24,8 @@ test("an admin blocks, unblocks and signs out a user from the panel", async ({
   await page.getByRole("menuitem", { name: "Administración" }).click();
   await expect(page).toHaveURL(/\/es\/admin\/users$/);
 
-  await page.getByLabel("Buscar por email").fill(target.email);
-  await page.getByRole("button", { name: "Buscar" }).click();
+  await page.getByLabel("Buscar por nombre o email").fill(target.email);
+  await page.getByRole("button", { name: "Filtrar" }).click();
   const row = page.getByRole("row").filter({ hasText: target.email });
   await expect(row).toContainText("Activo");
 
@@ -33,6 +33,19 @@ test("an admin blocks, unblocks and signs out a user from the panel", async ({
   await page.getByRole("menuitem", { name: "Bloquear" }).click();
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect(row).toContainText("Bloqueado");
+
+  // Status filter runs on the server: blocked shows them, active doesn't
+  const statusFilter = page.getByLabel("Estado");
+  await statusFilter.selectOption({ label: "Activo" });
+  await page.getByRole("button", { name: "Filtrar" }).click();
+  await expect(page.getByText("No hay usuarios que coincidan.")).toBeVisible();
+  await statusFilter.selectOption({ label: "Bloqueado" });
+  await page.getByRole("button", { name: "Filtrar" }).click();
+  await expect(row).toContainText("Bloqueado");
+  // Back to every status (keeping the search), or unblocking would hide the row
+  await statusFilter.selectOption({ label: "Todos los estados" });
+  await page.getByRole("button", { name: "Filtrar" }).click();
+  await expect(page).not.toHaveURL(/status=/);
 
   // The blocked user can't sign in (a separate browser, as that person)
   const other = await browser.newPage();
@@ -57,6 +70,26 @@ test("an admin blocks, unblocks and signs out a user from the panel", async ({
   await page.getByRole("menuitem", { name: "Cerrar sesiones" }).click();
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect(page.getByRole("alertdialog")).toHaveCount(0);
+});
+
+test("the users list sorts by column on the server", async ({
+  page,
+  request,
+}) => {
+  const token = Date.now().toString(36);
+  await createTestUser(request, { name: `Sort B ${token}` });
+  await createTestUser(request, { name: `Sort A ${token}` });
+  const admin = await createTestUser(request, { role: "admin" });
+  await signInAs(page, admin.email, admin.password);
+
+  await page.goto(`/es/admin/users?q=${token}`);
+  const firstRow = page.getByRole("row").nth(1);
+  await page.getByRole("link", { name: "Ordenar por Nombre" }).click();
+  await expect(page).toHaveURL(/sort=name&order=asc/);
+  await expect(firstRow).toContainText(`Sort A ${token}`);
+  await page.getByRole("link", { name: "Ordenar por Nombre" }).click();
+  await expect(page).toHaveURL(/sort=name&order=desc/);
+  await expect(firstRow).toContainText(`Sort B ${token}`);
 });
 
 test("regular users get a 404 on the admin panel", async ({

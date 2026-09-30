@@ -194,8 +194,8 @@
       "metaTitle": "Usuarios",
       "title": "Usuarios",
       "description": "Gestiona las cuentas de la web.",
-      "searchLabel": "Buscar por email",
-      "search": "Buscar",
+      "searchLabel": "Buscar por nombre o email",
+      "search": "Filtrar",
       "columns": {
         "name": "Nombre",
         "email": "Email",
@@ -248,7 +248,15 @@
       "errors": {
         "generic": "No se pudo completar la acción. Inténtalo de nuevo.",
         "forbidden": "No tienes permiso para esta acción."
-      }
+      },
+      "filters": {
+        "role": "Rol",
+        "status": "Estado",
+        "allRoles": "Todos los roles",
+        "allStatuses": "Todos los estados",
+        "clear": "Limpiar filtros"
+      },
+      "sortBy": "Ordenar por {column}"
     }
   },
   "UI": {
