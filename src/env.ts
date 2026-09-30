@@ -62,6 +62,45 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z.string().min(32),
 
     /**
+     * SUPER_ADMIN_EMAILS · obligatoria
+     * Emails de los desarrolladores, separados por comas. Una cuenta es
+     * `superadmin` solo si su email está aquí Y está verificado; se recalcula
+     * en cada inicio de sesión (quitar un email retira el rol).
+     */
+    SUPER_ADMIN_EMAILS: z
+      .string()
+      .transform((value) =>
+        value
+          .split(",")
+          .map((email) => email.trim().toLowerCase())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.email()).min(1)),
+
+    /**
+     * RESEND_API_KEY · opcional
+     * Clave de Resend para enviar emails. Sin ella, los emails se muestran en
+     * la consola y en la bandeja de desarrollo (`/dev/outbox`).
+     * Formato: re_xxxxxxxx (Resend → API Keys).
+     */
+    RESEND_API_KEY: z.string().startsWith("re_").optional(),
+
+    /**
+     * EMAIL_FROM · obligatoria si hay RESEND_API_KEY
+     * Remitente de los emails, con un dominio verificado en Resend.
+     * Formato: "Nombre <no-reply@tu-dominio.com>"
+     */
+    EMAIL_FROM: z.string().min(3).optional(),
+
+    /**
+     * EMAIL_DEV_OUTBOX · opcional · solo CI
+     * Con "1", activa la bandeja de desarrollo también en un build de
+     * producción. La usa el CI para que los e2e lean los enlaces de los emails.
+     * Nunca en un despliegue real: expondría los enlaces de verificación.
+     */
+    EMAIL_DEV_OUTBOX: z.literal("1").optional(),
+
+    /**
      * VERCEL · la define Vercel automáticamente (no la pongas en `.env`)
      * Vale "1" en los builds y servidores de Vercel. Activa Speed Insights
      * y Web Analytics de Vercel (`<VercelInsights />`); fuera de Vercel no

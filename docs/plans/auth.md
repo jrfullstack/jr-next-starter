@@ -1,6 +1,6 @@
 # Plan: autenticación y panel de administración
 
-> Estado: **aprobado**. Paso 1 (Base) hecho; el resto, pendiente.
+> Estado: **aprobado**. Pasos 1 (Base) y 2 (Emails y superadmin) hechos; el resto, pendiente.
 
 ## 1. Objetivo
 

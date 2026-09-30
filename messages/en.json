@@ -84,7 +84,9 @@
       "description": "Enter your email and password to continue.",
       "submit": "Sign in",
       "noAccount": "Don't have an account?",
-      "signUpLink": "Sign up"
+      "signUpLink": "Sign up",
+      "forgotPassword": "Forgot your password?",
+      "resetDone": "Password changed. You can now sign in with the new one."
     },
     "signUp": {
       "metaTitle": "Create account",
@@ -108,8 +110,41 @@
       "passwordTooLong": "The password is too long.",
       "banned": "Your account is blocked. Contact the administrator.",
       "tooManyRequests": "Too many attempts. Wait a moment and try again.",
-      "generic": "The operation could not be completed. Please try again."
-    }
+      "generic": "The operation could not be completed. Please try again.",
+      "emailNotVerified": "Your email isn't verified yet. We've sent you a new link."
+    },
+    "verifyEmail": {
+      "metaTitle": "Verify email",
+      "checkTitle": "Check your email",
+      "checkDescription": "We sent a verification link to {email}. Open it to activate your account.",
+      "checkNoEmail": "We sent you a verification link. Open it to activate your account.",
+      "resend": "Resend email",
+      "resent": "We sent you another link.",
+      "verifiedTitle": "Email verified",
+      "verifiedDescription": "Your account is now active.",
+      "continue": "Go to dashboard",
+      "invalidTitle": "Invalid link",
+      "invalidDescription": "The link is invalid or has expired. Sign in and we'll send you a new one.",
+      "signInLink": "Sign in"
+    },
+    "forgotPassword": {
+      "metaTitle": "Recover password",
+      "title": "Recover your password",
+      "description": "We'll send you a link to choose a new password.",
+      "submit": "Send link",
+      "sent": "If an account exists for that email, we've sent you a link to change the password.",
+      "backToSignIn": "Back to sign in"
+    },
+    "resetPassword": {
+      "metaTitle": "New password",
+      "title": "Choose a new password",
+      "description": "Changing it signs you out on your other devices.",
+      "submit": "Change password",
+      "invalidTitle": "Invalid link",
+      "invalidDescription": "The link is invalid or has expired.",
+      "requestNew": "Request a new link"
+    },
+    "showPassword": "Show password"
   },
   "UserMenu": {
     "signIn": "Sign in",
@@ -122,5 +157,30 @@
     "title": "Hi, {name}",
     "description": "You are signed in as {email}.",
     "role": "Role: {role}"
+  },
+  "Emails": {
+    "footer": "You received this email because your address was used on {name}.",
+    "verifyEmail": {
+      "subject": "Confirm your email",
+      "heading": "Confirm your email",
+      "body": "Hi {name}. Click the button to verify your email address and activate your account.",
+      "cta": "Verify email",
+      "footnote": "The link expires in 1 hour. If you didn't create an account, ignore this message."
+    },
+    "resetPassword": {
+      "subject": "Reset your password",
+      "heading": "Reset your password",
+      "body": "Hi {name}. We received a request to change your password. Click the button to choose a new one.",
+      "cta": "Change password",
+      "footnote": "The link expires in 1 hour. If you didn't request it, ignore this message: your password won't change."
+    }
+  },
+  "DevOutbox": {
+    "metaTitle": "Dev outbox",
+    "title": "Dev outbox",
+    "description": "Emails the app would have sent. Only available in development (or in CI with EMAIL_DEV_OUTBOX=1).",
+    "empty": "No emails yet.",
+    "to": "To: {to} · {sentAt}",
+    "links": "Links"
   }
 }

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { FieldDescription } from "@/components/ui/field";
 
-/** Layout shared by the auth forms: title, description, form and a footer link */
+/** Layout shared by the auth pages: title, description, content and an optional footer link */
 export function AuthCard({
   title,
   description,
@@ -17,8 +17,8 @@ export function AuthCard({
 }: {
   title: string;
   description: string;
-  footer: ReactNode;
-  children: ReactNode;
+  footer?: ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <Card>
@@ -30,7 +30,9 @@ export function AuthCard({
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         {children}
-        <FieldDescription className="text-center">{footer}</FieldDescription>
+        {footer && (
+          <FieldDescription className="text-center">{footer}</FieldDescription>
+        )}
       </CardContent>
     </Card>
   );

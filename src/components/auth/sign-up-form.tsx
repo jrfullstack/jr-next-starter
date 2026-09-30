@@ -1,26 +1,39 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldGroup } from "@/components/ui/field";
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
-import { authRoutes } from "@/lib/auth/routes";
-import { PASSWORD_MIN_LENGTH, signUpSchema } from "@/lib/auth/schemas";
+import { authRoutes, withLocale } from "@/lib/auth/routes";
+import { signUpSchema } from "@/lib/auth/schemas";
 import { AuthCard } from "./auth-card";
-import { AuthFormField, EmailField } from "./auth-form-field";
+import {
+  AuthFormField,
+  EmailField,
+  NewPasswordFields,
+} from "./auth-form-field";
 import { useAuthForm } from "./use-auth-form";
 
 // Based on the shadcn/ui "signup-01" block
 export function SignUpForm() {
   const t = useTranslations("Auth");
-  const { onSubmit, invalid, error, pending } = useAuthForm({
+  const locale = useLocale();
+  const { onSubmit, invalid, error, submitDisabled } = useAuthForm({
     schema: signUpSchema,
-    redirectTo: authRoutes.afterSignIn,
+    // No session until the email is verified: show "check your email"
+    redirectTo: ({ email }) => ({
+      pathname: authRoutes.verifyEmail,
+      query: { email },
+    }),
     submit: ({ name, email, password }) =>
-      authClient.signUp.email({ name, email, password }),
+      authClient.signUp.email({
+        name,
+        email,
+        password,
+        callbackURL: withLocale(locale, authRoutes.verifyEmail),
+      }),
   });
-  const min = PASSWORD_MIN_LENGTH;
 
   return (
     <AuthCard
@@ -33,7 +46,7 @@ export function SignUpForm() {
         </>
       }
     >
-      <form onSubmit={onSubmit} noValidate>
+      <form method="post" onSubmit={onSubmit} noValidate>
         <FieldGroup>
           <AuthFormField
             name="name"
@@ -43,23 +56,9 @@ export function SignUpForm() {
             error={invalid.name && t("validation.name")}
           />
           <EmailField invalid={invalid.email} />
-          <AuthFormField
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            label={t("fields.password")}
-            hint={t("signUp.passwordHint", { min })}
-            error={invalid.password && t("validation.password", { min })}
-          />
-          <AuthFormField
-            name="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            label={t("fields.confirmPassword")}
-            error={invalid.confirmPassword && t("validation.confirmPassword")}
-          />
+          <NewPasswordFields invalid={invalid} />
           {error && <FieldError>{t(`errors.${error}`)}</FieldError>}
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={submitDisabled}>
             {t("signUp.submit")}
           </Button>
         </FieldGroup>

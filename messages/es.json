@@ -84,7 +84,9 @@
       "description": "Introduce tu email y tu contraseña para continuar.",
       "submit": "Iniciar sesión",
       "noAccount": "¿No tienes cuenta?",
-      "signUpLink": "Regístrate"
+      "signUpLink": "Regístrate",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "resetDone": "Contraseña cambiada. Ya puedes iniciar sesión con la nueva."
     },
     "signUp": {
       "metaTitle": "Crear cuenta",
@@ -108,8 +110,41 @@
       "passwordTooLong": "La contraseña es demasiado larga.",
       "banned": "Tu cuenta está bloqueada. Contacta con el administrador.",
       "tooManyRequests": "Demasiados intentos. Espera un momento y vuelve a probar.",
-      "generic": "No se pudo completar la operación. Inténtalo de nuevo."
-    }
+      "generic": "No se pudo completar la operación. Inténtalo de nuevo.",
+      "emailNotVerified": "Tu email aún no está verificado. Te hemos enviado un nuevo enlace."
+    },
+    "verifyEmail": {
+      "metaTitle": "Verificar email",
+      "checkTitle": "Revisa tu email",
+      "checkDescription": "Te hemos enviado un enlace de verificación a {email}. Ábrelo para activar tu cuenta.",
+      "checkNoEmail": "Te hemos enviado un enlace de verificación. Ábrelo para activar tu cuenta.",
+      "resend": "Reenviar email",
+      "resent": "Te hemos enviado otro enlace.",
+      "verifiedTitle": "Email verificado",
+      "verifiedDescription": "Tu cuenta ya está activa.",
+      "continue": "Ir al panel",
+      "invalidTitle": "Enlace no válido",
+      "invalidDescription": "El enlace no es válido o ha caducado. Inicia sesión y te enviaremos uno nuevo.",
+      "signInLink": "Iniciar sesión"
+    },
+    "forgotPassword": {
+      "metaTitle": "Recuperar contraseña",
+      "title": "Recupera tu contraseña",
+      "description": "Te enviaremos un enlace para elegir una nueva contraseña.",
+      "submit": "Enviar enlace",
+      "sent": "Si existe una cuenta con ese email, te hemos enviado un enlace para cambiar la contraseña.",
+      "backToSignIn": "Volver a iniciar sesión"
+    },
+    "resetPassword": {
+      "metaTitle": "Nueva contraseña",
+      "title": "Elige una nueva contraseña",
+      "description": "Al cambiarla se cerrará la sesión en tus otros dispositivos.",
+      "submit": "Cambiar contraseña",
+      "invalidTitle": "Enlace no válido",
+      "invalidDescription": "El enlace no es válido o ha caducado.",
+      "requestNew": "Pedir otro enlace"
+    },
+    "showPassword": "Mostrar contraseña"
   },
   "UserMenu": {
     "signIn": "Iniciar sesión",
@@ -122,5 +157,30 @@
     "title": "Hola, {name}",
     "description": "Has iniciado sesión como {email}.",
     "role": "Rol: {role}"
+  },
+  "Emails": {
+    "footer": "Has recibido este email porque se usó tu dirección en {name}.",
+    "verifyEmail": {
+      "subject": "Confirma tu email",
+      "heading": "Confirma tu email",
+      "body": "Hola, {name}. Pulsa el botón para verificar tu dirección de email y activar tu cuenta.",
+      "cta": "Verificar email",
+      "footnote": "El enlace caduca en 1 hora. Si no has creado una cuenta, ignora este mensaje."
+    },
+    "resetPassword": {
+      "subject": "Restablece tu contraseña",
+      "heading": "Restablece tu contraseña",
+      "body": "Hola, {name}. Hemos recibido una solicitud para cambiar tu contraseña. Pulsa el botón para elegir una nueva.",
+      "cta": "Cambiar contraseña",
+      "footnote": "El enlace caduca en 1 hora. Si no lo has pedido tú, ignora este mensaje: tu contraseña no cambiará."
+    }
+  },
+  "DevOutbox": {
+    "metaTitle": "Bandeja de desarrollo",
+    "title": "Bandeja de desarrollo",
+    "description": "Emails que la app habría enviado. Solo existe en desarrollo (o en CI con EMAIL_DEV_OUTBOX=1).",
+    "empty": "Aún no hay emails.",
+    "to": "Para: {to} · {sentAt}",
+    "links": "Enlaces"
   }
 }

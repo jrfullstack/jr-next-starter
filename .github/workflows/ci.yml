@@ -18,6 +18,7 @@ env:
   DATABASE_URL: postgresql://user:password@localhost:5432/ci
   NEXT_PUBLIC_APP_URL: http://localhost:3000
   BETTER_AUTH_SECRET: ci-only-secret-with-at-least-32-characters
+  SUPER_ADMIN_EMAILS: dev@example.com
   # Opt out of Next.js and Prisma CLI telemetry
   NEXT_TELEMETRY_DISABLED: 1
   CHECKPOINT_DISABLE: 1
@@ -68,6 +69,8 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://postgres@localhost:5432/e2e
+      # e2e runs against the production build and reads email links from the dev outbox
+      EMAIL_DEV_OUTBOX: 1
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: ./.github/actions/setup

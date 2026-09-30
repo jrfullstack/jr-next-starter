@@ -10,8 +10,6 @@
     "src/lib/utils.ts"
   ],
   "ignoreDependencies": [
-    // Imported by the generated client in src/generated/prisma (gitignored)
-    "@prisma/client",
     // Peer dependency of @prisma/adapter-pg, and its types
     "pg",
     "@types/pg",

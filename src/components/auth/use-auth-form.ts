@@ -1,16 +1,33 @@
 "use client";
 
-import { type FormEvent, useState, useTransition } from "react";
+import {
+  type FormEvent,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+} from "react";
 import type { z } from "zod";
 import { useRouter } from "@/i18n/navigation";
 import { type AuthErrorKey, authErrorKey } from "@/lib/auth/errors";
 import { type AuthField, invalidFields } from "@/lib/auth/schemas";
 
-type AuthResult = { error: { code?: string } | null };
+type AuthResult = { error: { code?: string; status?: number } | null };
+
+const noop = () => () => {};
+
+/** False during SSR and until React hydrates the form */
+function useHydrated() {
+  return useSyncExternalStore(
+    noop,
+    () => true,
+    () => false,
+  );
+}
+type Href = Parameters<ReturnType<typeof useRouter>["push"]>[0];
 
 /**
  * Shared submit flow of the auth forms: validate with Zod, call Better Auth,
- * translate its error or navigate on success.
+ * translate its error, then navigate to `redirectTo` or flag `succeeded`.
  */
 export function useAuthForm<Schema extends z.ZodType>({
   schema,
@@ -19,12 +36,26 @@ export function useAuthForm<Schema extends z.ZodType>({
 }: {
   schema: Schema;
   submit: (data: z.output<Schema>) => Promise<AuthResult>;
-  redirectTo: string;
+  /** Where to go on success; without it the form stays and `succeeded` becomes true */
+  redirectTo?: Href | ((data: z.output<Schema>) => Href);
 }) {
   const router = useRouter();
   const [invalid, setInvalid] = useState<Partial<Record<AuthField, true>>>({});
   const [error, setError] = useState<AuthErrorKey | null>(null);
+  const [succeeded, setSucceeded] = useState(false);
   const [pending, startTransition] = useTransition();
+  const hydrated = useHydrated();
+
+  const onSuccess = (data: z.output<Schema>) => {
+    if (!redirectTo) {
+      setSucceeded(true);
+      return;
+    }
+    router.push(
+      typeof redirectTo === "function" ? redirectTo(data) : redirectTo,
+    );
+    router.refresh();
+  };
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,13 +70,20 @@ export function useAuthForm<Schema extends z.ZodType>({
     startTransition(async () => {
       const result = await submit(parsed.data);
       if (result.error) {
-        setError(authErrorKey(result.error.code));
+        setError(authErrorKey(result.error.code, result.error.status));
         return;
       }
-      router.push(redirectTo);
-      router.refresh();
+      onSuccess(parsed.data);
     });
   };
 
-  return { onSubmit, invalid, error, pending };
+  // Submitting before hydration would do a native form submit (reload, lost state):
+  // keep the button disabled until React handles it
+  return {
+    onSubmit,
+    invalid,
+    error,
+    succeeded,
+    submitDisabled: pending || !hydrated,
+  };
 }

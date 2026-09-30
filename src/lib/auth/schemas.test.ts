@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { invalidFields, signUpSchema } from "./schemas";
+import { invalidFields, resetPasswordSchema, signUpSchema } from "./schemas";
 
 const valid = {
   name: "Ada",
@@ -29,5 +29,21 @@ describe("signUpSchema", () => {
       password: true,
       confirmPassword: true,
     });
+  });
+});
+
+describe("resetPasswordSchema", () => {
+  it("requires a long enough password confirmed twice", () => {
+    const ok = resetPasswordSchema.safeParse({
+      password: "12345678",
+      confirmPassword: "12345678",
+    });
+    const mismatch = resetPasswordSchema.safeParse({
+      password: "12345678",
+      confirmPassword: "87654321",
+    });
+
+    expect(ok.success).toBe(true);
+    expect(mismatch.success).toBe(false);
   });
 });
