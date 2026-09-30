@@ -38,6 +38,32 @@ const statusVariant: Record<
 
 const knownRoles = new Set(["user", "admin", "superadmin"]);
 
+/** Column labels and sort links, shared with the loading skeletons */
+export function UsersTableHeader({ query }: { query?: UsersQuery }) {
+  const t = useTranslations("Admin.users");
+
+  return (
+    <TableHeader>
+      <TableRow>
+        <SortableHeader field="name" label={t("columns.name")} query={query} />
+        <SortableHeader
+          field="email"
+          label={t("columns.email")}
+          query={query}
+        />
+        <TableHead>{t("columns.role")}</TableHead>
+        <TableHead>{t("columns.status")}</TableHead>
+        <SortableHeader
+          field="createdAt"
+          label={t("columns.createdAt")}
+          query={query}
+        />
+        <TableHead className="sr-only">{t("columns.actions")}</TableHead>
+      </TableRow>
+    </TableHeader>
+  );
+}
+
 export function UsersTable({
   users,
   actor,
@@ -56,28 +82,7 @@ export function UsersTable({
 
   return (
     <Table>
-      <TableHeader>
-        <TableRow>
-          <SortableHeader
-            field="name"
-            label={t("columns.name")}
-            query={query}
-          />
-          <SortableHeader
-            field="email"
-            label={t("columns.email")}
-            query={query}
-          />
-          <TableHead>{t("columns.role")}</TableHead>
-          <TableHead>{t("columns.status")}</TableHead>
-          <SortableHeader
-            field="createdAt"
-            label={t("columns.createdAt")}
-            query={query}
-          />
-          <TableHead className="sr-only">{t("columns.actions")}</TableHead>
-        </TableRow>
-      </TableHeader>
+      <UsersTableHeader query={query} />
       <TableBody>
         {users.map((user) => {
           const permissions = rowPermissions(actor, user);

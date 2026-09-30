@@ -59,7 +59,20 @@ Cada dato vive en **un solo lugar**. Antes de escribir un valor, búscalo aquí;
 - **Los parámetros de la URL se validan** con una función `parse…Query` con valores por defecto: página mínima 1, tamaño de página fijo o con un máximo, y **los campos de orden y filtro en una lista blanca** (nunca se pasa un nombre de columna de la URL directamente a la consulta).
 - **URL canónica:** si llegan parámetros vacíos (un formulario GET los envía), por defecto o no permitidos, la página redirige a la URL limpia equivalente (`hasCanonicalParams` en `src/lib/search-params.ts`).
 - **Orden estable:** además de la columna elegida, se ordena por `id`, para que ningún registro cambie de página entre peticiones.
-- Ejemplo de referencia: `src/lib/admin/users.ts` (`parseUsersQuery`, `usersWhere`, `usersHref`), `src/lib/admin/users-query.ts` y `src/app/[locale]/admin/users/page.tsx`.
+- Ejemplo de referencia: `src/lib/admin/users.ts` (`parseUsersQuery`, `usersWhere`, `usersHref`), `src/lib/admin/users-query.ts` y `src/components/admin/users-list.tsx`.
+
+### Carga: Cache Components, `loading.tsx` y Suspense
+
+`cacheComponents` está activo: en el build se prerenderiza el **shell estático** de cada página y lo que depende de la petición (sesión, `searchParams`, base de datos, `new Date()`) llega en streaming dentro de un `<Suspense>`. Next.js falla en el build si algo dinámico queda fuera de un límite.
+
+- 🔒 **Cada `page.tsx` tiene su `loading.tsx`** (lo comprueba `src/app/loading-convention.test.ts`). Excepciones, justificadas en ese test: páginas que nunca esperan nada (totalmente estáticas o que solo llaman a `notFound()`).
+- **El skeleton es idéntico al diseño:** mismos componentes de shadcn (`Card`, `Table`, `Sidebar`…), mismos tamaños y espaciados; los textos estáticos (títulos, cabeceras de tabla) se renderizan de verdad y solo los datos llevan `Skeleton`. Si cambias el diseño de una página o componente, **actualiza su skeleton en el mismo cambio**.
+- **Suspense granular:** lo estático fuera del límite (se ve al instante) y cada bloque con datos en su propio `<Suspense>` con su skeleton como `fallback`. Ejemplo: el título de usuarios es estático; la lista (sesión + URL) y la tabla (base de datos) tienen límites separados.
+- **Listas: el `<Suspense>` de resultados lleva `key` con la consulta** (`key={JSON.stringify(query)}`), para que cada búsqueda, filtro, orden o página muestre el skeleton en lugar de las filas anteriores.
+- **Un skeleton no enlaza a sitios equivocados:** si aún no conoce el estado (p. ej. la consulta de la URL), sus controles se muestran inertes.
+- **Sesión fuera de los layouts:** no hagas `await` de la sesión en el nivel superior de un layout; muévelo a un componente dentro de un `<Suspense>` (ver `src/app/[locale]/admin/layout.tsx`). Un `notFound()`/`redirect()` dentro de un límite responde con estado 200 y la página de 404 (Next.js añade `noindex`).
+- **Datos que cambian con el tiempo** en contenido estático: función con `"use cache"` + `cacheLife(...)` (ver el año en `src/components/site-footer.tsx`).
+- Los skeletons viven junto a su componente (`users-skeletons.tsx`, `auth-skeletons.tsx`…) y reutilizan sus piezas (`UsersTableHeader`, `AdminSidebarFrame`, `AuthCard`).
 
 ### Qué testear (y qué no)
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -16,11 +17,9 @@ import { adminSections } from "@/lib/admin/sections";
 
 type SectionId = (typeof adminSections)[number]["id"];
 
-/** Admin menu; receives only the sections the user's role can see (filtered on the server) */
-export function AdminSidebar({ sectionIds }: { sectionIds: SectionId[] }) {
+/** Sidebar chrome with the real panel title; the menu items vary (real links or skeletons) */
+export function AdminSidebarFrame({ children }: { children: ReactNode }) {
   const t = useTranslations("Admin");
-  const pathname = usePathname();
-  const sections = adminSections.filter(({ id }) => sectionIds.includes(id));
 
   return (
     <Sidebar
@@ -32,22 +31,33 @@ export function AdminSidebar({ sectionIds }: { sectionIds: SectionId[] }) {
         <SidebarGroup>
           <SidebarGroupLabel>{t("panelTitle")}</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {sections.map(({ id, href, icon: Icon }) => (
-                <SidebarMenuItem key={id}>
-                  <SidebarMenuButton
-                    isActive={pathname.startsWith(href)}
-                    render={<Link href={href} />}
-                  >
-                    <Icon />
-                    <span>{t(`sections.${id}`)}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <SidebarMenu>{children}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
+  );
+}
+
+/** Admin menu; receives only the sections the user's role can see (filtered on the server) */
+export function AdminSidebar({ sectionIds }: { sectionIds: SectionId[] }) {
+  const t = useTranslations("Admin");
+  const pathname = usePathname();
+  const sections = adminSections.filter(({ id }) => sectionIds.includes(id));
+
+  return (
+    <AdminSidebarFrame>
+      {sections.map(({ id, href, icon: Icon }) => (
+        <SidebarMenuItem key={id}>
+          <SidebarMenuButton
+            isActive={pathname.startsWith(href)}
+            render={<Link href={href} />}
+          >
+            <Icon />
+            <span>{t(`sections.${id}`)}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </AdminSidebarFrame>
   );
 }

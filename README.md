@@ -23,7 +23,8 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 
 ## 🎉 Características
 
-- 🚀 Next.js 16 (App Router, Turbopack, React Compiler)
+- 🚀 Next.js 16 (App Router, Turbopack, React Compiler, Cache Components)
+- 💀 `loading.tsx` con skeletons idénticos al diseño en cada página y Suspense granular
 - ⚛️ React 19
 - 📘 TypeScript 7
 - 🎨 Tailwind CSS 4
@@ -173,6 +174,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
   - [x] **1. Base:** email + contraseña, login, registro, logout, roles y permisos, `/dashboard` protegido, primera migración
   - [x] **2. Emails y superadmin:** verificación de email obligatoria, recuperar contraseña, Resend + React Email con bandeja de desarrollo, rol `superadmin` calculado desde `SUPER_ADMIN_EMAILS`
   - [x] **3. Panel `/admin` y usuarios:** menú lateral según permisos; usuarios con búsqueda, filtros por rol y estado, orden por columna y paginación (todo en el servidor), crear, bloquear/desbloquear, cerrar sesiones y (solo superadmin) cambiar rol; las cuentas superadmin no se pueden gestionar
+  - [x] **Carga moderna:** Cache Components activado (shell estático + streaming), `loading.tsx` con skeletons idénticos al diseño en cada página (verificado por un test) y Suspense granular en el panel
   - [ ] 4. Sistema (configuración de métodos)
   - [ ] 5. Magic link
   - [ ] 6. Google
@@ -471,6 +473,7 @@ Todas las URLs absolutas (canonical, `hreflang`, sitemap, Open Graph) se constru
 
 1. Exporta `generateMetadata` con su título y `alternates: pageAlternates("/ruta", locale)`, para que tenga su URL canónica y sus `hreflang`.
 2. Añade la ruta a `routes` en `src/app/sitemap.ts`.
+3. Crea su `loading.tsx` con un skeleton idéntico al diseño y envuelve en `<Suspense>` lo que dependa de la petición (ver "Carga" en [`AGENTS.md`](AGENTS.md)).
 
 ```tsx
 export async function generateMetadata(): Promise<Metadata> {
@@ -623,7 +626,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 ├── public                          # Archivos estáticos
 ├── src
 │   ├── app
-│   │   ├── [locale]                # Layout raíz, páginas, 404 e imagen Open Graph, por idioma
+│   │   ├── [locale]                # Layout raíz, páginas (cada una con su loading.tsx), 404 e imagen Open Graph
 │   │   │   ├── (auth)              # Login, registro, verificar email, recuperar contraseña (noindex)
 │   │   │   ├── dev/outbox          # Bandeja de emails de desarrollo
 │   │   │   ├── admin               # Panel de administración (secciones según permisos)
@@ -631,11 +634,12 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   │   └── [...rest]           # Envía las rutas desconocidas al 404 traducido
 │   │   ├── api/auth/[...all]       # Endpoints de Better Auth
 │   │   ├── globals.css             # Estilos globales y tema de Tailwind
+│   │   ├── loading-convention.test.ts # Exige un loading.tsx junto a cada page.tsx
 │   │   ├── robots.ts               # robots.txt
 │   │   └── sitemap.ts              # sitemap.xml
 │   ├── components
-│   │   ├── admin                   # Menú y componentes del panel de administración
-│   │   ├── auth                    # Formularios de login y registro
+│   │   ├── admin                   # Menú, lista de usuarios y sus skeletons
+│   │   ├── auth                    # Formularios de autenticación y sus skeletons
 │   │   ├── ui                      # Componentes de shadcn/ui
 │   │   ├── analytics.tsx           # Google Analytics (solo si hay ID)
 │   │   ├── locale-switcher.tsx     # Selector de idioma

@@ -99,10 +99,12 @@ test("regular users get a 404 on the admin panel", async ({
   const user = await createTestUser(request);
   await signInAs(page, user.email, user.password);
 
-  const response = await page.goto("/es/admin/users");
+  // The role is checked inside a Suspense boundary, so the 404 page streams
+  // with status 200 (Next.js adds noindex); what matters is that nothing leaks
+  await page.goto("/es/admin/users");
 
-  expect(response?.status()).toBe(404);
   await expect(
     page.getByRole("heading", { name: "Página no encontrada" }),
   ).toBeVisible();
+  await expect(page.getByRole("table")).toHaveCount(0);
 });
