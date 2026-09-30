@@ -150,7 +150,8 @@
     "signIn": "Iniciar sesión",
     "account": "Cuenta",
     "dashboard": "Panel",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "admin": "Administración"
   },
   "Dashboard": {
     "metaTitle": "Panel",
@@ -182,5 +183,78 @@
     "empty": "Aún no hay emails.",
     "to": "Para: {to} · {sentAt}",
     "links": "Enlaces"
+  },
+  "Admin": {
+    "metaTitle": "Administración",
+    "panelTitle": "Administración",
+    "sections": {
+      "users": "Usuarios"
+    },
+    "users": {
+      "metaTitle": "Usuarios",
+      "title": "Usuarios",
+      "description": "Gestiona las cuentas de la web.",
+      "searchLabel": "Buscar por email",
+      "search": "Buscar",
+      "columns": {
+        "name": "Nombre",
+        "email": "Email",
+        "role": "Rol",
+        "status": "Estado",
+        "createdAt": "Alta",
+        "actions": "Acciones"
+      },
+      "roles": {
+        "user": "Usuario",
+        "admin": "Administrador",
+        "superadmin": "Superadmin"
+      },
+      "status": {
+        "active": "Activo",
+        "banned": "Bloqueado",
+        "unverified": "Sin verificar"
+      },
+      "empty": "No hay usuarios que coincidan.",
+      "pagination": {
+        "summary": "{from}–{to} de {total}",
+        "previous": "Anterior",
+        "next": "Siguiente"
+      },
+      "protected": "Cuenta protegida",
+      "you": "Tú",
+      "actions": {
+        "menu": "Acciones de {name}",
+        "ban": "Bloquear",
+        "unban": "Desbloquear",
+        "revokeSessions": "Cerrar sesiones",
+        "makeAdmin": "Hacer administrador",
+        "makeUser": "Quitar administrador"
+      },
+      "confirm": {
+        "banTitle": "¿Bloquear a {name}?",
+        "banDescription": "No podrá iniciar sesión y se cerrarán todas sus sesiones.",
+        "revokeTitle": "¿Cerrar las sesiones de {name}?",
+        "revokeDescription": "Tendrá que volver a iniciar sesión en todos sus dispositivos.",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar"
+      },
+      "create": {
+        "open": "Crear usuario",
+        "title": "Crear usuario",
+        "description": "La persona tendrá que verificar su email la primera vez que inicie sesión.",
+        "submit": "Crear usuario",
+        "created": "Usuario creado."
+      },
+      "errors": {
+        "generic": "No se pudo completar la acción. Inténtalo de nuevo.",
+        "forbidden": "No tienes permiso para esta acción."
+      }
+    }
+  },
+  "UI": {
+    "close": "Cerrar",
+    "sidebar": "Menú lateral",
+    "toggleSidebar": "Mostrar u ocultar el menú lateral",
+    "sidebarDescription": "Muestra el menú lateral en el móvil."
   }
 }

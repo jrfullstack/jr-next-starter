@@ -172,7 +172,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 - [ ] Autenticación y panel de administración (Better Auth), en 8 pasos según [`docs/plans/auth.md`](docs/plans/auth.md):
   - [x] **1. Base:** email + contraseña, login, registro, logout, roles y permisos, `/dashboard` protegido, primera migración
   - [x] **2. Emails y superadmin:** verificación de email obligatoria, recuperar contraseña, Resend + React Email con bandeja de desarrollo, rol `superadmin` calculado desde `SUPER_ADMIN_EMAILS`
-  - [ ] 3. Panel `/admin` y usuarios
+  - [x] **3. Panel `/admin` y usuarios:** menú lateral según permisos; usuarios con búsqueda, paginación, crear, bloquear/desbloquear, cerrar sesiones y (solo superadmin) cambiar rol; las cuentas superadmin no se pueden gestionar
   - [ ] 4. Sistema (configuración de métodos)
   - [ ] 5. Magic link
   - [ ] 6. Google
@@ -197,6 +197,7 @@ Versiones instaladas a fecha de la última actualización del README.
 | `shadcn` | 4.21.0 | CLI para añadir componentes y estilos base de Tailwind (`shadcn/tailwind.css`) |
 | `class-variance-authority` | 0.7.1 | Define variantes de componentes (tamaño, color…) con clases de Tailwind |
 | `cn` | 0.4.0 | Combina clases de Tailwind resolviendo conflictos (reemplaza clsx + tailwind-merge) |
+| `sonner` | 2.0.8 | Notificaciones tipo toast (errores y confirmaciones del panel) |
 | `lucide-react` | 1.48.0 | Iconos SVG como componentes de React |
 | `@next/third-parties` | 16.3.6 | Integraciones oficiales de Next.js con servicios externos (Google Analytics) cargadas sin bloquear el renderizado |
 | `@vercel/speed-insights` | 2.0.0 | Mide Core Web Vitals de usuarios reales en Vercel (solo se carga en Vercel) |
@@ -625,6 +626,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── [locale]                # Layout raíz, páginas, 404 e imagen Open Graph, por idioma
 │   │   │   ├── (auth)              # Login, registro, verificar email, recuperar contraseña (noindex)
 │   │   │   ├── dev/outbox          # Bandeja de emails de desarrollo
+│   │   │   ├── admin               # Panel de administración (secciones según permisos)
 │   │   │   ├── dashboard           # Página protegida de ejemplo
 │   │   │   └── [...rest]           # Envía las rutas desconocidas al 404 traducido
 │   │   ├── api/auth/[...all]       # Endpoints de Better Auth
@@ -632,6 +634,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── robots.ts               # robots.txt
 │   │   └── sitemap.ts              # sitemap.xml
 │   ├── components
+│   │   ├── admin                   # Menú y componentes del panel de administración
 │   │   ├── auth                    # Formularios de login y registro
 │   │   ├── ui                      # Componentes de shadcn/ui
 │   │   ├── analytics.tsx           # Google Analytics (solo si hay ID)
@@ -643,6 +646,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── vercel-insights.tsx     # Speed Insights y Web Analytics (solo en Vercel)
 │   │   └── theme-provider.tsx      # Provider de next-themes
 │   ├── emails                      # Plantillas de email (React Email)
+│   ├── hooks                       # Hooks compartidos (useHydrated, useIsMobile)
 │   ├── config
 │   │   └── site.ts                 # Datos del sitio: nombre, autor, enlaces
 │   ├── generated/prisma            # Cliente de Prisma generado (ignorado por git)
@@ -652,6 +656,7 @@ No hay que tocar la versión a mano. Para forzar una versión concreta, añade `
 │   │   ├── request.ts              # Carga los mensajes del idioma actual
 │   │   └── routing.ts              # Idiomas soportados e idioma por defecto
 │   ├── lib
+│   │   ├── admin                   # Secciones del panel y lógica de la tabla de usuarios
 │   │   ├── auth                    # Better Auth: servidor, cliente, permisos, rutas, sesión, emails, superadmin
 │   │   ├── email                   # Envío (Resend) y bandeja de desarrollo
 │   │   ├── db.ts                   # Cliente de Prisma singleton

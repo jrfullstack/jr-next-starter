@@ -30,6 +30,11 @@ export default defineConfig({
         "better-tailwindcss/enforce-shorthand-classes": "error",
         "better-tailwindcss/enforce-consistent-important-position": "error",
         "better-tailwindcss/enforce-consistent-variable-syntax": "error",
+        // "toaster" is Sonner's styling hook, not a Tailwind class
+        "better-tailwindcss/no-unknown-classes": [
+          "error",
+          { ignore: ["^toaster$"] },
+        ],
         // Formatting (line breaks) belongs to Biome
         "better-tailwindcss/enforce-consistent-line-wrapping": "off",
       },

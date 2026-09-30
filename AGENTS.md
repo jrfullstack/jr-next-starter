@@ -23,6 +23,8 @@ Cada dato vive en **un solo lugar**. Antes de escribir un valor, búscalo aquí;
 | Variables de entorno | `src/env.ts` (ficha completa en `.env.example`) | `import { env } from "@/env"` 🔒 `noProcessEnv` |
 | Idiomas soportados | `src/i18n/routing.ts` | `routing.locales` |
 | Validar un locale / params estáticos | `src/i18n/locale.ts` | `parseLocale`, `localeStaticParams` |
+| Roles y permisos | `src/lib/auth/permissions.ts` | `can(role, { user: ["ban"] })` (cliente y servidor); `requirePermission` en páginas |
+| Secciones del panel `/admin` | `src/lib/admin/sections.ts` | Añade aquí cada sección nueva con su permiso: menú y protección salen de ahí |
 | Enlaces y navegación | `src/i18n/navigation.ts` | `Link`, `useRouter`, `redirect`… 🔒 `noRestrictedImports` |
 | URLs absolutas, canonical, hreflang | `src/lib/seo.ts` | `absoluteUrl`, `pageAlternates` |
 | Rutas indexables | `src/app/sitemap.ts` (`routes`) | Añade cada página pública nueva |
@@ -44,6 +46,7 @@ Cada dato vive en **un solo lugar**. Antes de escribir un valor, búscalo aquí;
 - 🔒 **TypeScript estricto**: `strict`, `noUncheckedIndexedAccess`, `noImplicitReturns`, `noImplicitOverride`.
 - Nombres que expliquen la intención; evita abreviaturas.
 - Comentarios solo para el **porqué**, no para el qué.
+- **Controles interactivos de Client Components** (botones de envío, menús): desactivados hasta hidratar con `useHydrated()`; un clic antes de hidratar se pierde o hace un envío nativo.
 - Server Components por defecto; `"use client"` solo cuando haga falta (estado, efectos, eventos).
 
 ### Qué testear (y qué no)

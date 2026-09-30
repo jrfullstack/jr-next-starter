@@ -1,11 +1,24 @@
 // @vitest-environment node
 // Node environment: server-only env vars are blocked by T3-env in jsdom
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   assertAssignableRole,
+  assertNotSuperadminTarget,
   isSuperadmin,
   superadminRoleChange,
 } from "./superadmin";
+
+// The target's role, as the database would return it
+vi.mock("@/lib/db", () => ({
+  db: {
+    user: {
+      findUnique: ({ where }: { where: { id: string } }) =>
+        Promise.resolve({
+          role: where.id === "super-1" ? "superadmin" : "user",
+        }),
+    },
+  },
+}));
 
 const developerEmails = ["dev@example.com"];
 const dev = { email: "Dev@Example.com", emailVerified: true };
@@ -43,5 +56,25 @@ describe("superadmin", () => {
     expect(() => assertAssignableRole("superadmin")).toThrow();
     expect(() => assertAssignableRole(["admin", "superadmin"])).toThrow();
     expect(() => assertAssignableRole("admin")).not.toThrow();
+  });
+});
+
+describe("assertNotSuperadminTarget", () => {
+  it("rejects any admin action on a superadmin account", async () => {
+    await expect(
+      assertNotSuperadminTarget("/admin/ban-user", "super-1"),
+    ).rejects.toThrow();
+    await expect(
+      assertNotSuperadminTarget("/admin/set-role", "super-1"),
+    ).rejects.toThrow();
+  });
+
+  it("allows actions on other users and ignores unrelated endpoints", async () => {
+    await expect(
+      assertNotSuperadminTarget("/admin/ban-user", "user-1"),
+    ).resolves.toBeUndefined();
+    await expect(
+      assertNotSuperadminTarget("/sign-in/email", "super-1"),
+    ).resolves.toBeUndefined();
   });
 });
