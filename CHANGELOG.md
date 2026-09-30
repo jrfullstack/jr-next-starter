@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.3.0...v0.4.0) (2026-09-30)
+
+
+### ✨ Nuevas funcionalidades
+
+* add admin panel with user management (auth step 3) ([#10](https://github.com/jrfullstack/jr-next-starter/issues/10)) ([d478819](https://github.com/jrfullstack/jr-next-starter/commit/d478819fdbf755a58a4e5e6aaf6c2b27ac887659))
+
 ## [0.3.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.2.1...v0.3.0) (2026-09-30)
 
 
