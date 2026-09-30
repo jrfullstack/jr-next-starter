@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.7.0...v0.8.0) (2026-09-30)
+
+
+### ✨ Nuevas funcionalidades
+
+* add account security page and two-factor authentication (auth step 7) ([#20](https://github.com/jrfullstack/jr-next-starter/issues/20)) ([ab6fd6b](https://github.com/jrfullstack/jr-next-starter/commit/ab6fd6b65aefab96a4b67a55bd610efc9cae5254))
+
 ## [0.7.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.6.1...v0.7.0) (2026-09-30)
 
 
