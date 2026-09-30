@@ -252,7 +252,52 @@ Nueva tarjeta **Magic link** en Sistema; los campos nuevos entran con su valor p
 - **Unitarios**: disponibilidad según credenciales (política efectiva), salvaguardas con un método vinculado, rutas del hook para Google, mensajes de error de OAuth, validación "las dos o ninguna" de las variables.
 - **E2E**: sin credenciales en CI, el login no muestra Google y Sistema lo marca como no configurado. El flujo real con Google no se prueba contra Google (plan §11).
 
-## 16. Fuera de alcance
+## 16. Paso 7 en detalle: Cuenta → Seguridad y 2FA
+
+> Estado: **propuesto**, pendiente de aprobación.
+
+Es el paso más grande y el más sensible, así que se entrega en **dos PR encadenados**:
+
+### 7a. Cuenta → Seguridad (`/account/security`)
+
+Página del usuario (cualquier rol), necesaria antes del 2FA porque es donde se configura:
+
+| Bloque | Qué permite |
+| --- | --- |
+| Contraseña | Cambiarla (pide la actual y cierra las demás sesiones) o **crearla** si la cuenta no tiene (entró con magic link o Google) |
+| Cuentas vinculadas | Vincular o desvincular Google; nunca se puede quitar el último método con el que entrar |
+| Sesiones | Dispositivos con sesión abierta (navegador, IP, fecha); cerrar una o todas las demás |
+
+- Enlace desde el menú de la cuenta; skeleton y Suspense como el resto.
+- E2E: cambiar contraseña, crear contraseña tras entrar con magic link, cerrar otra sesión.
+
+### 7b. 2FA
+
+Política (tarjeta **2FA** en Sistema, sin migración de la política):
+
+| Opción | Por defecto |
+| --- | --- |
+| Nivel: desactivado / opcional / obligatorio | Desactivado |
+| Código por email como segundo factor | Desactivado |
+| Recordar dispositivo 30 días | Activado |
+
+- **Factores**: app de autenticación (TOTP, con QR) + 10 códigos de respaldo; código por email solo si se activa.
+- **Datos**: el plugin `twoFactor` de Better Auth añade su tabla y un campo al usuario (una migración).
+- **Opcional**: cada usuario lo activa en Cuenta → Seguridad. **Obligatorio**: quien no lo tenga, al entrar solo puede ir a configurarlo.
+- **Admins y superadmins**: con el 2FA en opcional u obligatorio, siempre deben tenerlo (plan §6).
+- **Página `/two-factor`**: pide el código (o uno de respaldo / por email) y "recordar este dispositivo".
+
+**Parte sensible: 2FA también con magic link y Google.** Better Auth solo lo exige al entrar con contraseña. Para los otros métodos, un *after hook* propio hace lo mismo que su plugin: si el usuario tiene 2FA y el dispositivo no es de confianza, anula la sesión recién creada, abre el reto de 2FA de Better Auth y redirige a `/two-factor`. Así la verificación la sigue haciendo Better Auth (límite de intentos, bloqueo de cuenta, dispositivos de confianza). Como depende de detalles internos del plugin, un **e2e completo por cada método** (contraseña, magic link) protege contra cambios al actualizar Better Auth; Google, con unitarios.
+
+#### Salvaguardas y recuperación del 2FA
+
+- Los códigos de respaldo se muestran una sola vez y se pueden regenerar (pide contraseña o código).
+- Un superadmin no puede pasar a obligatorio si él mismo no tiene 2FA configurado.
+- Un admin puede **quitar el 2FA a un usuario** que perdió su móvil (desde Usuarios, queda en el historial); nunca a un superadmin.
+
+**Tests**: unitarios de la política y del hook; e2e generando el código TOTP en el propio test (con contraseña y con magic link, código de respaldo, dispositivo de confianza, nivel obligatorio).
+
+## 17. Fuera de alcance
 
 - Suplantar usuarios (fase posterior, solo `superadmin`, con aviso visible, salida y registro).
 - Otros proveedores OAuth (GitHub, Microsoft, Apple…): la arquitectura los admite, se añadirán cuando hagan falta.
