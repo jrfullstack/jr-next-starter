@@ -49,6 +49,16 @@ Cada dato vive en **un solo lugar**. Antes de escribir un valor, búscalo aquí;
 - **Controles interactivos de Client Components** (botones de envío, menús): desactivados hasta hidratar con `useHydrated()`; un clic antes de hidratar se pierde o hace un envío nativo.
 - Server Components por defecto; `"use client"` solo cuando haga falta (estado, efectos, eventos).
 
+### Listas de datos (paginación, búsqueda, filtros, orden)
+
+**Los datos de una lista siempre se resuelven en el servidor.** Nunca se traen todos los registros para paginar, buscar, filtrar u ordenar en el navegador.
+
+- **Paginación en la base de datos:** `limit`/`offset` (o cursor), y el `total` se cuenta en el servidor.
+- **Búsqueda, filtros y orden en la consulta:** `WHERE` y `ORDER BY` en la base de datos, no `Array.filter`/`sort` en el cliente (tampoco con librerías de tablas en modo cliente).
+- **El estado vive en la URL** (`?q=…&page=…&sort=…&order=…&status=…`): se puede compartir, el botón "atrás" funciona y la página se renderiza en el servidor.
+- **Los parámetros de la URL se validan** con una función `parse…Query` con valores por defecto: página mínima 1, tamaño de página fijo o con un máximo, y **los campos de orden y filtro en una lista blanca** (nunca se pasa un nombre de columna de la URL directamente a la consulta).
+- Ejemplo de referencia: `src/lib/admin/users.ts` (`parseUsersQuery`) y `src/app/[locale]/admin/users/page.tsx`.
+
 ### Qué testear (y qué no)
 
 Un test se escribe solo si protege **lógica o configuración nuestra** que podría romperse sin que nadie lo note.
