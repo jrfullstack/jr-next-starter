@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.5.0...v0.6.0) (2026-09-30)
+
+
+### ✨ Nuevas funcionalidades
+
+* add magic link sign-in configurable from system (auth step 5) ([#14](https://github.com/jrfullstack/jr-next-starter/issues/14)) ([83234c9](https://github.com/jrfullstack/jr-next-starter/commit/83234c9383e990e007b1c1f49a52379e96ec21df))
+
 ## [0.5.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.4.0...v0.5.0) (2026-09-30)
 
 
