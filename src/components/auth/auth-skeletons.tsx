@@ -1,7 +1,24 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Field, FieldGroup, FieldSeparator } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { AuthCard } from "./auth-card";
+
+/**
+ * Placeholder for a line of text inside a paragraph: the card footer is a <p>,
+ * where shadcn's Skeleton (a <div>) would be invalid HTML and break hydration.
+ */
+function TextSkeleton({ className }: { className: string }) {
+  return (
+    <span
+      data-slot="skeleton"
+      className={cn(
+        "inline-block animate-pulse rounded-md bg-muted",
+        className,
+      )}
+    />
+  );
+}
 
 /** Label + input, same spacing as AuthFormField (Field) with an h-8 input */
 function FieldSkeleton() {
@@ -35,7 +52,7 @@ export function AuthFormSkeleton({
     <AuthCard
       title={title}
       description={description}
-      footer={withFooter && <Skeleton className="mx-auto h-4 w-48" />}
+      footer={withFooter && <TextSkeleton className="h-4 w-48 align-middle" />}
     >
       <FieldGroup aria-busy>
         {Array.from({ length: fields }, (_, index) => (
