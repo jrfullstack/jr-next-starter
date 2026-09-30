@@ -5,12 +5,20 @@ import {
   disabledMethodRedirect,
 } from "@/lib/system/policy-guard";
 import { assertKeepsSignInMethod } from "./account-guard";
+import { assertPasskeyUserVerified } from "./passkey";
 import {
   assertAssignableRole,
   assertNotSuperadminTarget,
   assertSafeAdminUserInput,
 } from "./superadmin";
 import { challengeSecondFactor, guardTwoFactor } from "./two-factor";
+
+/** What an unlink or passkey deletion removes, to keep the user a way in */
+function removalOf(path: string, body: { accountId?: unknown; id?: unknown }) {
+  if (path === "/unlink-account") return { accountId: body?.accountId };
+  if (path === "/passkey/delete-passkey") return { passkeyId: body?.id };
+  return undefined;
+}
 
 /** Runs before every Better Auth endpoint: policy, roles and account rules */
 export function beforeHook(policy: AuthPolicy) {
@@ -24,14 +32,12 @@ export function beforeHook(policy: AuthPolicy) {
       assertAssignableRole(ctx.body?.role);
     }
     assertSafeAdminUserInput(ctx.path, ctx.body);
-    if (ctx.path === "/unlink-account") {
+    assertPasskeyUserVerified(ctx.path, ctx.body);
+    const removal = removalOf(ctx.path, ctx.body);
+    if (removal) {
       const session = await getSessionFromCtx(ctx);
       if (session) {
-        await assertKeepsSignInMethod(
-          policy,
-          session.user.id,
-          ctx.body?.accountId,
-        );
+        await assertKeepsSignInMethod(policy, session.user.id, removal);
       }
     }
     await assertNotSuperadminTarget(ctx.path, ctx.body?.userId);

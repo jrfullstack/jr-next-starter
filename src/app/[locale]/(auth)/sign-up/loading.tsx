@@ -10,7 +10,10 @@ export default async function Loading() {
       title={t("signUp.title")}
       description={t("signUp.description")}
       fields={4}
-      google={authCapabilities().google ? { separator: t("or") } : undefined}
+      leading={{
+        buttons: authCapabilities().google ? 1 : 0,
+        separator: t("or"),
+      }}
     />
   );
 }

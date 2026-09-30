@@ -8,7 +8,15 @@ const signInPaths: Record<string, AccessMethod> = {
   "/sign-in/magic-link": "magicLink",
   "/magic-link/verify": "magicLink",
   "/callback/google": "google",
+  "/passkey/generate-authenticate-options": "passkey",
+  "/passkey/verify-authentication": "passkey",
 };
+
+/** Adding a passkey (Account → Security), which the policy can turn off */
+const passkeyRegisterPaths = new Set([
+  "/passkey/generate-register-options",
+  "/passkey/verify-registration",
+]);
 
 /** Method a request signs in with; social sign-in names its provider in the body */
 function signInMethod(path: string, body: unknown) {
@@ -79,6 +87,12 @@ export function assertPolicyAllows(
     throw new APIError("FORBIDDEN", {
       code: SIGN_IN_METHOD_DISABLED,
       message: "This sign-in method is disabled",
+    });
+  }
+  if (passkeyRegisterPaths.has(path) && !policy.passkey.register) {
+    throw new APIError("FORBIDDEN", {
+      code: "PASSKEY_REGISTER_OFF",
+      message: "Adding passkeys is turned off",
     });
   }
   const password = passwordOf(body);

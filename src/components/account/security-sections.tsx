@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/auth/session";
 import { canSignIn, canUnlink, twoFactorRequired } from "@/lib/system/policy";
 import { getAuthPolicy } from "@/lib/system/policy-store";
 import { LinkedAccountsCard } from "./linked-accounts-card";
+import { PasskeysCard } from "./passkeys-card";
 import { PasswordCard } from "./password-card";
 import { SessionsCard } from "./sessions-card";
 import { TwoFactorCard } from "./two-factor-card";
@@ -20,9 +21,10 @@ export async function SecuritySections({ locale }: { locale: Locale }) {
   );
   const auth = await getAuth();
   const requestHeaders = await headers();
-  const [accounts, sessions, policy] = await Promise.all([
+  const [accounts, sessions, passkeys, policy] = await Promise.all([
     auth.api.listUserAccounts({ headers: requestHeaders }),
     auth.api.listSessions({ headers: requestHeaders }),
+    auth.api.listPasskeys({ headers: requestHeaders }),
     getAuthPolicy(),
   ]);
 
@@ -58,6 +60,16 @@ export async function SecuritySections({ locale }: { locale: Locale }) {
         />
       )}
       {!setupPending && twoFactorCard}
+      {(passkeys.length > 0 || canSignIn(policy, "passkey")) && (
+        <PasskeysCard
+          passkeys={passkeys.map(({ id, name, createdAt }) => ({
+            id,
+            name,
+            createdAt,
+          }))}
+          canRegister={policy.passkey.register}
+        />
+      )}
       {(googleAccount || canSignIn(policy, "google")) && (
         <LinkedAccountsCard
           googleAccountId={googleAccount?.accountId}

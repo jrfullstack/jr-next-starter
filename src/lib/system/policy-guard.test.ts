@@ -44,6 +44,22 @@ describe("assertPolicyAllows", () => {
     ).toThrow("This sign-in method is disabled");
   });
 
+  it("refuses passkey sign-in and new passkeys when turned off", () => {
+    const passkeysOff: AuthPolicy = {
+      ...defaultAuthPolicy,
+      passkey: { access: false, register: false },
+    };
+    expect(() =>
+      assertPolicyAllows(passkeysOff, "/passkey/verify-authentication", {}),
+    ).toThrow("This sign-in method is disabled");
+    expect(() =>
+      assertPolicyAllows(passkeysOff, "/passkey/generate-register-options", {}),
+    ).toThrow("Adding passkeys is turned off");
+    expect(() =>
+      assertPolicyAllows(passkeysOff, "/passkey/delete-passkey", {}),
+    ).not.toThrow();
+  });
+
   it("lets everything else through", () => {
     expect(() =>
       assertPolicyAllows(passwordOff, "/get-session", undefined),

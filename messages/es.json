@@ -127,7 +127,10 @@
       "twoFactorSetupRequired": "Configura la verificación en dos pasos para continuar.",
       "invalidCode": "El código no es correcto.",
       "twoFactorExpired": "La verificación ha caducado. Vuelve a iniciar sesión.",
-      "tooManyAttempts": "Demasiados intentos. Espera unos minutos y vuelve a iniciar sesión."
+      "tooManyAttempts": "Demasiados intentos. Espera unos minutos y vuelve a iniciar sesión.",
+      "passkeyFailed": "No se pudo usar la passkey. Inténtalo de nuevo o entra de otra forma.",
+      "passkeyNotVerified": "La passkey no verificó tu identidad (huella, cara o PIN).",
+      "passkeyRegisterOff": "Ahora mismo no se pueden añadir passkeys."
     },
     "verifyEmail": {
       "metaTitle": "Verificar email",
@@ -196,6 +199,10 @@
       "useEmail": "Enviarme un código por email",
       "emailSent": "Te hemos enviado un código por email.",
       "signInAgain": "Volver a iniciar sesión"
+    },
+    "passkey": {
+      "signIn": "Entrar con passkey",
+      "signInDescription": "Entra con la passkey de este dispositivo."
     }
   },
   "UserMenu": {
@@ -352,6 +359,10 @@
         "twoFactor": {
           "title": "Verificación en dos pasos (2FA)",
           "description": "Un segundo factor al entrar: app de autenticación y códigos de respaldo."
+        },
+        "passkey": {
+          "title": "Passkeys",
+          "description": "Entrar con la huella, la cara o el PIN del dispositivo, sin contraseña. Cuentan como verificación en dos pasos."
         }
       },
       "fields": {
@@ -415,6 +426,16 @@
           "trustDevice": {
             "label": "Recordar dispositivo 30 días",
             "description": "Permite no pedir el segundo factor en un dispositivo durante 30 días."
+          }
+        },
+        "passkey": {
+          "access": {
+            "label": "Acceso",
+            "description": "Iniciar sesión con una passkey."
+          },
+          "register": {
+            "label": "Añadir passkeys",
+            "description": "Los usuarios pueden añadir passkeys en Cuenta → Seguridad. Las ya creadas siempre se pueden borrar."
           }
         }
       },
@@ -532,7 +553,24 @@
         "qr": "QR para tu app de autenticación",
         "setupAlertTitle": "Activa la verificación en dos pasos para continuar",
         "setupAlertRole": "Los administradores deben usarla. Hasta que la actives, el panel y el resto de páginas de la cuenta te traerán aquí.",
-        "setupAlertEveryone": "La web la exige a todas las cuentas. Hasta que la actives, el resto de páginas de la cuenta te traerán aquí."
+        "setupAlertEveryone": "La web la exige a todas las cuentas. Hasta que la actives, el resto de páginas de la cuenta te traerán aquí.",
+        "setupAlertPasskey": "Si ya tienes una passkey, entrar con ella también sirve."
+      },
+      "passkeys": {
+        "title": "Passkeys",
+        "description": "Entra con la huella, la cara o el PIN de tus dispositivos. Cuentan como verificación en dos pasos.",
+        "empty": "Todavía no tienes passkeys.",
+        "name": "Nombre de la nueva passkey",
+        "namePlaceholder": "Portátil, móvil…",
+        "add": "Añadir passkey",
+        "added": "Passkey añadida.",
+        "remove": "Eliminar",
+        "removed": "Passkey eliminada.",
+        "created": "Añadida el {date}",
+        "unnamed": "Passkey sin nombre",
+        "confirmTitle": "¿Eliminar la passkey «{name}»?",
+        "confirmDescription": "Ya no podrás entrar con ella desde ese dispositivo.",
+        "registerOff": "Añadir passkeys está desactivado en esta web."
       }
     }
   }

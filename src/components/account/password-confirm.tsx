@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { type FormEvent, useState } from "react";
+import type { FormEvent } from "react";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -19,10 +19,11 @@ export function PasswordConfirm({
   onCancel: () => void;
 }) {
   const t = useTranslations("Account.security.twoFactor");
-  const [password, setPassword] = useState("");
+  // Read from the form (uncontrolled), like the other forms
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onConfirm(password);
+    const password = String(new FormData(event.currentTarget).get("password"));
+    if (password) onConfirm(password);
   };
   return (
     <form method="post" onSubmit={submit} className="flex flex-col gap-3">
@@ -33,14 +34,13 @@ export function PasswordConfirm({
         <PasswordInput
           id="twoFactorPassword"
           autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          name="password"
           aria-invalid={error ? true : undefined}
         />
         {error && <FieldError>{error}</FieldError>}
       </Field>
       <div className="flex gap-2">
-        <Button type="submit" disabled={pending || password === ""}>
+        <Button type="submit" disabled={pending}>
           {t("continue")}
         </Button>
         <Button type="button" variant="ghost" onClick={onCancel}>

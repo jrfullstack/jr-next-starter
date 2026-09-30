@@ -6,6 +6,7 @@ import {
   defaultAuthPolicy,
   disabledAccessMethods,
   effectivePolicy,
+  meetsTwoFactor,
   parseAuthPolicy,
   policyChanges,
   policyViolations,
@@ -26,6 +27,7 @@ function withChanges(changes: PolicyChanges): AuthPolicy {
     },
     magicLink: { ...defaultAuthPolicy.magicLink, ...changes.magicLink },
     twoFactor: { ...defaultAuthPolicy.twoFactor, ...changes.twoFactor },
+    passkey: { ...defaultAuthPolicy.passkey, ...changes.passkey },
     google: { ...defaultAuthPolicy.google, ...changes.google },
   };
 }
@@ -41,6 +43,7 @@ const everythingOff = withChanges({
   emailPassword: { access: false },
   magicLink: { access: false },
   google: { access: false },
+  passkey: { access: false },
 });
 
 describe("parseAuthPolicy", () => {
@@ -55,6 +58,7 @@ describe("parseAuthPolicy", () => {
       },
       magicLink: { access: false, signUp: false, expiresInMinutes: 5 },
       twoFactor: { level: "optional", emailOtp: false, trustDevice: false },
+      passkey: { access: true, register: true },
       google: { access: true, signUp: true },
     });
   });
@@ -193,5 +197,35 @@ describe("twoFactorRequired", () => {
   ] as const)("%s level, %s → %s", (level, role, expected) => {
     const policy = withChanges({ twoFactor: { level } });
     expect(twoFactorRequired(policy, role)).toBe(expected);
+  });
+});
+
+describe("meetsTwoFactor", () => {
+  it("accepts the authenticator app or a passkey sign-in when 2FA is required", () => {
+    const admin = { role: "admin", twoFactorEnabled: false };
+    expect(meetsTwoFactor(defaultAuthPolicy, admin, {})).toBe(false);
+    expect(
+      meetsTwoFactor(defaultAuthPolicy, admin, { authMethod: "passkey" }),
+    ).toBe(true);
+    expect(
+      meetsTwoFactor(
+        defaultAuthPolicy,
+        { ...admin, twoFactorEnabled: true },
+        { authMethod: "password" },
+      ),
+    ).toBe(true);
+    expect(meetsTwoFactor(defaultAuthPolicy, { role: "user" }, {})).toBe(true);
+  });
+});
+
+describe("passkeys in the safeguards", () => {
+  it("keep a passkey-only user in when passwords go off", () => {
+    const groups = [{ methods: ["passkey" as const], count: 4 }];
+    expect(
+      usersLockedOut(withChanges({ emailPassword: { access: false } }), groups),
+    ).toBe(0);
+    expect(
+      usersLockedOut(withChanges({ passkey: { access: false } }), groups),
+    ).toBe(4);
   });
 });

@@ -42,6 +42,7 @@ export default async function SignInPage({
         password: canSignIn(policy, "emailPassword"),
         magicLink: canSignIn(policy, "magicLink"),
         google: canSignIn(policy, "google"),
+        passkey: canSignIn(policy, "passkey"),
       }}
       magicLinkMinutes={policy.magicLink.expiresInMinutes}
       allowSignUp={canSignUpAny(policy)}

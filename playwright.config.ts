@@ -16,6 +16,9 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
+  /* Locally `pnpm dev` compiles each page on first visit: longer flows (2FA) need more time */
+  timeout: process.env.CI ? 30_000 : 60_000,
+  expect: { timeout: process.env.CI ? 5_000 : 10_000 },
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */

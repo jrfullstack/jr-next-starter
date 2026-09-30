@@ -24,6 +24,10 @@ const knownErrors = {
   INVALID_TWO_FACTOR_COOKIE: "twoFactorExpired",
   TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE: "tooManyAttempts",
   ACCOUNT_TEMPORARILY_LOCKED: "tooManyAttempts",
+  PASSKEY_NOT_VERIFIED: "passkeyNotVerified",
+  // The browser dialog was closed or no passkey matched
+  AUTH_CANCELLED: "passkeyFailed",
+  PASSKEY_REGISTER_OFF: "passkeyRegisterOff",
 } as const;
 
 export type AuthErrorKey =

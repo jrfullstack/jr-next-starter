@@ -40,7 +40,7 @@ export function AuthFormSkeleton({
   fields,
   withFooter = true,
   secondaryAction,
-  google,
+  leading,
 }: {
   title: string;
   description: string;
@@ -48,8 +48,8 @@ export function AuthFormSkeleton({
   withFooter?: boolean;
   /** Sign-in: the "or" separator and the magic link button (on by default in the policy) */
   secondaryAction?: string;
-  /** With Google credentials: its button and the "or" separator go first */
-  google?: { separator: string };
+  /** Buttons above the form (Google, passkey) and the "or" separator after them */
+  leading?: { buttons: number; separator: string };
 }) {
   return (
     <AuthCard
@@ -57,10 +57,15 @@ export function AuthFormSkeleton({
       description={description}
       footer={withFooter && <TextSkeleton className="h-4 w-48 align-middle" />}
     >
-      {google && (
+      {leading && leading.buttons > 0 && (
         <>
-          <Skeleton className="h-8 w-full rounded-lg" />
-          <FieldSeparator>{google.separator}</FieldSeparator>
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: leading.buttons }, (_, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static placeholders, never reordered
+              <Skeleton key={index} className="h-8 w-full rounded-lg" />
+            ))}
+          </div>
+          <FieldSeparator>{leading.separator}</FieldSeparator>
         </>
       )}
       <FieldGroup aria-busy>

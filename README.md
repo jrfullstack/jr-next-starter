@@ -30,7 +30,7 @@ Plantilla base para arrancar proyectos con **Next.js 16** en minutos: todo el st
 - 🎨 Tailwind CSS 4
 - 🧩 shadcn/ui (estilo `base-nova` sobre Base UI) - Componentes personalizables
 - 🔹 Iconos de Lucide
-- 🔐 Autenticación con Better Auth - Email + contraseña, magic link y Google; verificación de email, recuperar contraseña, verificación en dos pasos (app de autenticación + códigos de respaldo) y roles (`user`, `admin`, `superadmin`)
+- 🔐 Autenticación con Better Auth - Email + contraseña, magic link, Google y passkeys; verificación de email, recuperar contraseña, verificación en dos pasos (app de autenticación + códigos de respaldo) y roles (`user`, `admin`, `superadmin`)
 - 🛠️ Panel `/admin` - Gestión de usuarios y sección **Sistema** para activar o desactivar métodos de acceso y registro sin tocar código
 - ✉️ Emails con Resend + React Email, traducidos, con bandeja de desarrollo en local
 - 🗄️ Prisma 7 + PostgreSQL - ORM con driver adapter `pg`
@@ -173,7 +173,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
 
 ### 🧭 Fase avanzada
 
-- [ ] Autenticación y panel de administración (Better Auth), en 8 pasos según [`docs/plans/auth.md`](docs/plans/auth.md):
+- [x] Autenticación y panel de administración (Better Auth), en 8 pasos según [`docs/plans/auth.md`](docs/plans/auth.md):
   - [x] **1. Base:** email + contraseña, login, registro, logout, roles y permisos, `/dashboard` protegido, primera migración
   - [x] **2. Emails y superadmin:** verificación de email obligatoria, recuperar contraseña, Resend + React Email con bandeja de desarrollo, rol `superadmin` calculado desde `SUPER_ADMIN_EMAILS`
   - [x] **3. Panel `/admin` y usuarios:** menú lateral según permisos; usuarios con búsqueda, filtros por rol y estado, orden por columna y paginación (todo en el servidor), crear, bloquear/desbloquear, cerrar sesiones y (solo superadmin) cambiar rol; las cuentas superadmin no se pueden gestionar
@@ -184,7 +184,7 @@ Seguimiento de lo que ya está listo y lo que viene. Cada fase se instala con el
   - [x] **7. 2FA**, en dos partes:
     - [x] **7a. Cuenta → Seguridad:** `/account/security` para cambiar o crear la contraseña, vincular o desvincular Google (nunca el último método de acceso) y ver y cerrar las sesiones abiertas en otros dispositivos
     - [x] **7b. 2FA:** app de autenticación (QR) y códigos de respaldo desde Seguridad; niveles desactivado / opcional / obligatorio en Sistema (opcional por defecto: obligatorio para admins y superadmins); también se pide al entrar con magic link o Google; código por email y "recordar dispositivo" opcionales (desactivados); un admin puede quitar el 2FA a un usuario que perdió el móvil
-  - [ ] 8. Passkeys
+  - [x] **8. Passkeys:** entrar con la huella, la cara o el PIN del dispositivo (botón "Entrar con passkey"), añadirlas y eliminarlas desde Seguridad; cuentan como 2FA (también para admins); acceso y alta se configuran en Sistema
 
 ## 📦 Librerías
 
@@ -211,7 +211,9 @@ Versiones instaladas a fecha de la última actualización del README.
 | `@vercel/analytics` | 2.0.1 | Analítica de visitas de Vercel, sin cookies (solo se carga en Vercel) |
 | `resend` | 6.30.0 | Envío de emails transaccionales (verificación, recuperar contraseña) |
 | `react-email` | 6.11.0 | Plantillas de email como componentes de React |
-| `better-auth` | 1.7.6 | Autenticación: sesiones, email + contraseña, magic link, Google (OAuth), roles y permisos (plugin admin); datos en PostgreSQL con Prisma |
+| `better-auth` | 1.7.6 | Autenticación: sesiones, email + contraseña, magic link, Google (OAuth), 2FA, roles y permisos (plugin admin); datos en PostgreSQL con Prisma |
+| `@better-auth/passkey` | 1.7.6 | Plugin oficial de passkeys (WebAuthn, con SimpleWebAuthn) |
+| `uqr` | 0.1.3 | Genera el QR del 2FA, sin dependencias (se dibuja como SVG) |
 | `next-intl` | 4.14.7 | Traducciones, formato de fechas/números y rutas por idioma para el App Router |
 | `next-themes` | 0.4.6 | Tema claro/oscuro/sistema sin parpadeo; guarda la preferencia del usuario |
 | `@t3-oss/env-nextjs` | 0.13.11 | Valida con Zod las variables de entorno al arrancar y las expone tipadas en `env` |
@@ -442,6 +444,7 @@ Con [Better Auth](https://www.better-auth.com). El plan completo y sus decisione
 | Email + contraseña | Registro con verificación de email, recuperar contraseña |
 | Magic link | Enlace de un solo uso por email; entrar con él verifica el email. Sirve a cualquier cuenta, también para recuperarla |
 | Google | "Continuar con Google". Solo aparece si hay credenciales |
+| Passkeys | Huella, cara o PIN del dispositivo. Se añaden en Cuenta → Seguridad y cuentan como verificación en dos pasos |
 
 El login usa un solo formulario: un campo de email con "Iniciar sesión" (contraseña) y "Enviar enlace de acceso" (magic link, si se activa en Sistema), y "Continuar con Google" encima.
 
@@ -451,6 +454,8 @@ El login usa un solo formulario: un campo de email con "Iniciar sesión" (contra
 - **Niveles** (Admin → Sistema): *desactivado*, *opcional* (cada usuario decide; admins y superadmins deben usarlo) u *obligatorio* (todas las cuentas). Por defecto, **opcional**.
 - **Cuando es obligatorio** para una cuenta que aún no lo tiene, todas sus páginas protegidas la llevan a Cuenta → Seguridad para activarlo, y los endpoints de administración la rechazan.
 - **Con cualquier método:** se pide al entrar con contraseña (lo hace Better Auth) y también con magic link o Google (un hook propio abre el mismo reto de Better Auth).
+- **Passkeys:** entrar con una passkey no pide segundo factor (el dispositivo y la huella/PIN ya son dos), y cumple el 2FA obligatorio de admins y superadmins. El servidor exige que la passkey haya verificado al usuario.
+- **Una passkey pertenece a un dominio:** las creadas en `localhost` no sirven en producción; cada usuario registra las suyas en cada dominio.
 - **Móvil perdido:** con un código de respaldo; o un admin se lo quita desde Usuarios (nunca a un superadmin).
 - **Recordar dispositivo 30 días:** desactivado por defecto; se activa en Sistema.
 
@@ -472,6 +477,7 @@ En `/admin/system` (solo `superadmin`) se decide, **sin tocar código ni reinici
 | Email y contraseña | Registro · acceso · verificación obligatoria · longitud mínima (8–128) | Sí · sí · sí · 8 |
 | Magic link | Acceso · registro automático · caducidad (1–60 min) | No · no · 5 |
 | Google | Acceso · registro | Sí · sí (si hay credenciales) |
+| Passkeys | Acceso · añadir passkeys | Sí · sí |
 | Verificación en dos pasos | Nivel (desactivado / opcional / obligatorio) · código por email · recordar dispositivo 30 días | Opcional · no · no |
 
 - La configuración se guarda en la base de datos (`system_setting`) y se aplica al instante: Better Auth se construye con ella y un hook del servidor rechaza los métodos desactivados, aunque se llame a la API directamente.

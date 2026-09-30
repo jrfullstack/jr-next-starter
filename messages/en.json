@@ -127,7 +127,10 @@
       "twoFactorSetupRequired": "Set up two-step verification to continue.",
       "invalidCode": "The code isn't correct.",
       "twoFactorExpired": "The verification expired. Sign in again.",
-      "tooManyAttempts": "Too many attempts. Wait a few minutes and sign in again."
+      "tooManyAttempts": "Too many attempts. Wait a few minutes and sign in again.",
+      "passkeyFailed": "The passkey couldn't be used. Try again or sign in another way.",
+      "passkeyNotVerified": "The passkey didn't verify you (fingerprint, face or PIN).",
+      "passkeyRegisterOff": "Passkeys can't be added right now."
     },
     "verifyEmail": {
       "metaTitle": "Verify email",
@@ -196,6 +199,10 @@
       "useEmail": "Email me a code",
       "emailSent": "We've emailed you a code.",
       "signInAgain": "Sign in again"
+    },
+    "passkey": {
+      "signIn": "Sign in with a passkey",
+      "signInDescription": "Sign in with this device's passkey."
     }
   },
   "UserMenu": {
@@ -352,6 +359,10 @@
         "twoFactor": {
           "title": "Two-step verification (2FA)",
           "description": "A second factor on sign-in: authenticator app and backup codes."
+        },
+        "passkey": {
+          "title": "Passkeys",
+          "description": "Sign in with the device's fingerprint, face or PIN, no password. They count as two-step verification."
         }
       },
       "fields": {
@@ -415,6 +426,16 @@
           "trustDevice": {
             "label": "Remember device for 30 days",
             "description": "Lets users skip the second factor on a device for 30 days."
+          }
+        },
+        "passkey": {
+          "access": {
+            "label": "Sign-in",
+            "description": "Sign in with a passkey."
+          },
+          "register": {
+            "label": "Add passkeys",
+            "description": "Users can add passkeys in Account → Security. Existing ones can always be deleted."
           }
         }
       },
@@ -532,7 +553,24 @@
         "qr": "QR for your authenticator app",
         "setupAlertTitle": "Turn on two-step verification to continue",
         "setupAlertRole": "Administrators must use it. Until you turn it on, the panel and the other account pages will bring you here.",
-        "setupAlertEveryone": "The site requires it for every account. Until you turn it on, the other account pages will bring you here."
+        "setupAlertEveryone": "The site requires it for every account. Until you turn it on, the other account pages will bring you here.",
+        "setupAlertPasskey": "If you already have a passkey, signing in with it works too."
+      },
+      "passkeys": {
+        "title": "Passkeys",
+        "description": "Sign in with your devices' fingerprint, face or PIN. They count as two-step verification.",
+        "empty": "You don't have passkeys yet.",
+        "name": "Name of the new passkey",
+        "namePlaceholder": "Laptop, phone…",
+        "add": "Add passkey",
+        "added": "Passkey added.",
+        "remove": "Remove",
+        "removed": "Passkey removed.",
+        "created": "Added on {date}",
+        "unnamed": "Unnamed passkey",
+        "confirmTitle": "Remove the passkey “{name}”?",
+        "confirmDescription": "You won't be able to sign in with it from that device.",
+        "registerOff": "Adding passkeys is turned off on this site."
       }
     }
   }

@@ -6,7 +6,11 @@ import { twoFactor } from "better-auth/plugins";
 import { after } from "next/server";
 import { siteConfig } from "@/config/site";
 import { routing } from "@/i18n/routing";
-import { type AuthPolicy, twoFactorRequired } from "@/lib/system/policy";
+import {
+  type AuthPolicy,
+  meetsTwoFactor,
+  twoFactorRequired,
+} from "@/lib/system/policy";
 import { sendAuthEmail } from "./emails";
 import { splitLocale } from "./routes";
 
@@ -56,8 +60,10 @@ async function assertAdminHasTwoFactor(
   ctx: GenericEndpointContext,
 ) {
   const session = await getSessionFromCtx(ctx);
-  if (!session || !twoFactorRequired(policy, session.user.role)) return;
-  if (!(session.user as { twoFactorEnabled?: boolean }).twoFactorEnabled) {
+  if (!session) return;
+  const user = session.user as { role?: string; twoFactorEnabled?: boolean };
+  const current = session.session as { authMethod?: string };
+  if (!meetsTwoFactor(policy, user, current)) {
     throw forbidden("TWO_FACTOR_SETUP_REQUIRED", "Set up 2FA first");
   }
 }
