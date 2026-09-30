@@ -37,7 +37,7 @@ async function signUp(page: Page, email: string) {
 
 async function signIn(page: Page, email: string, withPassword = password) {
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Contraseña").fill(withPassword);
+  await page.getByLabel("Contraseña", { exact: true }).fill(withPassword);
   await page.getByRole("button", { name: "Iniciar sesión" }).click();
 }
 

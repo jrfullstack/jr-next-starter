@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { type AuthField, PASSWORD_MIN_LENGTH } from "@/lib/auth/schemas";
+import { PasswordInput } from "./password-input";
 
 type Props = Pick<
   ComponentProps<"input">,
@@ -28,21 +29,27 @@ export function AuthFormField({
   error,
   hint,
   aside,
+  type,
   ...input
 }: Props) {
+  const control = {
+    id: name,
+    name,
+    "aria-invalid": error ? true : undefined,
+    required: true,
+    ...input,
+  };
   return (
     <Field data-invalid={error ? true : undefined}>
       <div className="flex items-center justify-between gap-2">
         <FieldLabel htmlFor={name}>{label}</FieldLabel>
         {aside}
       </div>
-      <Input
-        id={name}
-        name={name}
-        aria-invalid={error ? true : undefined}
-        required
-        {...input}
-      />
+      {type === "password" ? (
+        <PasswordInput {...control} />
+      ) : (
+        <Input type={type} {...control} />
+      )}
       {error ? (
         <FieldError>{error}</FieldError>
       ) : (
