@@ -19,6 +19,9 @@ test.describe("i18n", () => {
       if (message.type() === "error") errors.push(message.text());
     });
     await page.goto("/es");
+    // Opening a menu marks the rest of the page (data-base-ui-inert): if part
+    // of it is still hydrating, React warns in dev. Wait until it's all loaded
+    await page.waitForLoadState("networkidle");
 
     await page.getByRole("button", { name: "Cambiar idioma" }).click();
     await page.getByRole("menuitemradio", { name: "English" }).click();
