@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/jrfullstack/jr-next-starter/compare/v0.6.1...v0.7.0) (2026-09-30)
+
+
+### ✨ Nuevas funcionalidades
+
+* add google sign-in configurable from system (auth step 6) ([#18](https://github.com/jrfullstack/jr-next-starter/issues/18)) ([de6433b](https://github.com/jrfullstack/jr-next-starter/commit/de6433b9ea036af99c67554cce29b9a9dae32ce8))
+
 ## [0.6.1](https://github.com/jrfullstack/jr-next-starter/compare/v0.6.0...v0.6.1) (2026-09-30)
 
 
